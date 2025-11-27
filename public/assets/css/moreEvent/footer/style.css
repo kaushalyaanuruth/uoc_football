@@ -1,0 +1,125 @@
+/* Footer */
+.footer {
+    background: white;
+    padding: 4rem 2rem 2rem;
+    text-align: center;
+    border-top: 1px solid #ccc;
+}
+
+/* Row layout */
+.footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+    margin-left: 64px;
+    margin-right: 64px;
+    margin-bottom: 64px;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+/* Left Logos */
+.footer-left {
+    margin-top: 32px;
+    display: flex;
+    gap: 1rem;
+}
+
+.footer-logo {
+    height: 50px;
+    transition: transform 0.3s ease;
+}
+
+/* Center Sponsors */
+.footer-center {
+    text-align: center;
+}
+
+.sponsor-title {
+    color: #4C0E54;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    margin-bottom: 32px;
+    font-size: 24px;
+}
+
+.sponsor-logos {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer-sponsor {
+    height: 80px;
+    transition: transform 0.3s ease;
+}
+
+.footer-sponsor:hover {
+    transform: scale(1.1);
+}
+
+/* Right Social */
+.footer-right {
+    text-align: right;
+}
+
+.follow-text {
+    font-weight: bold;
+    color: #4C0E54;
+    margin-bottom: 0.5rem;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.social-links {
+    display: flex;
+    gap: 01rem;
+    justify-content: flex-end;
+}
+
+.social-link {
+    width: 35px;
+    height: 35px;
+    background: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.social-link:hover {
+    background: #ffffff;
+    transform: scale(1.1);
+}
+
+.social-icon {
+    width: 40px;
+    height: 40px;
+}
+
+/* Footer bottom text */
+.footer-copy {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-row {
+        flex-direction: column;
+        text-align: center;
+    }
+    .footer-right {
+        text-align: center;
+    }
+    .social-links {
+        justify-content: center;
+    }
+}

@@ -1,0 +1,189 @@
+/* Player/Coach List Styles */
+.player-coach-list {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px;
+    background: #ffffff;
+}
+
+.player-coach-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.player-coach-item:hover {
+    background: #f3f4f6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.player-coach-item:last-child {
+    margin-bottom: 0;
+}
+
+.player-coach-info {
+    flex: 1;
+}
+
+.player-coach-name {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.player-coach-details {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.role-captain {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.role-vice-captain {
+    background: #f3e8ff;
+    color: #a855f7;
+}
+
+.player-coach-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.icon-btn-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.icon-btn-small:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.icon-btn-small.edit-btn:hover {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.icon-btn-small.delete-btn:hover {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: #6b7280;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.empty-state-text {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Add button in section header */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.section-header label {
+    margin-bottom: 0 !important;
+}
+
+.add-item-btn {
+    padding: 6px 12px;
+    background: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.add-item-btn:hover {
+    background: #4C0E54;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(124, 58, 237, 0.3);
+}
+
+.add-item-btn:active {
+    transform: translateY(0);
+}
+
+/* Loading state */
+.loading-state {
+    text-align: center;
+    padding: 20px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* Error state */
+.error-state {
+    text-align: center;
+    padding: 20px;
+    color: #ef4444;
+    font-size: 14px;
+}
+
+/* Scrollbar styling for lists */
+.player-coach-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.player-coach-list::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 10px;
+}
+
+.player-coach-list::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 10px;
+}
+
+.player-coach-list::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}

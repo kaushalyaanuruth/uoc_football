@@ -1,0 +1,130 @@
+/* Global Reset and Base Styles */
+
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #f8f9fa;
+    overflow-x: hidden;
+}
+
+/* Global Typography */
+.section-title {
+    color: #4C0E54;
+    font-size: 2.2em;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: bold;
+}
+
+/* Global Button Styles */
+.view-all-btn {
+    background: #ffffff;
+    color: #4C0E54;
+    border: 2px solid #4C0E54;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 700;
+}
+
+.view-all-btn:hover {
+    background: #4C0E54;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* Global Color Variables */
+:root {
+    --primary-color: #4C0E54;
+    --primary-hover: #64126F;
+    --secondary-color: #663399;
+    --secondary-light: #9966cc;
+    --background-light: #f8f9fa;
+    --white: #ffffff;
+    --text-dark: #333333;
+    --text-light: #666666;
+    --shadow-light: rgba(0,0,0,0.1);
+    --shadow-heavy: rgba(0,0,0,0.2);
+}
+
+/* Global Animation Classes */
+.fade-in-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease-out;
+}
+
+.fade-in-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Global Card Hover Effects */
+.hover-lift {
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+/* Global Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 1.8em;
+    }
+    
+    .view-all-btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}

@@ -1,0 +1,241 @@
+.containers-section {
+    margin-top: 80px; /* Match header height */
+    padding-top: 40px; /* Add some spacing */
+}
+
+.main-container {
+    max-width: 100%;
+    margin-top: 0; /* Remove conflicting margin */
+    margin-left: 64px;
+    margin-right: 64px;
+    padding: 20px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4C0E54;
+    text-decoration: none;
+    margin-bottom: 30px;
+    font-weight: 700;
+    font-size: large;
+    transition: color 0.3s ease;
+}
+
+.back-button:hover {
+    color: #8b5a96;
+}
+
+.back-arrow {
+    width: 15px;
+    height: 15px;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+}
+
+.sessions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.session-card {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.session-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Event image */
+.session-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+}
+
+/* Optional: Field diagram styles if used */
+.field-diagram {
+    height: 180px;
+    background: linear-gradient(135deg, #2d7d32, #4caf50);
+    position: relative;
+    overflow: hidden;
+}
+
+.field-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border: 2px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
+}
+
+.center-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 4px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+}
+
+.penalty-area {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 80px;
+    border: 2px solid rgba(255,255,255,0.6);
+}
+
+.penalty-area.right {
+    left: auto;
+    right: 20px;
+}
+
+.goal-area {
+    position: absolute;
+    top: 40px;
+    left: 20px;
+    width: 20px;
+    height: 40px;
+    border: 2px solid rgba(255,255,255,0.6);
+}
+
+.goal-area.right {
+    left: auto;
+    right: 20px;
+}
+
+.player-positions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.player {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+    color: #2d7d32;
+}
+
+.player.x {
+    background: rgba(255,193,7,0.9);
+    color: #333;
+}
+
+.arrow {
+    position: absolute;
+    width: 2px;
+    background: rgba(255,255,255,0.7);
+    transform-origin: bottom;
+}
+
+.arrow::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -3px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid rgba(255,255,255,0.7);
+}
+
+.session-content {
+    padding: 24px;
+}
+
+.session-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.session-description {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.session-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.detail-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+}
+
+@media (max-width: 1200px) {
+    .sessions-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .sessions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .sessions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .main-container {
+        padding: 15px;
+    }
+    
+    .session-content {
+        padding: 20px;
+    }
+}

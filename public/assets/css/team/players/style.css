@@ -1,0 +1,336 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Main Content */
+.main-container {
+    max-width: 100%;
+    margin-top: 96px;
+    margin-left: 64px;
+    margin-right:64px;
+}
+
+.back-btn {
+    color: #4c0e4c;
+    text-decoration: none;
+    margin-top: 5rem;
+    margin-bottom: 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    transition: color 0.3s ease;
+    font-size: 19px;
+    
+}
+
+.back-btn:hover {
+    color: #4c0e4c;
+}
+
+/* Position Navigation Tabs */
+.position-tabs {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid #ddd;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.position-tab {
+    padding: 1rem 0;
+    text-decoration: none;
+    color: #4c0e4c;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-weight: 600;
+}
+
+.position-tab.active,
+.position-tab:hover {
+    color: #4c0e4c;
+    border-bottom-color: #4c0e4c;
+}
+
+/* Position Sections */
+.position-section {
+    margin-bottom: 4rem;
+}
+
+.position-section.hidden {
+    display: none;
+}
+
+.position-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+/* Players Grid */
+.players-grid {
+    display: grid;
+    /* Each column will be at least 200px and at most 350px */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 350px));
+    gap: 2rem;
+}
+
+/* player card sizing/layout */
+.player-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: white;
+    /* enforce requested size constraints */
+    min-width: 200px;
+    max-width: 300px;
+    min-height: 350px;
+    max-height: 600px;
+
+    display: flex;
+    flex-direction: column; /* keep image on top and content below if needed */
+    /* ensure card fills available grid track but not exceed max-width */
+    width: 100%;
+}
+
+/* Make image occupy the full card height */
+.player-image {
+    width: 100%;
+    flex: 1 1 auto; /* fill remaining vertical space */
+    height: 100%;
+    min-height: 180px;
+    max-height: none;
+    position: relative;
+    overflow: hidden;
+}
+
+/* actual image */
+.player-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    display: block;
+}
+
+/* Position player-content as overlay on the image (bottom) */
+.player-content {
+    position: absolute; /* overlay */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    background: linear-gradient(transparent, rgba(0,0,0,0.55));
+    color: #fff; /* ensure text readable over image */
+    min-height: 100px;
+    box-sizing: border-box;
+}
+
+/* If player-overlay exists inside image keep it as an alternative overlay */
+.player-overlay {
+    /* keep existing visuals but ensure it won't conflict */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.45));
+    padding: 0.75rem 1rem;
+    color: white;
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+
+/* top meta (number/position) — now shown in overlay, use lighter color */
+.player-number {
+    font-size: 0.85rem;
+    opacity: 0.95;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.9);
+}
+
+/* name: clamp to two lines to prevent overflow */
+.player-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+/* role / small meta */
+.player-role {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 0.5rem;
+}
+
+/* extra details row (e.g., age/height) */
+.player-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.85);
+    flex-wrap: wrap;
+}
+
+/* Loading Animation */
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Body Responsive Design */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 0 1rem;
+    }
+
+    .position-tabs {
+        gap: 1rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .position-tab {
+        font-size: 0.9rem;
+    }
+
+    .players-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .player-card {
+        min-height: 300px;
+        max-height: 520px;
+    }
+
+    .player-image {
+        /* still full height of the card */
+        flex: 1 1 auto;
+    }
+
+    .player-content {
+        padding: 0.75rem 0.9rem;
+        min-height: 90px;
+    }
+
+    .player-name {
+        font-size: 1rem;
+    }
+
+    .position-title {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .players-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .player-card {
+        min-height: 280px;
+        max-height: 480px;
+    }
+
+    .player-image {
+        flex: 1 1 auto;
+    }
+
+    .player-content {
+        min-height: 80px;
+    }
+
+    .player-name {
+        font-size: 0.95rem;
+    }
+
+    .position-title {
+        font-size: 1.1rem;
+    }
+
+    .player-number {
+        font-size: 0.8rem;
+    }
+
+    .back-btn {
+        font-size: 0.9rem;
+    }
+}
+
+/* Additional Utility Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.error-state {
+    text-align: center;
+    color: #666;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
