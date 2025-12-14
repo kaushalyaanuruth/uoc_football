@@ -14,11 +14,8 @@ $category = $data['category'] ?? null;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery - UOC Football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/gallery/styles.css">
-    <script src="<?php echo ROOT; ?>/assets/js/gallery/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/gallery/header/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/gallery/header/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/gallery/footer/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/gallery/footer/script.js"></script>
 </head>
 <body>
     <div class="header">
@@ -198,7 +195,8 @@ $category = $data['category'] ?? null;
 
         <p class="footer-copy">UOC FOOTBALL © 2025 All rights reserved</p>
     </footer>
-
-    <script src="script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/gallery/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/gallery/header/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/gallery/footer/script.js"></script>
 </body>
 </html>

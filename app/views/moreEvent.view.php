@@ -10,13 +10,9 @@ $allEvents = $data['allEvents'] ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>University of Colombo Football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreEvent/header/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/header/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreEvent/footer/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/footer/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreEvent/containers/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/containers/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreEvent/default/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/default/script.js"></script>
     <style>
         *{
             font-family: 'poppins', sans-serif;
@@ -166,5 +162,9 @@ $allEvents = $data['allEvents'] ?? [];
 
         <p class="footer-copy">UOC FOOTBALL © 2025 All rights reserved</p>
     </footer>
+    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/header/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/footer/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/containers/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/default/script.js"></script>
 </body>
 </html>

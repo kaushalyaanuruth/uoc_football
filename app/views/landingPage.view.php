@@ -12,19 +12,12 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>University of Colombo Football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/header/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/landingPage/header/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/hero/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/landingPage/hero/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/main-feature/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/landingPage/main-feature/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/news/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/landingPage/news/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/values/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/landingPage/events/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/events/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/landingPage/team/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/team/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/landingPage/footer/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/footer/style.css">
     <style>
         *{
@@ -236,5 +229,12 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
 
         <p class="footer-copy">UOC FOOTBALL © 2025 All rights reserved</p>
     </footer>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/header/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/hero/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/main-feature/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/news/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/events/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/team/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/footer/script.js"></script>
 </body>
 </html>

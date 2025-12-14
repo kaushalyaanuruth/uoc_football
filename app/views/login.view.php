@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UOC Football - Team Portal Login</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/login/styles.css">
-    <script src="<?php echo ROOT; ?>/assets/js/login/script.js" defer></script>
 </head>
 <body>
     <div class="container">
@@ -37,5 +36,6 @@
             </form>
         </div>
     </div>
+    <script src="<?php echo ROOT; ?>/assets/js/login/script.js"></script>
 </body>
 </html>

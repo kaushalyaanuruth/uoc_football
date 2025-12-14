@@ -2,9 +2,15 @@
 
 require_once __DIR__ . '/../models/NewsModel.php';
 
-class News
+class News extends Controller
 {
-public function addNewNews()
+    public function index()
+    {
+        $data = [];
+        $this->view('news', $data);
+    }
+
+    public function addNewNews()
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 

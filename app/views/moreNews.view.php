@@ -10,11 +10,8 @@ $allNews = $data['allNews'] ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All News - UOC Football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreNews/header/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/moreNews/header/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreNews/footer/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/moreNews/footer/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreNews/containers/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/moreNews/containers/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreNews/default/styles.css">
     <style>
         *{
@@ -32,7 +29,7 @@ $allNews = $data['allNews'] ?? [];
                 <a href="<?php echo ROOT; ?>/landingPage"><img class="header-logo" src="<?php echo ROOT; ?>/assets/images/landingPage/header/uoclogo.png" alt="UOC Logo"></a>
             </div>
             <ul class="nav-menu">
-                <li><a href="<?php echo ROOT; ?>/news">News</a></li>
+                <li><a href="<?php echo ROOT; ?>/moreNews">News</a></li>
                 <li><a href="<?php echo ROOT; ?>/moreEvent">Events</a></li>
                 <li><a href="<?php echo ROOT; ?>/team">Team</a></li>
                 <li><a href="<?php echo ROOT; ?>/gallery">Gallery</a></li>
@@ -148,5 +145,8 @@ $allNews = $data['allNews'] ?? [];
 
         <p class="footer-copy">UOC FOOTBALL © 2025 All rights reserved</p>
     </footer>
+    <script src="<?php echo ROOT; ?>/assets/js/moreNews/header/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/moreNews/footer/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/moreNews/containers/script.js"></script>
 </body>
 </html>

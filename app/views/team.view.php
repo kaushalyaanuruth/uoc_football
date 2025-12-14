@@ -6,12 +6,8 @@
     <title>University of Colombo Football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/team/default/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/team/header/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/team/header/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/team/footer/style.css">
-    <script src="<?php echo ROOT; ?>/assets/js/team/footer/script.js"></script>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/team/players/style.css">
-    <!-- <script src="<?php echo ROOT; ?>/assets/js/team/players/script.js"></script> -->
-
 </head>
 <body>
     <div class="header">
@@ -25,7 +21,7 @@
                 <li><a href="http://localhost/UOC_Football/public/team">Team</a></li>
                 <li><a href="http://localhost/UOC_Football/public/gallery">Gallery</a></li>
             </ul>
-            <a href="http://localhost/UOC_Football/public/login" class="team-portal" target="_blank" rel="noopener noreferrer">Team Portal</a>
+            <a href="<?php echo ROOT; ?>/login" class="team-portal" target="_blank" rel="noopener noreferrer">Team Portal</a>
         </nav>
     </div>
     <div class="main-container">
@@ -313,5 +309,8 @@
 
         <p class="footer-copy">UOC FOOTBALL © 2025 All rights reserved</p>
     </footer>
+    <script src="<?php echo ROOT; ?>/assets/js/team/header/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/team/footer/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/team/players/script.js"></script>
 </body>
 </html>
