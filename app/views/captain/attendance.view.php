@@ -113,9 +113,9 @@
             <section class="quick-actions">
                 <h2>Quick Actions</h2>
                 <div class="action-btns">
-                    <button class="btn primary">Save Attendance</button>
-                    <button class="btn secondary">Reset Changes</button>
-                    <button class="btn outline">Export Report</button>
+                    <button class="btn save-attendance">Save Attendance</button>
+                    <button class="btn reset-changes">Reset Changes</button>
+                    <button class="btn exportreport">Export Report</button>
                 </div>
             </section>
 

@@ -56,7 +56,7 @@ body {
     
 }
 
-.nav-center a.active {
+.nav-center a:hover {
   background: #4A1150;
   color: #ffffff;
 }
@@ -303,21 +303,11 @@ body {
   cursor: pointer;
 }
 
-.btn.primary {
+.btn:hover {
   background: #4A1150;
   color: #ffffff;
 }
 
-.btn.secondary {
-  background: #e5e7eb;
-  color: #1f2937;
-}
-
-.btn.outline {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  color: #1f2937;
-}
 
 /* ================= Quick Actions ================= */
 .quick-actions {
@@ -337,6 +327,12 @@ body {
   flex-direction: column;
   gap: 12px;
 }
+
+/* .save-attendance:hover,.reset-changes:hover,.exportreport:hover{
+    background: #4A1150;
+    color: #ffffff;
+} */
+
 /* ================= Responsive Design ================= */
 
 /* Tablets */
