@@ -1,43 +1,37 @@
-/* ================= Global Container ================= */
-/* .content {
-  max-width: 1400px;
-  margin: 0 auto;
-} */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
 
-/* ================= Base ================= */
 * {
   margin: 0;
-    padding: 0;
+  padding: 0;
   box-sizing: border-box;
 
 }
 
 body {
-   margin: 0;
+  margin: 0;
   background-color: #FFF7FF;
-  
   font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    min-height: 100vh;
-    position: relative;
-    /* color: #310037; */
-    color: #1f2937; 
+  min-height: 100vh;
+  position: relative;
+  color: #1f2937;
 
 }
+
 body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url("../../../public/assets/images/common/bgimage.png");
-    background-size: 1298px 1298px;
-    background-position: -517px -125px;
-    background-repeat: no-repeat;
-    opacity: 0.1;
-    z-index: -1;
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../../images/common/bgimage.png");
+  background-size: 1298px 1298px;
+  background-position: -517px -125px;
+  background-repeat: no-repeat;
+  opacity: 0.1;
+  z-index: -1;
 }
+
 /* ================= Top Navbar ================= */
 .top-navbar {
   height: 70px;
@@ -63,19 +57,19 @@ body::before {
 .nav-center {
   display: flex;
   gap: 32px;
-    padding: 8px 64px;
-   
-   
+  padding: 8px 64px;
+
+
 }
 
 .nav-center a {
-   border-radius: 50px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 50px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   color: rgb(65, 65, 65);
-    font-size: 13px;
-    padding: 4px 24px;
-    text-decoration: none;
-    
+  font-size: 13px;
+  padding: 4px 24px;
+  text-decoration: none;
+
 }
 
 .nav-center a:hover {
@@ -97,6 +91,7 @@ body::before {
   height: 36px;
   cursor: pointer;
 }
+
 /* .icon-btn {
     width: 40px;
     height: 40px;
@@ -112,7 +107,7 @@ body::before {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-object-fit: cover;
+  object-fit: cover;
 }
 
 /* ================= Main Content ================= */
