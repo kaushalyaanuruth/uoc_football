@@ -1,11 +1,14 @@
 <!-- ================= TOP NAVBAR ================= -->
 <header class="top-navbar">
     <div class="nav-left">
-        <span class="brand">UOC Football</span>
+        <a href="<?php echo ROOT; ?>/admin">
+            <img class="header-logo" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/uoclogo.png"
+                alt="UOC Football Logo">
+        </a>
     </div>
 
     <nav class="nav-center">
-        <a href="<?= ROOT  ?>/captain/dashboard" class="active">Home</a>
+        <a href="<?= ROOT ?>/captain/dashboard" class="active">Home</a>
         <a href="#">Schedule</a>
         <a href="#">Analytics</a>
         <a href="#">Notices</a>
@@ -13,7 +16,11 @@
 
     <div class="nav-right">
         <button class="icon-btn">🔔</button>
-        <div class="profile">C</div>
+        <div class="profile">
+            <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
+                alt="Admin Avatar">
+
+        </div>
     </div>
 </header>
 
@@ -124,5 +131,5 @@
 
 </main>
 
-<link rel="stylesheet" href="<?= ROOT  ?>/assets/css/captain/attendance.css">
-<script src="<?= ROOT  ?>/assets/js/captain/attendance.js"></script>
+<link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/attendance.css">
+<script src="<?= ROOT ?>/assets/js/captain/attendance.js"></script>
