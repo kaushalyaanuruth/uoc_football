@@ -1,0 +1,85 @@
+/* Offline Reset + Poppins Font */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Poppins', sans-serif;
+}
+
+a { text-decoration: none; }
+
+button:focus-visible {
+  outline: 2px solid #8b5cf6;
+}
+
+/* Poppins Font - allowed */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Your full Anima style.css below */
+.captain-attendence {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  background-color: #ffffff;
+  border: 2px solid;
+  border-color: #ced4da;
+}
+
+/* ... paste all your long style.css code here ... */
+
+/* Badge classes for JS */
+.badge-present {
+  background-color: #dcfce7;
+  color: #16a34a;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.badge-absent {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.badge-late {
+  background-color: #fef9c3;
+  color: #854d0e;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.action-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.action-button-check {
+  background-color: #22c55e;
+}
+
+.action-button-x {
+  background-color: #ef4444;
+}
+
+.action-button-clock {
+  background-color: #eab308;
+}
+.div-8 {
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 12px;
+}
+
+.text-wrapper-13, .text-wrapper-15, .text-wrapper-17 {
+  font-size: 36px !important;
+  font-weight: bold !important;
+}
