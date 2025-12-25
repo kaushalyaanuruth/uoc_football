@@ -172,6 +172,18 @@ body::before {
   font-size: 32px;
   font-weight: 700;
 }
+.icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+}
+
+.action-icon {
+    width: 24px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+}
 
 .stat-card.success span {
   color: #16a34a;

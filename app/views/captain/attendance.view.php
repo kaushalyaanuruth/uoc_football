@@ -1,7 +1,7 @@
 <!-- ================= TOP NAVBAR ================= -->
 <header class="top-navbar">
     <div class="nav-left">
-        <a href="<?php echo ROOT; ?>/admin">
+        <a href="<?php echo ROOT; ?>/captain/dashboard">
             <img class="header-logo" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/uoclogo.png"
                 alt="UOC Football Logo">
         </a>
@@ -36,10 +36,15 @@
         <div class="filters">
             <select>
                 <option>Practice</option>
+                <option>Match</option>
+                <option>Training</option>
+                <option>Fitness</option>
             </select>
             <input type="date" value="<?= date('Y-m-d') ?>">
             <select>
                 <option>All Teams</option>
+                <!-- <option value="">Team A</option>
+                <option value="">Team B</option> -->
             </select>
         </div>
     </header>
@@ -48,16 +53,28 @@
     <section class="stats">
         <div class="stat-card">
             <h3>Total Players</h3>
+            <div class="icon-container">
+                <img src="<?php echo ROOT; ?>/assets/images/Captain/icons/teams.svg" alt="team icon"
+                    class="action-icon">
+            </div>
             <span><?= $data['totalPlayers'] ?></span>
         </div>
 
         <div class="stat-card success">
-            <h3>Present</h3>
+            <h3>Present Players</h3>
+             <div class="icon-container">
+                <img src="<?php echo ROOT; ?>/assets/images/Captain/icons/pre.svg" alt="team icon"
+                    class="action-icon">
+            </div>
             <span><?= $data['present'] ?></span>
         </div>
 
         <div class="stat-card danger">
-            <h3>Absent</h3>
+            <h3>Absent Players</h3>
+             <div class="icon-container">
+                <img src="<?php echo ROOT; ?>/assets/images/Captain/icons/a" alt="team icon"
+                    class="action-icon">
+            </div>
             <span><?= $data['absent'] ?></span>
         </div>
     </section>
