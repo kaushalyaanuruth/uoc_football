@@ -1,7 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captain_Attendence </title>
+    <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/attendance.css">
+
+</head>
+<body>
+    
+
 <!-- ================= TOP NAVBAR ================= -->
 <header class="top-navbar">
     <div class="nav-left">
-        <a href="<?php echo ROOT; ?>/captain/dashboard">
+        <a href="<?php echo ROOT; ?>/captain/captainDashboard">
             <img class="header-logo" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/uoclogo.png"
                 alt="UOC Football Logo">
         </a>
@@ -148,5 +160,6 @@
 
 </main>
 
-<link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/attendance.css">
 <script src="<?= ROOT ?>/assets/js/captain/attendance.js"></script>
+</body>
+</html>
