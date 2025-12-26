@@ -160,6 +160,8 @@ body::before {
   padding: 20px;
   border-radius: 12px;
   border: 1px solid #f3f4f6;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
 }
 
 .stat-card h3 {
@@ -198,6 +200,8 @@ body::before {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 24px;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
 }
 
 /* ================= Attendance Table ================= */
@@ -230,7 +234,7 @@ body::before {
   padding: 16px 24px;
   font-size: 14px;
   color: #374151;
-  background-color: #f9fafb;
+  background-color: #FAF5FF;
 }
 
 .attendance-table td {
@@ -295,37 +299,37 @@ body::before {
 }
 
 /* ================= Attendance Rate ================= */
-.attendance-rate {
+
+.fitness-trends-card {
   background: #ffffff;
+  padding: 20px;
   border-radius: 12px;
   border: 1px solid #f3f4f6;
-  padding: 20px;
-  margin-bottom: 24px;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
 }
 
-.attendance-rate h2 {
-  margin: 0 0 16px;
-  font-size: 18px;
+.chart-container {
+  position: relative;
+  height: 260px;
 }
 
-.chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  height: 200px;
+.chart-svg {
+  width: 100%;
+  height: 100%;
 }
 
-.bar {
-  flex: 1;
-  background: #4A1150;
-  border-radius: 6px;
-  color: #ffffff;
-  font-size: 12px;
-  text-align: center;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 6px;
+
+
+
+.attendance-line {
+  fill: none;
+  stroke: #4A1150;
+  stroke-width: 2;
+  
+}
+.chart-svg circle {
+  fill: #4A1150;
 }
 
 /* ================= Buttons ================= */
@@ -335,6 +339,7 @@ body::before {
   border: none;
   font-weight: 600;
   cursor: pointer;
+  background-color:#FAF5FF ;
 }
 
 .btn:hover {
@@ -349,6 +354,10 @@ body::before {
   border-radius: 12px;
   border: 1px solid #f3f4f6;
   padding: 20px;
+  margin-top: 20px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
+
 }
 
 .quick-actions h2 {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captain_Attendence </title>
+    <title>Document</title>
     <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/attendance.css">
 
 </head>
@@ -13,7 +13,7 @@
 <!-- ================= TOP NAVBAR ================= -->
 <header class="top-navbar">
     <div class="nav-left">
-        <a href="<?php echo ROOT; ?>/captain/captainDashboard">
+        <a href="<?php echo ROOT; ?>/captain/dashboard">
             <img class="header-logo" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/uoclogo.png"
                 alt="UOC Football Logo">
         </a>
@@ -137,14 +137,52 @@
         <!-- Right Panel -->
         <aside class="right-panel">
 
-            <section class="attendance-rate">
-                <h2>Attendance Rate</h2>
-                <div class="chart">
-                    <?php foreach ($data['weekly'] as $day => $value): ?>
-                        <div class="bar" style="height:<?= $value ?>%"><?= $day ?></div>
-                    <?php endforeach; ?>
-                </div>
-            </section>
+           <!-- Attendance Rate -->
+<section class="attendance-rate fitness-trends-card">
+    <h2>Attendance Rate</h2>
+
+    <div class="chart-container">
+        <svg class="chart-svg" viewBox="0 0 500 300">
+            <!-- Grid lines -->
+            <line x1="50" y1="250" x2="370" y2="250" />
+            <line x1="50" y1="200" x2="370" y2="200" />
+            <line x1="50" y1="150" x2="370" y2="150" />
+            <line x1="50" y1="100" x2="370" y2="100" />
+            <line x1="50" y1="50"  x2="370" y2="50" />
+
+            <!-- Y-axis labels -->
+            <text x="30" y="255">0</text>
+            <text x="30" y="205">25</text>
+            <text x="30" y="155">50</text>
+            <text x="30" y="105">75</text>
+            <text x="25" y="55">100</text>
+
+            <!-- X-axis labels -->
+            <text x="50"  y="270">Mon</text>
+            <text x="100" y="270">Tue</text>
+            <text x="150" y="270">Wed</text>
+            <text x="200" y="270">Thu</text>
+            <text x="250" y="270">Fri</text>
+            <text x="300" y="270">Sat</text>
+            <text x="350" y="270">Sun</text>
+
+            <!-- Attendance line -->
+            <polyline
+                points="50,80 100,70 150,95 200,60 250,75 300,74 350,71"
+                class="attendance-line" />
+
+            <!-- Data points -->
+            <circle cx="50"  cy="80" r="4" />
+            <circle cx="100" cy="70" r="4" />
+            <circle cx="150" cy="95" r="4" />
+            <circle cx="200" cy="60" r="4" />
+            <circle cx="250" cy="75" r="4" />
+            <circle cx="300" cy="74" r="4" />
+            <circle cx="350" cy="71" r="4" />
+        </svg>
+    </div>
+</section>
+
 
             <section class="quick-actions">
                 <h2>Quick Actions</h2>
