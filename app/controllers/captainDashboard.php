@@ -28,6 +28,6 @@ class captainDashboard extends Controller {
         //     'player_role' => $_SESSION['player_role']
          ];
         
-        $this->view('captainDashboard', $data);
+        $this->view('captain/captainDashboard', $data);
     }
 }
