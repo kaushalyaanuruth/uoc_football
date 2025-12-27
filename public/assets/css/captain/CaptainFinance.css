@@ -1,0 +1,358 @@
+
+       @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #FFF7FF;
+  font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+  position: relative;
+  color: #1f2937;
+
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../../images/common/bgimage.png");
+  background-size: 1298px 1298px;
+  background-position: -517px -125px;
+  background-repeat: no-repeat;
+  opacity: 0.1;
+  z-index: -1;
+}
+
+/* ================= NAVBAR ================= */
+.top-navbar {
+  height: 70px;
+  background: #FFF7FF;
+  /* border-bottom: 1px solid #e5e7eb; */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 16px;
+  color: #4A1150;
+}
+.nav-center {
+    display: flex;
+    gap: 32px;
+    padding: 8px 64px;
+
+
+}
+
+.nav-center a {
+    border-radius: 50px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    color: rgb(65, 65, 65);
+    font-size: 13px;
+    padding: 4px 24px;
+    text-decoration: none;
+
+}
+
+.nav-center a.active {
+    background: #4A1150;
+    color: #fff;
+          box-shadow: 0 4px 10px rgba(74, 17, 80, 0.4);
+
+}
+
+.nav-center a:hover {
+    background: #4A1150;
+    color: #ffffff;
+}
+
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.icon-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ================= CONTENT ================= */
+.content {
+    padding: 32px;
+}
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            margin: 4px 0 0;
+            color: #6b7280;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-actions select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-export {
+            background: #4A1150;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Cards */
+        .card , .finance-card{
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 700;
+            margin: 6px 0;
+        }
+
+        .stat-income small {
+            color: #16a34a;
+        }
+
+        .stat-expense small {
+            color: #dc2626;
+        }
+
+        .stat-balance small {
+            color: #8b5cf6;
+        }
+
+        /* Chart */
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-toggle button {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            background: #e5e7eb;
+            cursor: pointer;
+        }
+
+        .chart-toggle .active {
+            background: #4A1150;
+            color: #fff;
+        }
+
+        .bar-chart {
+            display: flex;
+            gap: 16px;
+            height: 220px;
+            margin-top: 24px;
+            align-items: flex-end;
+        }
+
+        .month {
+            width: 30px;
+            text-align: center;
+        }
+
+        .bars {
+            display: flex;
+            gap: 4px;
+            height: 180px;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 10px;
+            border-radius: 6px;
+        }
+
+        .bar.income {
+            background: #22c55e;
+        }
+
+        .bar.expense {
+            background: #ef4444;
+        }
+
+        .month span {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+        }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 32px 0;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+            display: block;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            margin-top: 6px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        /* Buttons */
+.finance-form button {
+  margin-top: 16px;
+  width: 100px;
+  height: 42px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.btn-income {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.btn-expense {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+        }
+
+        .badge-income {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-expense {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Cash Flow */
+        .cashflow {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .cashflow h3 {
+            color: #16a34a;
+        }
+
+        /* Summary */
+        .balance-summary {
+            margin-top: 24px;
+            background: #f0fdf4;
+            padding: 16px;
+            border-radius: 8px;
+            color: #166534;
+        }
+
+        /* Responsive */
+        @media(max-width: 1024px) {
+
+            .stats,
+            .form-grid,
+            .cashflow {
+                grid-template-columns: 1fr;
+            }
+        }
+ 

@@ -27,7 +27,9 @@
             <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
             <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
             <a href="#" class="active">Inventory</a>
-            <a href="<?= ROOT ?>/CaptainNotices">Notices</a>
+            <a href="<?= ROOT ?>/CaptainFinance">Finance</a>
+
+            <!-- <a href="<?= ROOT ?>/CaptainNotices">Notices</a> -->
             <!-- <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a> -->
         </nav>
 
