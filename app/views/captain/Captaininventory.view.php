@@ -1,126 +1,169 @@
-<main class="captain inventory-page">
+<!DOCTYPE html>
+<html lang="en">
 
-  <!-- TOP BAR -->
-  <div class="top">
-    <img class="logo" src="<?= ROOT ?>/assets/images/logo.png" alt="UOC Football Logo">
-    <span class="UOC-FOOTBALL">UOC<br>FOOTBALL</span>
-  </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
 
-  <!-- NAVBAR -->
-  <nav class="menu">
-    <a href="<?= ROOT ?>/captain/dashboard" class="frame-10">Home</a>
-    <a href="<?= ROOT ?>/captain/schedule" class="frame-11">Schedule</a>
-    <a href="<?= ROOT ?>/captain/analyze" class="frame-10">Analyze</a>
-    <a href="<?= ROOT ?>/captain/attendance" class="frame-10">Attendance</a>
-    <a href="<?= ROOT ?>/captain/notices" class="frame-10">Notices</a>
-    <a href="<?= ROOT ?>/captain/mealplan" class="frame-10">Meal Plan</a>
-  </nav>
+    <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/Captaininventory.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
-  <!-- RIGHT ICONS -->
-  <div class="right">
-    <button class="notifications">
-      <img src="<?= ROOT ?>/assets/images/notifications.svg" alt="">
-    </button>
-    <button class="avatar"></button>
-  </div>
+<body>
 
-  <!-- PAGE TITLE -->
-  <section class="page-title">
-    <h1>Inventory Management</h1>
-    <p>Manage team equipment and supplies</p>
-  </section>
+    <!-- ================= TOP NAVBAR ================= -->
+    <header class="top-navbar">
+        <div class="nav-left">
+            <a href="<?php echo ROOT; ?>/dashboard">
+                <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png"
+                    alt="UOC Football Logo">
+            </a>
+        </div>
 
-  <!-- SUMMARY CARDS -->
-  <section class="summary-cards">
-    <div class="summary-card total">
-      <h4>Total Items</h4>
-      <span>248</span>
-    </div>
+        <nav class="nav-center">
+            <a href="<?= ROOT ?>/Captaindashboard">Home</a>
+            <a href="<?= ROOT ?>/dashboard">Schedule</a>
+            <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
+            <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
+            <a href="#" class="active">Inventory</a>
+            <a href="<?= ROOT ?>/CaptainNotices">Notices</a>
+            <!-- <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a> -->
+        </nav>
 
-    <div class="summary-card in-use">
-      <h4>Items in Use</h4>
-      <span>142</span>
-    </div>
+        <div class="nav-right">
+            <button class="icon-btn">🔔</button>
+            <div class="profile">
+                <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
+                    alt="Admin Avatar">
 
-    <div class="summary-card available">
-      <h4>Available Items</h4>
-      <span>89</span>
-    </div>
+            </div>
+        </div>
+    </header>
 
-    <div class="summary-card damaged">
-      <h4>Damaged Items</h4>
-      <span>17</span>
-    </div>
-  </section>
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="content">
 
-  <!-- CHARTS -->
-  <section class="charts">
-    <div class="chart-box">
-      <h3>Equipment Usage</h3>
-      <!-- keep anima SVG here -->
-    </div>
+        <!-- Page Header -->
+        <header class="page-header">
+            <div>
+                <h1>Inventory Management</h1>
+                <p>Manage team equipment and supplies</p>
+            </div>
+        </header>
 
-    <div class="chart-box">
-      <h3>Item Status Distribution</h3>
-      <!-- keep anima SVG here -->
-    </div>
-  </section>
+        <!-- ================= STATS ================= -->
+        <section class="stats">
+            <div class="stat-card">
+                <h3>Total Items</h3>
+                <span>248 <span class="stat-icon purple"></span></span>
+            </div>
 
-  <!-- INVENTORY TABLE -->
-  <section class="inventory-table">
-    <div class="table-header">
-      <h3>Inventory Items</h3>
+            <div class="stat-card warning">
+                <h3>Items In Use</h3>
+                <span>142 <span class="stat-icon orange"></span></span>
+            </div>
 
-      <select>
-        <option>All Categories</option>
-        <option>Kits</option>
-        <option>Balls</option>
-        <option>Equipment</option>
-        <option>Accessories</option>
-      </select>
-    </div>
+            <div class="stat-card success">
+                <h3>Available Items</h3>
+                <span>89 <span class="stat-icon green"></span></span>
+            </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Item Name</th>
-          <th>Category</th>
-          <th>Quantity</th>
-          <th>Status</th>
-          <th>Last Updated</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+            <div class="stat-card danger">
+                <h3>Damaged Items</h3>
+                <span>17 <span class="stat-icon red"></span></span>
+            </div>
+        </section>
 
-      <tbody>
-        <tr>
-          <td>Training Jerseys</td>
-          <td>Kits</td>
-          <td>25</td>
-          <td><span class="status available">Available</span></td>
-          <td>2 hours ago</td>
-          <td>✏️ 🗑</td>
-        </tr>
+        <!-- ================= CHARTS ================= -->
+        <div class="dashboard-grid">
+            <section class="chart-card">
+                <h2>Equipment Usage</h2>
+                <canvas id="equipmentUsageChart"></canvas>
+            </section>
 
-        <tr>
-          <td>Match Footballs</td>
-          <td>Balls</td>
-          <td>12</td>
-          <td><span class="status in-use">In Use</span></td>
-          <td>1 day ago</td>
-          <td>✏️ 🗑</td>
-        </tr>
+            <section class="chart-card">
+                <h2>Item Status Distribution</h2>
+                <canvas id="statusDistributionChart"></canvas>
+            </section>
+        </div>
 
-        <tr>
-          <td>Shin Guards</td>
-          <td>Accessories</td>
-          <td>8</td>
-          <td><span class="status damaged">Damaged</span></td>
-          <td>1 week ago</td>
-          <td>✏️ 🗑</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+        <!-- ================= INVENTORY TABLE ================= -->
+        <section class="inventory-section">
+            <div class="section-header">
+                <h2>Inventory Items</h2>
+                <select>
+                    <option>All Categories</option>
+                    <option>Kits</option>
+                    <option>Balls</option>
+                    <option>Equipment</option>
+                    <option>Accessories</option>
+                </select>
+            </div>
 
-</main>
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Training Jerseys</td>
+                        <td>Kits</td>
+                        <td>25</td>
+                        <td><span class="status available">Available</span></td>
+                        <td>2 hours ago</td>
+                        <td class="actions">
+                            ✏️ 🗑
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Match Footballs</td>
+                        <td>Balls</td>
+                        <td>12</td>
+                        <td><span class="status inuse">In Use</span></td>
+                        <td>1 day ago</td>
+                        <td class="actions">
+                            ✏️ 🗑
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Training Cones</td>
+                        <td>Equipment</td>
+                        <td>50</td>
+                        <td><span class="status available">Available</span></td>
+                        <td>3 days ago</td>
+                        <td class="actions">
+                            ✏️ 🗑
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Shin Guards</td>
+                        <td>Accessories</td>
+                        <td>8</td>
+                        <td><span class="status damaged">Damaged</span></td>
+                        <td>1 week ago</td>
+                        <td class="actions">
+                            ✏️ 🗑
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+    <script src="<?= ROOT ?>/assets/js/captain/Captaininventory.js"></script>
+</body>
+
+</html>

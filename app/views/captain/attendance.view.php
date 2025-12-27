@@ -21,15 +21,14 @@
             </a>
         </div>
 
-          <nav class="nav-center">
+        <nav class="nav-center">
             <a href="<?= ROOT ?>/CaptainDashboard">Home</a>
-            <a href="#">Schedule</a>
-            <a href="#">Analytics</a>
+            <a href="<?= ROOT ?>/captain/dashboard">Schedule</a>
+            <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
             <a href="#" class="active">Attendance</a>
-            <a href="#">Inventory</a>
-            <a href="#">Notices</a>
-
-
+            <a href="<?= ROOT ?>/CaptainInventory">Inventory</a>
+            <a href="<?= ROOT ?>/CaptainNotices">Notices</a>
+            <!-- <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a> -->
         </nav>
 
         <div class="nav-right">

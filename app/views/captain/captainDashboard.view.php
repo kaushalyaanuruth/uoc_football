@@ -22,20 +22,21 @@
 
         <nav class="nav-center">
             <a href="#" class="active">Home</a>
-            <a href="#">Schedule</a>
-            <a href="#">Analytics</a>
-            <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
-            <a href="#">Inventory</a>
-            <a href="#">Notices</a>
+            <a href="<?= ROOT ?>/dashboard">Schedule</a>
+            <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
+            <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a> <a
+                href="<?= ROOT ?>/CaptainInventory">Inventory</a>
+            <a href="<?= ROOT ?>/CaptainNotices">Notices</a>
+            <!-- <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a> -->
         </nav>
-            <div class="nav-right">
-                <button class="icon-btn">🔔</button>
-                <div class="profile">
-                    <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
-                        alt="Admin Avatar">
+        <div class="nav-right">
+            <button class="icon-btn">🔔</button>
+            <div class="profile">
+                <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
+                    alt="Admin Avatar">
 
-                </div>
             </div>
+        </div>
     </header>
 
     <main class="content">
