@@ -179,6 +179,16 @@ body::before {
   background-color: #F4EAFF;
   justify-content: center;
 
+
+}
+
+.stat-card.warning span {
+  color: #EC6924;
+}
+
+.warning .stat-icon {
+  background: #FFEFD9;
+
 }
 
 .stat-card.success span {

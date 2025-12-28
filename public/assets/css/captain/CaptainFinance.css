@@ -296,12 +296,13 @@ label {
     margin-top: 12px;
     display: block;
 }
+
 .finance-card h2 {
-  font-size: 30px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    font-size: 30px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .finance-icon {
@@ -368,36 +369,43 @@ table {
     width: 100%;
     border-collapse: collapse;
 }
-th{
-   background: #FAF5FF;
-   
+
+th {
+    background: #FAF5FF;
+
 }
+
 th,
 td {
     padding: 14px;
     border-bottom: 1px solid #e5e7eb;
     text-align: left;
 }
-.finance-card h2{
-      justify-content: space-between;
+
+.finance-history {
+    justify-content: space-between;
 
 }
- .finance-charttoggle button {
+
+.finance-charttoggle button {
 
     padding: 6px 12px;
     border-radius: 6px;
     border: none;
     /* background: #e5e7eb; */
     cursor: pointer;
-} 
- .finance_income{
-  color: #16a34a;
+}
+
+.finance_income {
+    color: #16a34a;
     background: #DCFCE7;
- }
-  .finance_expense{
-  color: #dc2626;
+}
+
+.finance_expense {
+    color: #dc2626;
     background: #FEE2E2;
-  }
+}
+
 .badge {
     padding: 4px 10px;
     border-radius: 999px;

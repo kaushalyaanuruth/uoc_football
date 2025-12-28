@@ -182,13 +182,16 @@
 
         <!-- ================= Table ================= -->
         <section class="finance-card">
-            <h2>Transaction History
-                <div class="finance-charttoggle">
-                    <button class="">All</button>
-                    <button class="finance_income">Income</button>
-                    <button class="finance_expense">Expense</button>
-            </h2>
-            </div>
+            
+                <h2 class="finance-history">Transaction History
+                    <div class="finance-charttoggle">
+                        <button class="">All</button>
+                        <button class="finance_income">Income</button>
+                        <button class="finance_expense">Expense</button>
+                    </div>
+                </h2>
+
+            
             <table>
                 <tr>
                     <th>Type</th>
