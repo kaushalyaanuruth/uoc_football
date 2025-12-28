@@ -85,7 +85,7 @@
             <div class="stat-card success">
                 <h3>Present Players</h3>
                 <div class="icon-container"><span><?= $data['present'] ?>
-                        <img src="<?php echo ROOT; ?>/assets/images/Captain/icons/pre.svg" alt="team icon"
+                        <img src="<?php echo ROOT; ?>/assets/images/Captain/icons/" alt="team icon"
                             class="action-icon">
                 </div>
                 </span>

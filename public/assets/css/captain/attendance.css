@@ -55,32 +55,33 @@ body::before {
 }
 
 .nav-center {
-    display: flex;
-    gap: 32px;
-    padding: 8px 64px;
+  display: flex;
+  gap: 32px;
+  padding: 8px 64px;
 
 
 }
 
 .nav-center a {
-    border-radius: 50px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    color: rgb(65, 65, 65);
-    font-size: 13px;
-    padding: 4px 24px;
-    text-decoration: none;
+  border-radius: 50px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  color: rgb(65, 65, 65);
+  font-size: 13px;
+  padding: 4px 24px;
+  text-decoration: none;
 
 }
+
 .nav-center a.active {
-    background: #4A1150;
-    color: #fff;
-          box-shadow: 0 4px 10px rgba(74, 17, 80, 0.4);
+  background: #4A1150;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(74, 17, 80, 0.4);
 
 }
 
 .nav-center a:hover {
-    background: #4A1150;
-    color: #ffffff;
+  background: #4A1150;
+  color: #ffffff;
 }
 
 
@@ -168,7 +169,14 @@ body::before {
   border-radius: 12px;
   border: 1px solid #f3f4f6;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.25s ease;
 
+
+}
+
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
 }
 
 .stat-card h3 {
@@ -206,7 +214,7 @@ body::before {
   border-radius: 12px;
   display: flex;
   align-items: center;
-  background-color: #F4EAFF;
+  background-color: #DBEAFE;
   justify-content: center;
 
 }

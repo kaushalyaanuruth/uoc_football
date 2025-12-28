@@ -13,8 +13,8 @@
     <!-- ================= TOP NAVBAR ================= -->
     <header class="top-navbar">
         <div class="nav-left">
-            <a href="<?php echo ROOT; ?>/captain/dashboard">
-                <img class="header-logo" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/uoclogo.png"
+            <a href="<?= ROOT ?>/captain/dashboard">
+                <img class="header-logo" src="<?= ROOT ?>/assets/images/adminDashboard/header/uoclogo.png"
                     alt="UOC Football Logo">
             </a>
         </div>
@@ -34,7 +34,7 @@
         <div class="nav-right">
             <button class="icon-btn">🔔</button>
             <div class="profile">
-                <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
+                <img class="avatar" src="<?= ROOT ?>../assets/images/adminDashboard/header/avatar.jpg"
                     alt="Admin Avatar">
 
             </div>
@@ -53,6 +53,8 @@
                 <select>
                     <option>This Month</option>
                     <option>Last Month</option>
+                    <option>This Quarter</option>
+
                 </select>
                 <button class="btn-export">Export Report</button>
             </div>
@@ -61,21 +63,43 @@
         <!-- ================= Stats ================= -->
         <section class="stats">
             <div class="card stat-income">
-                <div class="stat-title">Total Income</div>
-                <div class="stat-value">$45,250</div>
-                <small>+12.5% from last month</small>
+                <div class="stat-content">
+
+                    <div>
+                        <div class="stat-title">Total Income</div>
+                        <div class="stat-value">$45,250</div>
+                        <small>+12.5% from last month</small>
+                    </div>
+                    <div class="stat-icon income">
+                        $
+                    </div>
+                </div>
             </div>
 
             <div class="card stat-expense">
-                <div class="stat-title">Total Expenses</div>
-                <div class="stat-value">$32,180</div>
-                <small>+8.2% from last month</small>
+                <div class="stat-content">
+                    <div>
+                        <div class="stat-title">Total Expenses</div>
+                        <div class="stat-value">$32,180</div>
+                        <small>+8.2% from last month</small>
+                    </div>
+                    <div class="stat-icon expense">
+                    </div>
+                </div>
+            </div>
             </div>
 
             <div class="card stat-balance">
-                <div class="stat-title">Current Balance</div>
-                <div class="stat-value">$13,070</div>
-                <small>Healthy balance</small>
+                <div class="stat-content">
+                    <div>
+                        <div class="stat-title">Current Balance</div>
+                        <div class="stat-value">$13,070</div>
+                        <small>Healthy balance</small>
+                    </div>
+                    <div class="stat-icon balance">
+
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -111,7 +135,7 @@
 
             <!-- Income Form -->
             <div class="finance-card">
-                <h2>Record Income</h2>
+                <h2><span class="finance-icon green">+</span>Record Income</h2>
 
                 <form class="finance-form">
                     <label>Source Name</label>
@@ -132,7 +156,7 @@
 
             <!-- Expense Form -->
             <div class="finance-card">
-                <h2>Record Expense</h2>
+                <h2><span class="finance-icon red">-</span>Record Expense</h2>
 
                 <form class="finance-form">
                     <label>Expense Type</label>
@@ -158,7 +182,13 @@
 
         <!-- ================= Table ================= -->
         <section class="finance-card">
-            <h2>Transaction History</h2>
+            <h2>Transaction History
+                <div class="finance-charttoggle">
+                    <button class="">All</button>
+                    <button class="finance_income">Income</button>
+                    <button class="finance_expense">Expense</button>
+            </h2>
+            </div>
             <table>
                 <tr>
                     <th>Type</th>
@@ -171,7 +201,7 @@
                 <tr>
                     <td><span class="badge badge-income">Income</span></td>
                     <td>Sponsorship</td>
-                    <td>$5,000</td>
+                    <td class="amount_icome">+$5,000</td>
                     <td>Oct 15, 2024</td>
                     <td>Nike Partnership</td>
                     <td>✏️ 🗑</td>
@@ -179,7 +209,7 @@
                 <tr>
                     <td><span class="badge badge-expense">Expense</span></td>
                     <td>Equipment</td>
-                    <td>$1,250</td>
+                    <td class="amount_expense">-$1,250</td>
                     <td>Oct 12, 2024</td>
                     <td>Training gear</td>
                     <td>✏️ 🗑</td>
@@ -188,18 +218,21 @@
         </section>
 
         <!-- Cash Flow -->
-        <section class="card cashflow">
-            <div>
-                <h3>+15%</h3>
-                <p>Monthly Growth</p>
-            </div>
-            <div>
-                <h3>$2,890</h3>
-                <p>Avg Monthly Surplus</p>
-            </div>
-            <div>
-                <h3>71%</h3>
-                <p>Expense Ratio</p>
+        <section class="finance-card">
+            <h2>Cash Flow Trend</h2>
+            <div class=" cashflow">
+                <div>
+                    <h3 class="grow">+15%</h3>
+                    <p>Monthly Growth</p>
+                </div>
+                <div>
+                    <h3 class="surplus">$2,890</h3>
+                    <p>Avg Monthly Surplus</p>
+                </div>
+                <div>
+                    <h3 class="expense">71%</h3>
+                    <p>Expense Ratio</p>
+                </div>
             </div>
         </section>
         <!-- ================= Summary ================= -->
