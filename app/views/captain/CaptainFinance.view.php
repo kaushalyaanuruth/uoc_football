@@ -192,7 +192,7 @@
                 </h2>
 
             
-            <table>
+            <table class="finance-table">
                 <tr>
                     <th>Type</th>
                     <th>Category</th>

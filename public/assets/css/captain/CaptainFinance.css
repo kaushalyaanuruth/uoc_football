@@ -477,9 +477,74 @@ td {
 /* Responsive */
 @media(max-width: 1024px) {
 
-    .stats,
+    /* .stats,
     .form-grid,
     .cashflow {
         grid-template-columns: 1fr;
-    }
+    } */
+     /* Charts stack vertically */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stats → 2 per row */
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Navbar spacing */
+  .nav-center {
+    gap: 16px;
+    padding: 8px 24px;
+  }
+}
+/* ================= Mobile (≤ 768px) ================= */
+@media (max-width: 768px) {
+
+  /* Navbar becomes stacked */
+  .top-navbar {
+    flex-direction: column;
+    height: auto;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .nav-center {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .nav-center a {
+    font-size: 13px;
+    padding: 6px 14px;
+  }
+
+  /* Page header stacks */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* Stats → single column */
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+
+  .finance-table{
+     display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+ .finance-history{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+ }
+ .cashflow,.form-grid{
+    grid-template-columns: 1fr;
+ }
 }
