@@ -104,7 +104,7 @@
                 <div class="quick-links">
                     <h3>🔗 Quick Links</h3>
 
-                    <div class="link-item">
+                    <div class="link-item" >
                         <span class="link-icon">🍽️</span>
                         <span>Meal Plan</span>
                     </div>

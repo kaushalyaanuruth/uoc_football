@@ -91,9 +91,12 @@
         </div>
 
         <!-- ================= INVENTORY TABLE ================= -->
+        <!-- ================= INVENTORY TABLE ================= -->
         <section class="inventory-section">
             <div class="section-header">
-                <h2>Inventory Items</h2>
+                <h2>Inventory Items
+                    <button class="btn-add" id="addItem">Add New Item</button>
+                </h2>
                 <select>
                     <option>All Categories</option>
                     <option>Kits</option>
@@ -123,8 +126,14 @@
                         <td><span class="status available">Available</span></td>
                         <td>2 hours ago</td>
                         <td class="actions">
-                            ✏️ 🗑
+                            <button class="btn-edit" data-id="1" data-name="Training Jerseys" data-category="Kits"
+                                data-qty="25" data-status="Available">
+                                Edit
+                            </button>
+
+                            <button class="btn-delete">Delete</button>
                         </td>
+
                     </tr>
 
                     <tr>
@@ -134,7 +143,8 @@
                         <td><span class="status inuse">In Use</span></td>
                         <td>1 day ago</td>
                         <td class="actions">
-                            ✏️ 🗑
+                            <button class="btn-edit">Edit</button>
+                            <button class="btn-delete">Delete</button>
                         </td>
                     </tr>
 
@@ -145,7 +155,8 @@
                         <td><span class="status available">Available</span></td>
                         <td>3 days ago</td>
                         <td class="actions">
-                            ✏️ 🗑
+                            <button class="btn-edit">Edit</button>
+                            <button class="btn-delete">Delete</button>
                         </td>
                     </tr>
 
@@ -156,16 +167,69 @@
                         <td><span class="status damaged">Damaged</span></td>
                         <td>1 week ago</td>
                         <td class="actions">
-                            ✏️ 🗑
+                            <button class="btn-edit">Edit</button>
+                            <button class="btn-delete">Delete</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </section>
+        <!-- ================= ADD INVENTORY MODAL ================= -->
+
+        <!-- ================= EDIT INVENTORY MODAL ================= -->
+        <div class="modal" id="inventoryModal">
+            <div class="modal-content">
+                <div class="modal-header">
+
+                    <span>Edit Inventory Item</span>
+                    <span id="close">×</span>
+                </div>
+
+                <form id="inventoryForm" class="inventoryForm">
+                    <input type="hidden" id="item_id">
+
+                    <label>Item Name</label>
+                    <input type="text" id="item_name" required>
+
+                    <label>Category</label>
+                    <select id="category">
+                        <option>Kits</option>
+                        <option>Balls</option>
+                        <option>Equipment</option>
+                        <option>Accessories</option>
+                    </select>
+
+                    <label>Quantity</label>
+                    <input type="number" id="quantity" min="0">
+
+                    <label>Status</label>
+                    <select id="status">
+                        <option>Available</option>
+                        <option>In Use</option>
+                        <option>Damaged</option>
+                    </select>
+
+                    <div class="modal-actions">
+                        <button type="button" id="closeModal">Cancel</button>
+                        <button type="submit" class="save">Save</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+        <div id="toast"></div>
+        <!-- SUCCESS MODAL -->
+        <div class="modal" id="successModal">
+            <div class="modal-content" style="width:300px;text-align:center">
+                <h3>Success</h3>
+                <p>User details saved successfully!</p>
+                <button class="save" id="closeSuccess">OK</button>
+            </div>
+        </div>
 
     </main>
 
-    <script src="<?= ROOT ?>/assets/js/captain/Captaininventory.js"></script>
+<script src="<?= ROOT ?>/assets/js/captain/Captaininventory.js" defer></script>
 </body>
 
 </html>
