@@ -15,7 +15,7 @@
     <!-- ================= TOP NAVBAR ================= -->
     <header class="top-navbar">
         <div class="nav-left">
-            <a href="<?php echo ROOT; ?>/captain/dashboard">
+            <a href="<?php echo ROOT; ?>/captainDashboard">
                 <img class="header-logo" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/uoclogo.png"
                     alt="UOC Football Logo">
             </a>

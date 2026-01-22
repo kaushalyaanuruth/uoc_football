@@ -15,7 +15,7 @@
     <!-- ================= TOP NAVBAR ================= -->
     <header class="top-navbar">
         <div class="nav-left">
-            <a href="<?php echo ROOT; ?>/dashboard">
+            <a href="<?php echo ROOT; ?>/captainDashboard">
                 <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png"
                     alt="UOC Football Logo">
             </a>
@@ -97,13 +97,14 @@
                 <h2>Inventory Items
                     <button class="btn-add" id="addItem">Add New Item</button>
                 </h2>
-                <select>
-                    <option>All Categories</option>
-                    <option>Kits</option>
-                    <option>Balls</option>
-                    <option>Equipment</option>
-                    <option>Accessories</option>
+                <select id="categoryFilter">
+                    <option value="all">All Categories</option>
+                    <option value="kits">Kits</option>
+                    <option value="balls">Balls</option>
+                    <option value="equipment">Equipment</option>
+                    <option value="accessories">Accessories</option>
                 </select>
+
             </div>
 
             <table class="inventory-table">
@@ -229,7 +230,7 @@
 
     </main>
 
-<script src="<?= ROOT ?>/assets/js/captain/Captaininventory.js" defer></script>
+    <script src="<?= ROOT ?>/assets/js/captain/Captaininventory.js" defer></script>
 </body>
 
 </html>

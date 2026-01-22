@@ -27,13 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("inventoryModal");
     const successModal = document.getElementById("successModal");
     const toast = document.getElementById("toast");
-
     const inventoryForm = document.getElementById("inventoryForm");
     const item_name = document.getElementById("item_name");
     const category = document.getElementById("category");
     const quantity = document.getElementById("quantity");
     const status = document.getElementById("status");
-
+    const categoryFilter = document.getElementById("categoryFilter");
     let currentRow = null;
     let deletedRow = null;
 
@@ -47,7 +46,19 @@ document.addEventListener("DOMContentLoaded", () => {
         toast.style.display = "block";
         setTimeout(() => toast.style.display = "none", 2500);
     }
+    categoryFilter.addEventListener("change", () => {
+        const selectedCategory = categoryFilter.value; // <-- no toLowerCase here
 
+        document.querySelectorAll(".inventory-table tbody tr").forEach(row => {
+            const rowCategory = row.children[1].innerText.toLowerCase();
+
+            if (selectedCategory === "all" || rowCategory === selectedCategory) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
     document.getElementById("addItem").addEventListener("click", () => {
         currentRow = null;
         inventoryForm.reset();
@@ -130,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("close").onclick =
-    document.getElementById("closeModal").onclick = () => modal.style.display = "none";
+        document.getElementById("closeModal").onclick = () => modal.style.display = "none";
 
     document.getElementById("closeSuccess").onclick = () => {
         successModal.style.display = "none";

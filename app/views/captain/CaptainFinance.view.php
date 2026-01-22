@@ -13,7 +13,7 @@
     <!-- ================= TOP NAVBAR ================= -->
     <header class="top-navbar">
         <div class="nav-left">
-            <a href="<?= ROOT ?>/captain/dashboard">
+            <a href="<?= ROOT ?>/captainDashboard">
                 <img class="header-logo" src="<?= ROOT ?>/assets/images/adminDashboard/header/uoclogo.png"
                     alt="UOC Football Logo">
             </a>

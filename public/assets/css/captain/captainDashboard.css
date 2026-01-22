@@ -382,6 +382,7 @@ body::before {
     transition: all 0.3s;
     display: flex;
     align-items: center;
+    
     gap: 1rem;
 }
 
@@ -389,6 +390,23 @@ body::before {
     background: #4a1a4a;
     color: white;
 }
+/* .link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  text-decoration: none;   
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+}
+
+.link-item:hover {
+  background: #f4eaff;
+}
+*/
 
 .link-icon {
     font-size: 1.5rem;
