@@ -1,0 +1,253 @@
+:root {
+    --bg-color: #f8f5fa;
+    --primary-color: #3b124d;
+    --primary-light: #ece6f2;
+    --accent-red: #ff4d4d;
+    --accent-green: #00b894;
+    --accent-blue: #0984e3;
+    --accent-orange: #e17055;
+    --text-dark: #333;
+    --text-muted: #777;
+    --card-bg: #ffffff;
+    --border-radius: 16px;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.mealplan-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header (Shared) */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logo-section img {
+    height: 48px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+    background: var(--primary-light);
+    padding: 8px 24px;
+    border-radius: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: 0.3s;
+}
+
+.nav-links a.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.user-profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+/* Page Title Section */
+.page-title-section {
+    margin-bottom: 30px;
+}
+
+.page-title-section h1 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.page-title-section p {
+    color: var(--text-muted);
+}
+
+/* Main Content Area */
+.mealplan-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 30px;
+}
+
+/* Tabs */
+.meal-tabs {
+    display: flex;
+    background: white;
+    padding: 5px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+}
+
+.meal-tab {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.meal-tab.active {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+}
+
+/* Daily Cards Grid */
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.day-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid transparent;
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.day-header h4 {
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.calorie-badge {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.meal-items {
+    list-style: none;
+    padding: 0;
+}
+
+.meal-items li {
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.bullet {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+}
+
+/* Sidebar */
+.meal-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.sidebar-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+}
+
+.sidebar-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.nutrition-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.nutrition-row:last-child {
+    border-bottom: none;
+}
+
+.nutrition-row .label {
+    color: var(--text-muted);
+}
+
+.nutrition-row .value {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.hydration-box {
+    background: #fdf5ff;
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    line-height: 1.4;
+}
+
+.update-item {
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.update-item.warning {
+    background: #fff9e6;
+    color: #856404;
+}
+
+.update-item.success {
+    background: #e6fffa;
+    color: #234e52;
+}
+
+.update-title {
+    font-weight: 700;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.update-content {
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+}
+
+.update-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
