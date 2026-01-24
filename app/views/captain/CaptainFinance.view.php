@@ -56,7 +56,7 @@
                     <option>This Quarter</option>
 
                 </select>
-                <button class="btn-export">Export Report</button>
+<button class="btn-export" id="exportReport">Export Report</button>
             </div>
         </div>
 
@@ -87,7 +87,7 @@
                     </div>
                 </div>
             </div>
-            </div>
+
 
             <div class="card stat-balance">
                 <div class="stat-content">
@@ -108,26 +108,67 @@
             <div class="chart-header">
                 <h2>Budget Overview</h2>
                 <div class="chart-toggle">
-                    <button class="active">Monthly</button>
-                    <button>Quarterly</button>
+                    <button class="active" data-view="monthly">Monthly</button>
+                    <button data-view="quarterly">Quarterly</button>
                 </div>
+
             </div>
 
             <div class="bar-chart">
+
                 <?php
                 $months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"];
                 foreach ($months as $m) {
+                    $income = rand(60, 100);
+                    $expense = rand(30, 70);
+
                     echo "
-      <div class='month'>
+    <div class='month monthly'>
         <div class='bars'>
-          <div class='bar income' style='height: " . rand(60, 100) . "%'></div>
-          <div class='bar expense' style='height: " . rand(30, 70) . "%'></div>
+            <div class='bar income' data-month='$income'></div>
+            <div class='bar expense' data-month='$expense'></div>
         </div>
         <span>$m</span>
-      </div>";
+    </div>
+    ";
                 }
                 ?>
+
+                <!-- Quarterly -->
+                <div class="month quarterly" style="display:none">
+                    <div class="bars">
+                        <div class="bar income" data-quarter="80"></div>
+                        <div class="bar expense" data-quarter="50"></div>
+                    </div>
+                    <span>Q1</span>
+                </div>
+
+                <div class="month quarterly" style="display:none">
+                    <div class="bars">
+                        <div class="bar income" data-quarter="90"></div>
+                        <div class="bar expense" data-quarter="60"></div>
+                    </div>
+                    <span>Q2</span>
+                </div>
+
+                <div class="month quarterly" style="display:none">
+                    <div class="bars">
+                        <div class="bar income" data-quarter="85"></div>
+                        <div class="bar expense" data-quarter="55"></div>
+                    </div>
+                    <span>Q3</span>
+                </div>
+
+                <div class="month quarterly" style="display:none">
+                    <div class="bars">
+                        <div class="bar income" data-quarter="95"></div>
+                        <div class="bar expense" data-quarter="65"></div>
+                    </div>
+                    <span>Q4</span>
+                </div>
+
             </div>
+
         </section>
 
         <!-- ================= Forms ================= -->
@@ -139,13 +180,13 @@
 
                 <form class="finance-form">
                     <label>Source Name</label>
-                    <input type="text" placeholder="Sponsorship, Fundraising" />
+                    <input type="text" placeholder="Sponsorship, Fundraising" required />
 
                     <label>Amount</label>
-                    <input type="number" placeholder="5000" />
+                    <input type="number" placeholder="5000" min="0" required />
 
                     <label>Date</label>
-                    <input type="date" />
+                    <input type="date" required />
 
                     <label>Description</label>
                     <textarea placeholder="Optional notes"></textarea>
@@ -167,10 +208,10 @@
                     </select>
 
                     <label>Amount</label>
-                    <input type="number" placeholder="1200" />
+                    <input type="number" placeholder="1200" min="0" required />
 
                     <label>Date</label>
-                    <input type="date" />
+                    <input type="date" required />
 
                     <label>Notes</label>
                     <textarea placeholder="Optional notes"></textarea>
@@ -182,16 +223,16 @@
 
         <!-- ================= Table ================= -->
         <section class="finance-card">
-            
-                <h2 class="finance-history">Transaction History
-                    <div class="finance-charttoggle">
-                        <button class="">All</button>
-                        <button class="finance_income">Income</button>
-                        <button class="finance_expense">Expense</button>
-                    </div>
-                </h2>
 
-            
+            <h2 class="finance-history">Transaction History
+                <div class="finance-charttoggle">
+                    <button class="">All</button>
+                    <button class="finance_income">Income</button>
+                    <button class="finance_expense">Expense</button>
+                </div>
+            </h2>
+
+
             <table class="finance-table">
                 <tr>
                     <th>Type</th>
@@ -202,23 +243,68 @@
                     <th>Actions</th>
                 </tr>
                 <tr>
-                    <td><span class="badge badge-income">Income</span></td>
+                    <td><span class="badge badge-income"> Income</span></td>
                     <td>Sponsorship</td>
                     <td class="amount_icome">+$5,000</td>
                     <td>Oct 15, 2024</td>
                     <td>Nike Partnership</td>
-                    <td>✏️ 🗑</td>
+                    <td class="actions">
+                        <button class="btn-edit">Edit</button>
+                        <button class="btn-delete">Delete</button>
+                    </td>
+
                 </tr>
                 <tr>
-                    <td><span class="badge badge-expense">Expense</span></td>
+                    <td><span class="badge badge-expense"> Expense</span></td>
                     <td>Equipment</td>
                     <td class="amount_expense">-$1,250</td>
                     <td>Oct 12, 2024</td>
                     <td>Training gear</td>
-                    <td>✏️ 🗑</td>
+                    <td class="actions">
+                        <button class="btn-edit">Edit</button>
+                        <button class="btn-delete">Delete</button>
+                    </td>
+
                 </tr>
             </table>
         </section>
+        <!-- ================= EDIT TRANSACTION MODAL ================= -->
+        <div class="modal" id="financeModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Edit Transaction</span>
+                    <span id="closeFinanceModal">×</span>
+                </div>
+
+                <form id="financeEditForm">
+                    <input type="hidden" id="editRowIndex">
+
+                    <label>Type</label>
+                    <select id="editType">
+                        <option>Income</option>
+                        <option>Expense</option>
+                    </select>
+
+                    <label>Category</label>
+                    <input type="text" id="editCategory" required>
+
+                    <label>Amount</label>
+                    <input type="number" id="editAmount" min="0" required>
+
+                    <label>Date</label>
+                    <input type="date" id="editDate" required>
+
+                    <label>Description</label>
+                    <textarea id="editDescription"></textarea>
+
+                    <div class="modal-actions">
+                        <button type="button" id="cancelFinanceEdit">Cancel</button>
+                        <button type="submit" class="save">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
 
         <!-- Cash Flow -->
         <section class="finance-card">
@@ -245,6 +331,24 @@
         </div>
 
     </main>
+    <!-- SUCCESS TOAST -->
+    <!-- <div id="toast" class="toast">
+    <span id="toastMessage">Saved successfully</span>
+</div> -->
+    <!-- CENTER SUCCESS POPUP -->
+    <div class="modal" id="centerToast">
+        <div class="modal-content center-toast">
+            <h3>Success</h3>
+            <p id="centerToastMessage">Action completed successfully</p>
+            <button class="save" id="centerToastOk">OK</button>
+        </div>
+    </div>
+
 </body>
+<script>
+    window.APP_ROOT = "<?= ROOT ?>";
+</script>
+
+<script src="<?= ROOT ?>/assets/js/captain/CaptainFinance.js"></script>
 
 </html>

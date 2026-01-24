@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
             item_name.value = row.children[0].innerText;
             category.value = row.children[1].innerText;
             quantity.value = row.children[2].innerText;
-            status.value = row.children[3].innerText;
+status.value = row.children[3].querySelector("span").innerText;
             modal.style.display = "flex";
         });
 

@@ -525,3 +525,21 @@ body::before {
     gap: 0.6rem;
   }
 }
+@media (max-width: 768px) {
+    .top-navbar {
+        flex-direction: column;
+        height: auto;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .nav-center {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .nav-center a {
+        font-size: 13px;
+        padding: 6px 14px;
+    }
+}

@@ -359,6 +359,7 @@ button:hover {
   font-size: 22px;
 }
 
+
 .inventoryForm {
   padding: 1.5rem;
 }
@@ -399,10 +400,13 @@ button:hover {
 }
 
 .save {
-  background: #22c55e;
+  background:#4A1150;
   color: white;
 }
-
+#closeSuccess{
+   background:#4A1150;
+  color: white;
+}
 /* TOAST */
 #toast {
   position: fixed;
