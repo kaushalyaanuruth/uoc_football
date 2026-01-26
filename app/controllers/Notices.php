@@ -8,59 +8,51 @@ class Notices extends Controller
         $data = [
             'notices' => [
                 [
-                    'title' => 'Notice',
+                    'title' => 'Training Cancellation',
                     'author' => 'Team Captain',
-                    'date' => 'Jan 13, 2024',
-                    'content' => 'Tomorrow\'s (25th August 2025) training session has been cancelled due to heavy rain and unsafe field conditions.',
+                    'date' => 'Jan 25, 2026',
+                    'category' => 'Training',
+                    'content' => 'Tomorrow\'s training session has been cancelled due to field maintenance.',
                     'is_new' => true
                 ],
                 [
-                    'title' => 'Notice',
-                    'author' => 'Team Captain',
-                    'date' => 'Jan 13, 2024',
-                    'content' => 'Tomorrow\'s (25th August 2025) training session has been cancelled due to heavy rain and unsafe field conditions.',
-                    'is_new' => false
-                ],
-                [
-                    'title' => 'Notice',
+                    'title' => 'Upcoming Match',
                     'author' => 'Coach Martinez',
-                    'date' => 'Jan 14, 2024',
-                    'content' => 'Tomorrow\'s (25th August 2025) training session has been cancelled due to heavy rain and unsafe field conditions.',
+                    'date' => 'Jan 24, 2026',
+                    'category' => 'Matches',
+                    'content' => 'Please arrive at the stadium 2 hours before kickoff for our local derby.',
                     'is_new' => true
                 ],
                 [
-                    'title' => 'Notice',
-                    'author' => 'Coach Martinez',
-                    'date' => 'Jan 14, 2024',
-                    'content' => 'Tomorrow\'s (25th August 2025) training session has been cancelled due to heavy rain and unsafe field conditions.',
+                    'title' => 'New Equipment',
+                    'author' => 'Kit Manager',
+                    'date' => 'Jan 23, 2026',
+                    'category' => 'General',
+                    'content' => 'New training kits are available for pickup at the gym office.',
                     'is_new' => false
                 ],
                 [
-                    'title' => 'Notice',
-                    'author' => 'Coach Martinez',
-                    'date' => 'Jan 14, 2024',
-                    'content' => 'Tomorrow\'s (25th August 2025) training session has been cancelled due to heavy rain and unsafe field conditions.',
+                    'title' => 'Fitness Assessment',
+                    'author' => 'Dr. Smith',
+                    'date' => 'Jan 22, 2026',
+                    'category' => 'Training',
+                    'content' => 'Mandatory fitness tests scheduled for this Friday. Be ready.',
                     'is_new' => false
                 ],
                 [
-                    'title' => 'Notice',
+                    'title' => 'Team Meeting',
+                    'author' => 'Coach Martinez',
+                    'date' => 'Jan 21, 2026',
+                    'category' => 'General',
+                    'content' => 'Strategy session in the meeting room this evening at 6:00 PM.',
+                    'is_new' => false
+                ],
+                [
+                    'title' => 'Match Postponed',
                     'author' => 'Team Captain',
-                    'date' => 'Jan 13, 2024',
-                    'content' => 'Tomorrow\'s (25th August 2025) training session has been cancelled due to heavy rain and unsafe field conditions.',
-                    'is_new' => false
-                ],
-                [
-                    'title' => 'Notice',
-                    'author' => 'Coach Martinez',
-                    'date' => 'Jan 14, 2024',
-                    'content' => 'Tomorrow\'s (25th August 2025) training session has been cancelled due to heavy rain and unsafe field conditions.',
-                    'is_new' => false
-                ],
-                [
-                    'title' => 'Notice',
-                    'author' => 'Coach Martinez',
-                    'date' => 'Jan 14, 2024',
-                    'content' => 'Tomorrow\'s (25th August 2025) training session has been cancelled due to heavy rain and unsafe field conditions.',
+                    'date' => 'Jan 20, 2026',
+                    'category' => 'Matches',
+                    'content' => 'The match against Red Lions has been postponed to next week.',
                     'is_new' => false
                 ]
             ]

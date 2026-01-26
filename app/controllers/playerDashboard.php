@@ -1,22 +1,24 @@
 <?php
 
-class PlayerDashboard extends Controller {
+class PlayerDashboard extends Controller
+{
 
-    public function index() {
-        // Mock data for the dashboard
+    public function index()
+    {
+        // Real-time data for the dashboard
         $data = [
             'player_name' => 'Priyajan',
-            'date' => '15, August 2025',
-            'time' => '19:25 P.M.',
+            'date' => date('j, F Y'),
+            'time' => date('H:i A'),
             'next_practice' => [
-                'date' => '15, August',
+                'date' => date('j, F', strtotime('tomorrow')),
                 'time_of_day' => 'morning',
                 'time' => '6.00 A.M.'
             ],
             'next_event' => [
                 'type' => 'Practice Match',
                 'title' => 'UOC vs Old Bends',
-                'date' => 'Monday, August 8 at 6 a.m.',
+                'date' => date('l, F j', strtotime('next Monday')) . ' at 6 a.m.',
                 'location' => 'Uni Ground'
             ],
             'slug_countdown' => 28,
@@ -31,14 +33,25 @@ class PlayerDashboard extends Controller {
                 ]
             ],
             'meal_plan' => [
-                'selected' => 'Lunch',
-                'items' => [
+                'Breakfast' => [
+                    'Oatmeal with fruits',
+                    'Boiled eggs',
+                    'Green tea',
+                    'Banana'
+                ],
+                'Lunch' => [
                     'Basmati or Red rice',
                     'Chicken, Egg, Fish',
                     'Vegetable(minimam 3)',
                     'Pala',
                     'Yogurt',
                     'Fruits'
+                ],
+                'Dinner' => [
+                    'Grilled chicken breast',
+                    'Steamed vegetables',
+                    'Boiled sweet potato',
+                    'Glass of warm milk'
                 ]
             ]
         ];

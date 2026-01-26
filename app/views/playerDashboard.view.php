@@ -25,8 +25,8 @@
                 <a href="<?php echo ROOT; ?>/MealPlan">Meal Plan</a>
             </nav>
             <div class="user-section">
-                <div class="notification-icon">
-                    <img src="<?php echo ROOT; ?>/assets/images/notification-bell.png" alt="Notifications"
+                <div class="notification-icon" id="notificationBell">
+                    <img src="<?php echo ROOT; ?>/uploads/players/notification.png" alt="Notifications"
                         style="width: 24px; cursor: pointer;">
                 </div>
                 <div class="user-profile">
@@ -42,7 +42,7 @@
             </div>
             <div class="banner-datetime">
                 <h2><?php echo $data['date']; ?></h2>
-                <p><?php echo $data['time']; ?></p>
+                <p id="live-time"><?php echo $data['time']; ?></p>
             </div>
             <div class="banner-decoration"></div>
         </div>
@@ -117,11 +117,11 @@
                 <div class="card">
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <span style="font-weight: 600;">August 2025</span>
-                        <span style="cursor: pointer;">&gt;</span>
+                        <span style="font-weight: 600;" id="calendarHighlight">August 2025</span>
+                        <span style="cursor: pointer;" onclick="alert('Next month view coming soon!')">&gt;</span>
                     </div>
                     <div
-                        style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.8rem; row-gap: 10px;">
+                        style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.8rem; row-gap: 10px;" id="calendarGrid">
                         <div style="color: #999;">Mo</div>
                         <div style="color: #999;">Tu</div>
                         <div style="color: #999;">We</div>
@@ -129,29 +129,7 @@
                         <div style="color: #999;">Fr</div>
                         <div style="color: #999;">Sa</div>
                         <div style="color: #999;">Su</div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div>1</div>
-                        <div>2</div>
-                        <div>3</div>
-                        <div>4</div>
-                        <div>5</div>
-                        <div>6</div>
-                        <div>7</div>
-                        <div>8</div>
-                        <div>9</div>
-                        <div>10</div>
-                        <div>11</div>
-                        <div
-                            style="background: var(--primary-light); border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; margin: 0 auto; color: var(--primary-color);">
-                            12</div>
-                        <div>13</div>
-                        <div>14</div>
-                        <div>15</div>
-                        <div>16</div>
-                        <div>17</div>
+                        <!-- Grid items will be populated by JS -->
                     </div>
                 </div>
 
@@ -159,12 +137,12 @@
                 <div class="card">
                     <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Meal Plan</h3>
                     <div class="meal-plan-tabs">
-                        <button class="meal-btn">Breakfast</button>
-                        <button class="meal-btn active">Lunch</button>
-                        <button class="meal-btn">Dinner</button>
+                        <button class="meal-btn" onclick="showMeal('Breakfast', this)">Breakfast</button>
+                        <button class="meal-btn active" onclick="showMeal('Lunch', this)">Lunch</button>
+                        <button class="meal-btn" onclick="showMeal('Dinner', this)">Dinner</button>
                     </div>
-                    <ul class="meal-list">
-                        <?php foreach ($data['meal_plan']['items'] as $item): ?>
+                    <ul class="meal-list" id="mealList">
+                        <?php foreach ($data['meal_plan']['Lunch'] as $item): ?>
                             <li><?php echo $item; ?></li>
                         <?php endforeach; ?>
                     </ul>
@@ -173,11 +151,114 @@
         </div>
 
         <!-- Notification Overlay -->
-        <div class="notification-overlay">
+        <div class="notification-overlay" id="notificationOverlay" style="display: none;">
             <p style="font-size: 0.85rem; color: #444; line-height: 1.4;">
                 Tomorrow (25th august 2025) practice has been canceled.
             </p>
         </div>
+
+        <script>
+            // Notification Toggle logic
+            const bell = document.getElementById('notificationBell');
+            const overlay = document.getElementById('notificationOverlay');
+
+            bell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!overlay.contains(e.target) && e.target !== bell) {
+                    overlay.style.display = 'none';
+                }
+            });
+
+            // Meal Plan data
+            const mealPlans = <?php echo json_encode($data['meal_plan']); ?>;
+
+            function showMeal(mealType, btn) {
+                // Update active button
+                document.querySelectorAll('.meal-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update list items
+                const list = document.getElementById('mealList');
+                list.innerHTML = '';
+
+                if (mealPlans[mealType]) {
+                    mealPlans[mealType].forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        list.appendChild(li);
+                    });
+                }
+            }
+
+            // Calendar Navigation Placeholder removed as it's handled inline now
+            
+            // Ticking Clock logic
+            function updateClock() {
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                const strTime = hours + ':' + minutes + ' ' + ampm;
+                document.getElementById('live-time').textContent = strTime;
+            }
+            setInterval(updateClock, 1000);
+
+            // Dynamic Calendar logic
+            function generateCalendar() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                const today = now.getDate();
+
+                const monthNames = ["January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ];
+
+                document.getElementById('calendarHighlight').textContent = `${monthNames[month]} ${year}`;
+
+                const firstDay = new Date(year, month, 1).getDay(); // 0 (Sun) to 6 (Sat)
+                let startingIndex = firstDay === 0 ? 6 : firstDay - 1; // Adjust for Monday start
+
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const grid = document.getElementById('calendarGrid');
+                
+                // Clear only the days, keeping the headers (first 7 children)
+                const headers = Array.from(grid.children).slice(0, 7);
+                grid.innerHTML = '';
+                headers.forEach(h => grid.appendChild(h));
+
+                // Empty cells before first day
+                for (let i = 0; i < startingIndex; i++) {
+                    const empty = document.createElement('div');
+                    grid.appendChild(empty);
+                }
+
+                // Days
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.textContent = d;
+                    if (d === today) {
+                        dayCell.style.background = 'var(--primary-light)';
+                        dayCell.style.borderRadius = '50%';
+                        dayCell.style.width = '25px';
+                        dayCell.style.height = '25px';
+                        dayCell.style.display = 'flex';
+                        dayCell.style.alignItems = 'center';
+                        dayCell.style.justifyContent = 'center';
+                        dayCell.style.margin = '0 auto';
+                        dayCell.style.color = 'var(--primary-color)';
+                    }
+                    grid.appendChild(dayCell);
+                }
+            }
+            generateCalendar();
+        </script>
     </div>
 </body>
 
