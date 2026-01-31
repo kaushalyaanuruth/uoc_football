@@ -372,6 +372,39 @@ textarea {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
     animation: pop .25s ease;
 }
+@media print {
+
+    body {
+        background: white;
+    }
+
+    .top-navbar,
+    .page-header select,
+    .btn-export,
+    .form-grid,
+    .chart-toggle,
+    .finance-charttoggle,
+    .btn-edit,
+    .btn-delete,
+    .modal,
+    .toast {
+        display: none !important;
+    }
+
+    .finance-card {
+        box-shadow: none;
+        border: none;
+    }
+
+    table {
+        width: 100%;
+        font-size: 12px;
+    }
+
+    th {
+        background: #eee !important;
+    }
+}
 
 /* animation (optional but professional) */
 @keyframes pop {

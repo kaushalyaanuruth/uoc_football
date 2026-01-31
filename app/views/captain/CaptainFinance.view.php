@@ -233,40 +233,44 @@
             </h2>
 
 
-            <table class="finance-table">
-                <tr>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Actions</th>
-                </tr>
-                <tr>
-                    <td><span class="badge badge-income"> Income</span></td>
-                    <td>Sponsorship</td>
-                    <td class="amount_icome">+$5,000</td>
-                    <td>Oct 15, 2024</td>
-                    <td>Nike Partnership</td>
-                    <td class="actions">
-                        <button class="btn-edit">Edit</button>
-                        <button class="btn-delete">Delete</button>
-                    </td>
+           <table class="finance-table">
+    <tr>
+        <th>Type</th>
+        <th>Category</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Actions</th>
+    </tr>
 
-                </tr>
-                <tr>
-                    <td><span class="badge badge-expense"> Expense</span></td>
-                    <td>Equipment</td>
-                    <td class="amount_expense">-$1,250</td>
-                    <td>Oct 12, 2024</td>
-                    <td>Training gear</td>
-                    <td class="actions">
-                        <button class="btn-edit">Edit</button>
-                        <button class="btn-delete">Delete</button>
-                    </td>
+    <?php foreach ($data['transactions'] as $t): ?>
+        <tr>
+            <td>
+                <?php if ($t['type'] === "Income"): ?>
+                    <span class="badge badge-income">Income</span>
+                <?php else: ?>
+                    <span class="badge badge-expense">Expense</span>
+                <?php endif; ?>
+            </td>
 
-                </tr>
-            </table>
+            <td><?= htmlspecialchars($t['category']) ?></td>
+
+            <td class="<?= $t['type'] === 'Income' ? 'amount_income' : 'amount_expense' ?>">
+                <?= $t['type'] === 'Income' ? '+' : '-' ?>Rs. <?= number_format($t['amount']) ?>
+            </td>
+
+            <td><?= date("M d, Y", strtotime($t['date'])) ?></td>
+
+            <td><?= htmlspecialchars($t['description']) ?></td>
+
+            <td class="actions">
+                <button class="btn-edit">Edit</button>
+                <button class="btn-delete">Delete</button>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</table>
+
         </section>
         <!-- ================= EDIT TRANSACTION MODAL ================= -->
         <div class="modal" id="financeModal">

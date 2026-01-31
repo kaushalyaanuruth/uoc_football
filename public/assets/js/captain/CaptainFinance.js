@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         incomeForm.reset();
         showCenterToast("Income added successfully");
+        updateFinanceStats();
     });
 
     /* ================= EXPENSE SUBMIT ================= */
@@ -117,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         expenseForm.reset();
         showCenterToast("Expense added successfully");
+        updateFinanceStats();
     });
 
     /* ================= EDIT & DELETE ================= */
@@ -144,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Transaction deleted <u id='undoLink' style='cursor:pointer'>Undo</u>",
                     "#dc2626"
                 );
-
+updateFinanceStats();
                 // Auto remove undo after 5 seconds
                 deleteTimeout = setTimeout(() => {
                     deletedRow = null;
@@ -169,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             showToast("Undo successful", "#16a34a");
+            updateFinanceStats();
         }
     };
 
@@ -191,6 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         modal.style.display = "none";
         showCenterToast("Transaction updated successfully");
+        updateFinanceStats();
     });
 
     closeFinanceModal.onclick =
@@ -264,6 +268,29 @@ document.addEventListener("DOMContentLoaded", () => {
             centerToastOk.click();
         }
     });
+    function updateFinanceStats() {
+    let income = 0;
+    let expense = 0;
+
+    document.querySelectorAll(".finance-table tr").forEach((row, index) => {
+        if (index === 0 || row.style.display === "none") return;
+
+        const amountText = row.cells[2].innerText.replace(/[^\d]/g, "");
+        const amount = parseInt(amountText) || 0;
+
+        if (row.cells[0].innerText.includes("Income")) {
+            income += amount;
+        } else {
+            expense += amount;
+        }
+    });
+
+    document.querySelector(".stat-income .stat-value").innerText = `Rs. ${income.toLocaleString()}`;
+    document.querySelector(".stat-expense .stat-value").innerText = `Rs. ${expense.toLocaleString()}`;
+    document.querySelector(".stat-balance .stat-value").innerText =
+        `Rs. ${(income - expense).toLocaleString()}`;
+}
+
 
 
 });
@@ -272,22 +299,39 @@ document.getElementById("exportReport").addEventListener("click", () => {
     const table = document.querySelector(".finance-table");
     let csv = [];
 
-    for (let row of table.rows) {
+    // Table headers (skip Actions)
+    const headers = [];
+    table.querySelectorAll("th").forEach((th, index) => {
+        if (index < 5) {
+            headers.push(`"${th.innerText.trim()}"`);
+        }
+    });
+    csv.push(headers.join(","));
+
+    // Table rows
+    table.querySelectorAll("tr").forEach((row, index) => {
+        if (index === 0 || row.style.display === "none") return;
+
         let rowData = [];
-        for (let cell of row.cells) {
-            rowData.push(`"${cell.innerText.trim()}"`);
+        for (let i = 0; i < 5; i++) {
+            rowData.push(`"${row.cells[i].innerText.trim()}"`);
         }
         csv.push(rowData.join(","));
-    }
+    });
 
-    const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
-    const downloadLink = document.createElement("a");
+    const csvBlob = new Blob([csv.join("\n")], { type: "text/csv" });
+    const link = document.createElement("a");
 
-    downloadLink.download = "finance_report.csv";
-    downloadLink.href = window.URL.createObjectURL(csvFile);
-    downloadLink.style.display = "none";
+    const today = new Date().toISOString().split("T")[0];
+    link.download = `finance-report-${today}.csv`;
+    link.href = URL.createObjectURL(csvBlob);
 
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+});
+
+document.getElementById("exportPDF").addEventListener("click", () => {
+    window.print();
 });

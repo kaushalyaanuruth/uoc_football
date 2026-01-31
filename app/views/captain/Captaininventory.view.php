@@ -56,26 +56,39 @@
 
         <!-- ================= STATS ================= -->
         <section class="stats">
-            <div class="stat-card">
-                <h3>Total Items</h3>
-                <span>248 <span class="stat-icon purple"></span></span>
-            </div>
+    <div class="stat-card">
+        <h3>Total Items</h3>
+        <span>
+            <?= $data['total'] ?>
+            <span class="stat-icon purple"></span>
+        </span>
+    </div>
 
-            <div class="stat-card warning">
-                <h3>Items In Use</h3>
-                <span>142 <span class="stat-icon orange"></span></span>
-            </div>
+    <div class="stat-card warning">
+        <h3>Items In Use</h3>
+        <span>
+            <?= $data['in_use'] ?>
+            <span class="stat-icon orange"></span>
+        </span>
+    </div>
 
-            <div class="stat-card success">
-                <h3>Available Items</h3>
-                <span>89 <span class="stat-icon green"></span></span>
-            </div>
+    <div class="stat-card success">
+        <h3>Available Items</h3>
+        <span>
+            <?= $data['available'] ?>
+            <span class="stat-icon green"></span>
+        </span>
+    </div>
 
-            <div class="stat-card danger">
-                <h3>Damaged Items</h3>
-                <span>17 <span class="stat-icon red"></span></span>
-            </div>
-        </section>
+    <div class="stat-card danger">
+        <h3>Damaged Items</h3>
+        <span>
+            <?= $data['damaged'] ?>
+            <span class="stat-icon red"></span>
+        </span>
+    </div>
+</section>
+
 
         <!-- ================= CHARTS ================= -->
         <div class="dashboard-grid">
@@ -120,7 +133,26 @@
                 </thead>
 
                 <tbody>
-                    <tr>
+                    <?php foreach ($data['inventory'] as $inventory): ?>
+<tr>
+    <td><?= $inventory['item'] ?></td>
+    <td><?= $inventory['category'] ?></td>
+    <td><?= $inventory['quantity'] ?></td>
+    <td>
+        <span class="status <?= strtolower(str_replace(' ', '', $inventory['status'])) ?>">
+            <?= $inventory['status'] ?>
+        </span>
+    </td>
+    <td><?= $inventory['updated'] ?></td>
+    <td class="actions">
+        <button class="btn-edit">Edit</button>
+        <button class="btn-delete">Delete</button>
+    </td>
+</tr>
+<?php endforeach; ?>
+
+                  
+                    <!-- <tr>
                         <td>Training Jerseys</td>
                         <td>Kits</td>
                         <td>25</td>
@@ -171,7 +203,7 @@
                             <button class="btn-edit">Edit</button>
                             <button class="btn-delete">Delete</button>
                         </td>
-                    </tr>
+                    </tr> -->
                 </tbody>
             </table>
         </section>
