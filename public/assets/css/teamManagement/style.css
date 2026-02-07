@@ -14,122 +14,9 @@
     --danger-color: #ef4444;
     --white: #ffffff;
 }
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
-    min-height: 100vh;
-    padding: 20px;
-}
-
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* Header */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 0 10px;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.back-btn {
-    background: var(--white);
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center; /* added to vertically center text */
-    line-height: normal;  /* ensure consistent centering */
-    transition: all 0.3s ease;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-}
-.back-btn svg {
-    display: block;
-    height: 20px;
-    width: 20px;
-}
-
-.back-btn:hover {
-    transform: translateX(-1px);
-    box-shadow: 0 4px 12px rgba(76, 14, 84, 0.1);
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-}
-.logo img {
-    height: 40px;
-    margin-right: 10px;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.bell-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--white);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: all 0.2s ease;
-}
-
-.bell-icon:hover {
-    transform: scale(1.05);
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.user-avatar:hover {
-    transform: scale(1.05);
-}
-
-/* Page Title */
-.page-title {
-    font-size: 42px;
-    font-weight: 700;
-    color: var(--primary-purple-dark);
-    margin-bottom: 40px;
-    padding: 0 10px;
-}
-
 /* Teams Grid */
 .teams-grid {
+    margin-top: 96px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 25px;
@@ -160,7 +47,9 @@ body {
     cursor: pointer;
     border: 2px dashed var(--border-color);
     min-height: 280px;
-    background: var(--white);
+    background: #ffffff;
+    transition: all 0.3s ease;
+    border-radius: 24px;
 }
 
 .add-team-card:hover {
@@ -191,7 +80,7 @@ body {
 .add-team-card h3 {
     font-size: 18px;
     font-weight: 700;
-    color: var(--primary-purple-dark);
+    color: var(--primary-purple-light);
     margin-bottom: 10px;
 }
 
@@ -274,13 +163,15 @@ body {
     color: var(--text-medium);
 }
 
-.detail-icon {
-    font-size: 16px;
-    color: var(--text-light);
+.detail-icon img{
+    width: 14px;
+    display: flex;
+    justify-content: center;
 }
 
 .detail-text {
-    color: var(--text-medium);
+    color: var(--primary-purple);
+    font-weight: bold;
 }
 
 /* Team Footer */
@@ -302,8 +193,9 @@ body {
 }
 
 .player-icon {
-    font-size: 18px;
-    color: var(--primary-purple);
+    width: 18px;
+    display: flex;
+    justify-content: center;
 }
 
 .view-details-btn {
@@ -322,6 +214,7 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
 }
+
 /* Modal Styles */
 .modal-overlay {
     position: fixed;
@@ -329,7 +222,6 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -337,12 +229,15 @@ body {
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    scrollbar-width: none;
 }
 
+#addTeamModal{
+    background: rgba(0, 0, 0, 0.5);
+    /* box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); */
+}
 .modal-overlay::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none; 
 }
 
 .modal-overlay.active {
@@ -352,7 +247,7 @@ body {
 
 .modal {
     background: var(--white);
-    border-radius: 20px;
+    border-radius: 14px;
     padding: 30px;
     max-width: 500px;
     width: 90%;
@@ -362,12 +257,8 @@ body {
     transform: scale(0.9);
     transition: all 0.3s ease;
     position: relative;
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-}
-
-.modal::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .modal-overlay.active .modal {
@@ -401,19 +292,14 @@ body {
 .modal-header {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
-/* Logo Section */
-.logo-section {
-    text-align: center;
-}
 
 .logo {
+    text-align: center;
     width: 150px;
     height: auto;
-    object-fit: contain;
-    margin-bottom: 20px;
 }
 
 
@@ -482,7 +368,9 @@ body {
 .form-input::placeholder {
     color: #9ca3af;
 }
-
+.form-input:hover{
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
 .form-input:focus {
     outline: none;
     border-color: var(--primary-purple);
@@ -498,10 +386,6 @@ body {
 
 .form-section-wrapper:last-of-type {
     border-bottom: none;
-}
-
-.form-section-wrapper.collapsed .section-content {
-    display: none;
 }
 
 .form-section-header-main {
@@ -596,6 +480,7 @@ body {
     color: var(--danger-color);
 }
 
+
 /* Tournament Item */
 .tournament-item {
     display: flex;
@@ -628,6 +513,13 @@ body {
     color: var(--text-medium);
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.role-badge input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .role-badge.active {
