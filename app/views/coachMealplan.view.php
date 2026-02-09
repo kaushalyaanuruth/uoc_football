@@ -19,12 +19,12 @@
                 </a>
             </div>
             <nav class="nav-menu">
-                <a href="<?php echo ROOT; ?>/coach" class="nav-link">Home</a>
-                <a href="<?php echo ROOT; ?>/coach/events" class="nav-link">Events</a>
-                <a href="<?php echo ROOT; ?>/coach/mealplan" class="nav-link active">Meal Plan</a>
-                <a href="<?php echo ROOT; ?>/coach/performance" class="nav-link">Performance</a>
-                <a href="<?php echo ROOT; ?>/coach/attendance" class="nav-link">Attendance</a>
-                <a href="<?php echo ROOT; ?>/coach/notices" class="nav-link">Notices</a>
+                <a href="<?php echo ROOT; ?>/coachDashboard" class="nav-link">Home</a>
+                <a href="<?php echo ROOT; ?>/coachEvents" class="nav-link">Events</a>
+                <a href="<?php echo ROOT; ?>/coachMealPlan" class="nav-link active">Meal Plan</a>
+                <a href="<?php echo ROOT; ?>/coachPerformance" class="nav-link">Performance</a>
+                <a href="<?php echo ROOT; ?>/coachAttendance" class="nav-link">Attendance</a>
+                <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link">Notices</a>
             </nav>
             <div class="right-section">
                 <div class="bell-icon">

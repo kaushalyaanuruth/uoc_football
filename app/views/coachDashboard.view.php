@@ -18,12 +18,12 @@
                 </a>
             </div>
             <nav class="nav-menu">
-                <a href="<?php echo ROOT; ?>/coach" class="nav-link active">Home</a>
-                <a href="<?php echo ROOT; ?>/coach/events" class="nav-link">Events</a>
-                <a href="<?php echo ROOT; ?>/coach/mealplan" class="nav-link">Meal Plan</a>
-                <a href="<?php echo ROOT; ?>/coach/performance" class="nav-link">Performance</a>
-                <a href="<?php echo ROOT; ?>/coach/attendance" class="nav-link">Attendance</a>
-                <a href="<?php echo ROOT; ?>/coach/notices" class="nav-link">Notices</a>
+                <a href="<?php echo ROOT; ?>/coachDashboard" class="nav-link active">Home</a>
+                <a href="<?php echo ROOT; ?>/coachEvents" class="nav-link">Events</a>
+                <a href="<?php echo ROOT; ?>/coachMealPlan" class="nav-link">Meal Plan</a>
+                <a href="<?php echo ROOT; ?>/coachPerformance" class="nav-link">Performance</a>
+                <a href="<?php echo ROOT; ?>/coachAttendance" class="nav-link">Attendance</a>
+                <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link">Notices</a>
             </nav>
             <div class="right-section">
                 <img class="avatar" src="<?php echo ROOT; ?>/assets/images/coachDashboard/header/avatar.jpg" alt="Coach Avatar">
