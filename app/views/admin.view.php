@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <title>UOC_football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/adminDashboard/style.css">
+    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/potal/header.css">
+    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/potal/page.css">
 </head>
 <body>
     <div class="container">
@@ -25,7 +27,7 @@
         <div class="quickActions">
             <h2 class="section-title">Quick Actions</h2>
             <div class="actions-grid">
-                <a class="action-card icon-purple" href="">
+                <a class="action-card icon-purple" href="<?php echo ROOT; ?>/teamManagement">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/teams.svg" alt="team icon" class="action-icon">
                     </div>
