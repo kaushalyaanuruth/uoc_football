@@ -36,7 +36,6 @@ body::before {
 .top-navbar {
     height: 70px;
     background: #FFF7FF;
-    /* border-bottom: 1px solid #e5e7eb; */
     display: flex;
     align-items: center;
     justify-content: space-between;

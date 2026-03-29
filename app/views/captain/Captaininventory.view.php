@@ -28,9 +28,6 @@
             <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
             <a href="#" class="active">Inventory</a>
             <a href="<?= ROOT ?>/CaptainFinance">Finance</a>
-
-            <!-- <a href="<?= ROOT ?>/CaptainNotices">Notices</a> -->
-            <!-- <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a> -->
         </nav>
 
         <div class="nav-right">
@@ -56,38 +53,38 @@
 
         <!-- ================= STATS ================= -->
         <section class="stats">
-    <div class="stat-card">
-        <h3>Total Items</h3>
-        <span>
-            <?= $data['total'] ?>
-            <span class="stat-icon purple"></span>
-        </span>
-    </div>
+            <div class="stat-card">
+                <h3>Total Items</h3>
+                <span>
+                    <?= $data['total'] ?>
+                    <span class="stat-icon purple"></span>
+                </span>
+            </div>
 
-    <div class="stat-card warning">
-        <h3>Items In Use</h3>
-        <span>
-            <?= $data['in_use'] ?>
-            <span class="stat-icon orange"></span>
-        </span>
-    </div>
+            <div class="stat-card warning">
+                <h3>Items In Use</h3>
+                <span>
+                    <?= $data['in_use'] ?>
+                    <span class="stat-icon orange"></span>
+                </span>
+            </div>
 
-    <div class="stat-card success">
-        <h3>Available Items</h3>
-        <span>
-            <?= $data['available'] ?>
-            <span class="stat-icon green"></span>
-        </span>
-    </div>
+            <div class="stat-card success">
+                <h3>Available Items</h3>
+                <span>
+                    <?= $data['available'] ?>
+                    <span class="stat-icon green"></span>
+                </span>
+            </div>
 
-    <div class="stat-card danger">
-        <h3>Damaged Items</h3>
-        <span>
-            <?= $data['damaged'] ?>
-            <span class="stat-icon red"></span>
-        </span>
-    </div>
-</section>
+            <div class="stat-card danger">
+                <h3>Damaged Items</h3>
+                <span>
+                    <?= $data['damaged'] ?>
+                    <span class="stat-icon red"></span>
+                </span>
+            </div>
+        </section>
 
 
         <!-- ================= CHARTS ================= -->
@@ -103,7 +100,6 @@
             </section>
         </div>
 
-        <!-- ================= INVENTORY TABLE ================= -->
         <!-- ================= INVENTORY TABLE ================= -->
         <section class="inventory-section">
             <div class="section-header">
@@ -134,82 +130,26 @@
 
                 <tbody>
                     <?php foreach ($data['inventory'] as $inventory): ?>
-<tr>
-    <td><?= $inventory['item'] ?></td>
-    <td><?= $inventory['category'] ?></td>
-    <td><?= $inventory['quantity'] ?></td>
-    <td>
-        <span class="status <?= strtolower(str_replace(' ', '', $inventory['status'])) ?>">
-            <?= $inventory['status'] ?>
-        </span>
-    </td>
-    <td><?= $inventory['updated'] ?></td>
-    <td class="actions">
-        <button class="btn-edit">Edit</button>
-        <button class="btn-delete">Delete</button>
-    </td>
-</tr>
-<?php endforeach; ?>
-
-                  
-                    <!-- <tr>
-                        <td>Training Jerseys</td>
-                        <td>Kits</td>
-                        <td>25</td>
-                        <td><span class="status available">Available</span></td>
-                        <td>2 hours ago</td>
-                        <td class="actions">
-                            <button class="btn-edit" data-id="1" data-name="Training Jerseys" data-category="Kits"
-                                data-qty="25" data-status="Available">
-                                Edit
-                            </button>
-
-                            <button class="btn-delete">Delete</button>
-                        </td>
-
-                    </tr>
-
-                    <tr>
-                        <td>Match Footballs</td>
-                        <td>Balls</td>
-                        <td>12</td>
-                        <td><span class="status inuse">In Use</span></td>
-                        <td>1 day ago</td>
-                        <td class="actions">
-                            <button class="btn-edit">Edit</button>
-                            <button class="btn-delete">Delete</button>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>Training Cones</td>
-                        <td>Equipment</td>
-                        <td>50</td>
-                        <td><span class="status available">Available</span></td>
-                        <td>3 days ago</td>
-                        <td class="actions">
-                            <button class="btn-edit">Edit</button>
-                            <button class="btn-delete">Delete</button>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>Shin Guards</td>
-                        <td>Accessories</td>
-                        <td>8</td>
-                        <td><span class="status damaged">Damaged</span></td>
-                        <td>1 week ago</td>
-                        <td class="actions">
-                            <button class="btn-edit">Edit</button>
-                            <button class="btn-delete">Delete</button>
-                        </td>
-                    </tr> -->
+                        <tr>
+                            <td><?= $inventory['item'] ?></td>
+                            <td><?= $inventory['category'] ?></td>
+                            <td><?= $inventory['quantity'] ?></td>
+                            <td>
+                                <span class="status <?= strtolower(str_replace(' ', '', $inventory['status'])) ?>">
+                                    <?= $inventory['status'] ?>
+                                </span>
+                            </td>
+                            <td><?= $inventory['updated'] ?></td>
+                            <td class="actions">
+                                <button class="btn-edit">Edit</button>
+                                <button class="btn-delete">Delete</button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </section>
-        <!-- ================= ADD INVENTORY MODAL ================= -->
-
-        <!-- ================= EDIT INVENTORY MODAL ================= -->
+         <!-- ================= EDIT INVENTORY MODAL ================= -->
         <div class="modal" id="inventoryModal">
             <div class="modal-content">
                 <div class="modal-header">

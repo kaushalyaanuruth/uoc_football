@@ -35,7 +35,6 @@ body::before {
 .top-navbar {
     height: 70px;
     background: #FFF7FF;
-    /* border-bottom: 1px solid #e5e7eb; */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -311,7 +310,6 @@ label {
     border-radius: 12px;
     display: flex;
     align-items: center;
-    /* background-color: #F4EAFF; */
     justify-content: center;
 
 }
@@ -346,14 +344,10 @@ textarea {
 /* ================= FINANCE MODAL FIX ================= */
 .modal {
     display: none;
-    /* hidden by default */
     position: fixed;
-    /* IMPORTANT */
     inset: 0;
-    /* top, right, bottom, left = 0 */
     background: rgba(0, 0, 0, 0.4);
     z-index: 9999;
-    /* VERY IMPORTANT */
     justify-content: center;
     align-items: center;
 }
@@ -406,7 +400,7 @@ textarea {
     }
 }
 
-/* animation (optional but professional) */
+/* animation */
 @keyframes pop {
     from {
         transform: scale(.9);
@@ -449,10 +443,6 @@ button {
     transition: .2s;
 }
 
-/* .actions {
-  display: flex;
-  gap: 8px;
-} */
 button:hover {
     opacity: .9;
     transform: scale(1.03);
@@ -500,12 +490,8 @@ tr:hover {
     padding: 6px 12px;
     border-radius: 6px;
     border: none;
-    /* background: #e5e7eb; */
     cursor: pointer;
 }
-/* .finance-charttoggle .active {
-    border: 2px solid #4A1150;
-} */
 
 .finance_income {
     color: #16a34a;
@@ -643,8 +629,6 @@ tr:hover {
 }
 
 .center-toast .save {
-    /* background: #16a34a;
-    color: white; */
     padding: 10px 22px;
     border-radius: 8px;
     cursor: pointer;
@@ -652,13 +636,6 @@ tr:hover {
 
 /* Responsive */
 @media(max-width: 1024px) {
-
-    /* .stats,
-    .form-grid,
-    .cashflow {
-        grid-template-columns: 1fr;
-    } */
-    /* Charts stack vertically */
     .dashboard-grid {
         grid-template-columns: 1fr;
     }

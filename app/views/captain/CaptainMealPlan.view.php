@@ -7,8 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/CaptainMealPlan.css">
-    <!-- <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/captainDashboard.css"> -->
-
 </head>
 
 <body>
@@ -27,9 +25,6 @@
             <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
             <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a> <a href="<?= ROOT ?>/CaptainInventory">Inventory</a>
             <a href="<?= ROOT ?>/CaptainFinance">Finance</a>
-
-            <!-- <a href="<?= ROOT ?>/CaptainNotices">Notices</a> -->
-            <!-- <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a> -->
         </nav>
         <div class="nav-right">
             <button class="icon-btn">🔔</button>
@@ -95,68 +90,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Simple Meal Plan Page -->
-    <!-- <div id="simple-meal-page" class="page-content">
-        <div class="page-header">
-            <h1>Daily Meal Plan</h1>
-            <p>Your complete nutrition guide for the day</p>
-        </div>
-
-        <div class="meal-tabs-container">
-            <div class="meal-tabs">
-                <button class="meal-tab active">🌅 Breakfast</button>
-                <button class="meal-tab">🍽️ Lunch</button>
-                <button class="meal-tab">🌙 Dinner</button>
-            </div>
-        </div>
-
-        <div class="meal-categories-grid">
-            <div class="meal-category-card">
-                <div class="meal-category-header">
-                    <div class="meal-icon">🌅</div>
-                    <h2>Breakfast</h2>
-                </div>
-                <ul class="meal-category-list">
-                    <li>Basmati or Red rice</li>
-                    <li>Chicken, Egg, Fish</li>
-                    <li>Vegetable(minimum 3)</li>
-                    <li>Pala</li>
-                    <li>Yogurt</li>
-                    <li>Fruits</li>
-                </ul>
-            </div>
-
-            <div class="meal-category-card">
-                <div class="meal-category-header">
-                    <div class="meal-icon">🍽️</div>
-                    <h2>Lunch</h2>
-                </div>
-                <ul class="meal-category-list">
-                    <li>Basmati or Red rice</li>
-                    <li>Chicken, Egg, Fish</li>
-                    <li>Vegetable(minimum 3)</li>
-                    <li>Pala</li>
-                    <li>Yogurt</li>
-                    <li>Fruits</li>
-                </ul>
-            </div>
-
-            <div class="meal-category-card">
-                <div class="meal-category-header">
-                    <div class="meal-icon">🌙</div>
-                    <h2>Dinner</h2>
-                </div>
-                <ul class="meal-category-list">
-                    <li>Basmati or Red rice</li>
-                    <li>Chicken, Egg, Fish</li>
-                    <li>Vegetable(minimum 3)</li>
-                    <li>Pala</li>
-                    <li>Yogurt</li>
-                    <li>Fruits</li>
-                </ul>
-            </div>
-        </div> -->
         <script>
             window.APP_ROOT = "<?= ROOT ?>";
         </script>

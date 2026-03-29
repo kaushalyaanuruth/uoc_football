@@ -35,7 +35,6 @@ body::before {
 .top-navbar {
   height: 70px;
   background: #FFF7FF;
-  /* border-bottom: 1px solid #e5e7eb; */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -160,8 +159,6 @@ body::before {
 }
 
 .stat-card span {
-  /* font-size: 32px;
-  font-weight: 700; */
   font-size: 30px;
   font-weight: 700;
   justify-content: space-between;
@@ -215,7 +212,6 @@ body::before {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 24px;
-  /* box-shadow: 0 4px 15px rgba(0,0,0,0.08); */
   box-shadow: none;
 }
 
@@ -454,17 +450,15 @@ button:hover {
 /* ================= Tablets (≤ 1024px) ================= */
 @media (max-width: 1024px) {
 
-  /* Charts stack vertically */
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
 
-  /* Stats → 2 per row */
+  
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  /* Navbar spacing */
   .nav-center {
     gap: 16px;
     padding: 8px 24px;
@@ -474,7 +468,6 @@ button:hover {
 /* ================= Mobile (≤ 768px) ================= */
 @media (max-width: 768px) {
 
-  /* Navbar becomes stacked */
   .top-navbar {
     flex-direction: column;
     height: auto;
@@ -493,19 +486,16 @@ button:hover {
     padding: 6px 14px;
   }
 
-  /* Page header stacks */
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
 
-  /* Stats → single column */
   .stats {
     grid-template-columns: 1fr;
   }
 
-  /* Charts smaller height */
   .chart-card {
     height: auto;
   }
@@ -514,7 +504,6 @@ button:hover {
     height: 200px;
   }
 
-  /* Inventory table → horizontal scroll */
   .inventory-table {
     display: block;
     width: 100%;
@@ -522,7 +511,6 @@ button:hover {
     white-space: nowrap;
   }
 
-  /* Filters full width */
   .section-header {
     flex-direction: column;
     align-items: flex-start;
@@ -533,7 +521,6 @@ button:hover {
     width: 100%;
   }
 
-  /* Better touch targets */
   button,
   .icon-btn {
     min-height: 44px;

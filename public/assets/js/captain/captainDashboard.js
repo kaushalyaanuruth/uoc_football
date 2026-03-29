@@ -96,7 +96,6 @@
             });
         });
 
-        // Calendar removed: no calendar event handlers necessary
 
         // Logout button handler
         const logoutBtn = document.getElementById('logout-btn');
@@ -108,7 +107,6 @@
                 // Clear a common auth key if present and any other session data
                 try {
                     localStorage.removeItem('authToken');
-                    // add other cleanup here if needed
                 } catch (e) {
                     // ignore
                 }

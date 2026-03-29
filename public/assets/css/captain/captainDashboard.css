@@ -36,7 +36,6 @@ body::before {
 .top-navbar {
     height: 70px;
     background: #FFF7FF;
-    /* border-bottom: 1px solid #e5e7eb; */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -111,103 +110,6 @@ body::before {
 .content {
     padding: 32px;
 }
-
-/* .navbar {
-    background: white;
-    padding: 1rem 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-}
-
-.logo img {
-    height: 40px;
-    margin-right: 10px;
-}
-
-.nav-menu {
-    display: flex;
-    gap: 2rem;
-    list-style: none;
-}
-
-.nav-menu a {
-    text-decoration: none;
-    color: #666;
-    font-weight: 500;
-    padding: 0.5rem 1.5rem;
-    border-radius: 20px;
-    transition: all 0.3s;
-}
-
-.nav-menu a.active {
-    background: #4a1a4a;
-    color: white;
-}
-
-.nav-menu a:hover {
-    background: #4a1a4a;
-    color: white;
-}
-
-.user-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.notification-icon {
-    width: 40px;
-    height: 40px;
-    background: #f0f0f0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    position: relative;
-}
-
-.notification-icon::after {
-    content: '';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 8px;
-    height: 8px;
-    background: #ff4444;
-    border-radius: 50%;
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #4a1a4a;
-    cursor: pointer;
-}
-
-.logout-btn {
-    padding: 0.5rem 0.9rem;
-    background: #ff4444;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.container {
-    max-width: 1400px;
-    margin: 2rem auto;
-    padding: 0 2rem;
-} */
 
 .page-content {
     display: none;
@@ -390,23 +292,6 @@ body::before {
     background: #4a1a4a;
     color: white;
 }
-/* .link-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 10px;
-  text-decoration: none;   
-  color: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-}
-
-.link-item:hover {
-  background: #f4eaff;
-}
-*/
 
 .link-icon {
     font-size: 1.5rem;

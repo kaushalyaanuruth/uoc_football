@@ -26,9 +26,6 @@
             <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
             <a href="<?= ROOT ?>/CaptainInventory">Inventory</a>
             <a href="#" class="active">Finance</a>
-
-            <!-- <a href="<?= ROOT ?>/CaptainNotices">Notices</a> -->
-            <!-- <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a> -->
         </nav>
 
         <div class="nav-right">
@@ -335,10 +332,6 @@
         </div>
 
     </main>
-    <!-- SUCCESS TOAST -->
-    <!-- <div id="toast" class="toast">
-    <span id="toastMessage">Saved successfully</span>
-</div> -->
     <!-- CENTER SUCCESS POPUP -->
     <div class="modal" id="centerToast">
         <div class="modal-content center-toast">
