@@ -24,7 +24,7 @@
                     <!-- <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a> -->
                 </div>
         </div>
-        <a href="<?php echo ROOT; ?>/admin" class="back-btn">&lt; Back</a>
+        <a href="<?php echo ROOT; ?>/adminDashboard" class="back-btn">&lt; Back</a>
         <div class="teams-grid">
             <div class="add-team-card"  onclick="event.stopPropagation(); openAddTeamModal()">
                 <div class="add-icon">+</div>
@@ -37,10 +37,10 @@
                     </div>
                     <div class="team-actions">
                             <button class="icon-btn edit-btn">
-                                <img class="" src="<?php echo ROOT; ?>/assets/images/teamManagement/edit.svg" alt="edit">
+                                <img class="" src="<?php echo ROOT; ?>/assets/images/common/edit.svg" alt="edit">
                             </button>
                             <button class="icon-btn delete-btn">
-                                <img class="" src="<?php echo ROOT; ?>/assets/images/teamManagement/delete.svg" alt="delete">
+                                <img class="" src="<?php echo ROOT; ?>/assets/images/common/delete.svg" alt="delete">
                             </button>
                     </div>
                 </div>

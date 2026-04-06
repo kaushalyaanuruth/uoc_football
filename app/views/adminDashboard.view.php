@@ -33,7 +33,7 @@
                     </div>
                     <p class="action-label">Teams</p>
                 </a>
-                <a class="action-card icon-blue" href="">
+                <a class="action-card icon-blue" href="<?php echo ROOT; ?>/teamResult">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/test.svg" alt="results icon" class="action-icon">
                     </div>
