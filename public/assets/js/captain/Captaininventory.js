@@ -50,18 +50,28 @@ document.addEventListener("DOMContentLoaded", () => {
        CHARTS
     ========================================================= */
     function initCharts() {
+
+        // BAR CHART (Category Usage)
         usageChart = new Chart(document.getElementById("equipmentUsageChart"), {
             type: "bar",
             data: {
-                labels: ["In Use", "Available", "Damaged"],
-                datasets: [{
-                    label: "Items",
-                    data: [0, 0, 0],
-                    backgroundColor: ["#f97316", "#22c55e", "#ef4444"]
-                }]
+                labels: ["Kits", "Balls", "Equipment", "Accessories"],
+                datasets: [
+                    {
+                        label: "In Use",
+                        backgroundColor: "#f97316",
+                        data: [0, 0, 0, 0]
+                    },
+                    {
+                        label: "Available",
+                        backgroundColor: "#22c55e",
+                        data: [0, 0, 0, 0]
+                    }
+                ]
             }
         });
 
+        // PIE CHART (Status Distribution)
         statusChart = new Chart(document.getElementById("statusDistributionChart"), {
             type: "pie",
             data: {
@@ -85,29 +95,77 @@ document.addEventListener("DOMContentLoaded", () => {
     /* =========================================================
        STATS CALCULATION
     ========================================================= */
-    function updateInventoryStats() {
-        let total = 0, inUse = 0, available = 0, damaged = 0;
+ function updateInventoryStats() {
 
-        document.querySelectorAll(".inventory-table tbody tr").forEach(row => {
+    let categories = {
+        kits: { inUse: 0, available: 0 },
+        balls: { inUse: 0, available: 0 },
+        equipment: { inUse: 0, available: 0 },
+        accessories: { inUse: 0, available: 0 }
+    };
 
-            const qty = parseInt(row.children[2].innerText) || 0;
-            const stat = row.children[3].innerText.trim().toLowerCase();
+    let total = 0;
+    let inUseTotal = 0;
+    let availableTotal = 0;
+    let damagedTotal = 0;
 
-            total += qty;
+    document.querySelectorAll(".inventory-table tbody tr").forEach(row => {
 
-            if (stat === "in use") inUse += qty;
-            else if (stat === "available") available += qty;
-            else if (stat === "damaged") damaged += qty;
-        });
+        const qty = parseInt(row.children[2].innerText) || 0;
+        const category = row.children[1].innerText.trim().toLowerCase();
+        const status = row.children[3].innerText.trim().toLowerCase();
 
-        totalEl.textContent = total;
-        inUseEl.textContent = inUse;
-        availableEl.textContent = available;
-        damagedEl.textContent = damaged;
+        total += qty;
 
-        updateCharts(inUse, available, damaged);
-    }
+        if (status === "in use") {
+            inUseTotal += qty;
+        } 
+        else if (status === "available") {
+            availableTotal += qty;
+        } 
+        else if (status === "damaged") {
+            damagedTotal += qty;
+        }
 
+        // category chart mapping
+        if (categories[category]) {
+            if (status === "in use") {
+                categories[category].inUse += qty;
+            } else if (status === "available") {
+                categories[category].available += qty;
+            }
+        }
+    });
+
+    // -------------------------
+    // UPDATE PIE CHART
+    // -------------------------
+    statusChart.data.datasets[0].data = [
+        inUseTotal,
+        availableTotal,
+        damagedTotal
+    ];
+    statusChart.update();
+
+    // -------------------------
+    // UPDATE BAR CHART
+    // -------------------------
+    usageChart.data.datasets[0].data = [
+        categories.kits.inUse,
+        categories.balls.inUse,
+        categories.equipment.inUse,
+        categories.accessories.inUse
+    ];
+
+    usageChart.data.datasets[1].data = [
+        categories.kits.available,
+        categories.balls.available,
+        categories.equipment.available,
+        categories.accessories.available
+    ];
+
+    usageChart.update();
+}
     /* =========================================================
            TOAST (SMALL NOTIFICATION)
         ========================================================= */
