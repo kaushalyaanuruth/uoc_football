@@ -35,13 +35,16 @@
 }
 
 .hero-content h1 {
- color: #FFF;
-text-align: center;
-font-family: Poppins;
-font-size: 10rem;
-font-style: normal;
-font-weight: 700;
-line-height: 8.875rem; /* 110.938% */
+    color: #FFF;
+    text-align: center;
+    font-family: Poppins, sans-serif;
+    font-size: 5rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    word-spacing: 0.5rem;
 }
 
 .hero::before {
@@ -56,8 +59,23 @@ line-height: 8.875rem; /* 110.938% */
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .hero-content h1 {
         font-size: 2.5rem;
+        line-height: 1.2;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 2rem;
+        line-height: 1.1;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content h1 {
+        font-size: 1.5rem;
+        line-height: 1;
     }
 }

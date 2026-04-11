@@ -1,7 +1,7 @@
 /* Footer */
 .footer {
     background: white;
-    padding: 4rem 2rem 2rem;
+    padding: 2rem 2rem 1.5rem;
     text-align: center;
     border-top: 1px solid #ccc;
 }
@@ -14,14 +14,14 @@
     max-width: 100%;
     margin-left: 64px;
     margin-right: 64px;
-    margin-bottom: 64px;
+    margin-bottom: 30px;
     flex-wrap: wrap;
     gap: 2rem;
 }
 
 /* Left Logos */
 .footer-left {
-    margin-top: 32px;
+    margin-top: 0;
     display: flex;
     gap: 1rem;
 }
@@ -40,7 +40,7 @@
     color: #4C0E54;
     margin-bottom: 0.5rem;
     font-weight: bold;
-    margin-bottom: 32px;
+    margin-bottom: 15px;
     font-size: 24px;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .footer-sponsor {
-    height: 80px;
+    height: 60px;
     transition: transform 0.3s ease;
 }
 
@@ -69,7 +69,7 @@
     font-weight: bold;
     color: #4C0E54;
     margin-bottom: 0.5rem;
-    margin-bottom: 32px;
+    margin-bottom: 15px;
     text-align: center;
 }
 
@@ -107,7 +107,7 @@
 .footer-copy {
     font-size: 0.9rem;
     color: #555;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 
 /* Responsive */

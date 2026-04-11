@@ -49,4 +49,26 @@ class News extends Controller
         // Pass news to view
         require __DIR__ . '/../views/news_block.php';
     }
+
+    public function viewNews($id = null)
+    {
+        if (!$id) {
+            $this->view('404');
+            return;
+        }
+
+        $newsModel = new NewsModel();
+        $news = $newsModel->getById($id);
+
+        if (!$news) {
+            $this->view('404');
+            return;
+        }
+
+        $data = [
+            'news' => $news
+        ];
+
+        $this->view('newsDetail', $data);
+    }
 }

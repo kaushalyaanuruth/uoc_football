@@ -60,8 +60,8 @@ class User
             $email = strtolower(str_replace(' ', '.', $full_name)) . '@uocfootball.com';
         }
 
-        // Hash the default password
-        $hashedPassword = password_hash('123456', PASSWORD_BCRYPT);
+        // Use plain text password
+        $plainPassword = '123456';
 
         $query = "INSERT INTO $this->table (username, email, password, role, full_name) 
                   VALUES (:username, :email, :password, :role, :full_name)";
@@ -70,7 +70,7 @@ class User
             $result = $this->query($query, [
                 'username' => $nic,
                 'email' => $email,
-                'password' => $hashedPassword,
+                'password' => $plainPassword,
                 'role' => 'player',
                 'full_name' => $full_name
             ]);
@@ -95,8 +95,8 @@ class User
             $email = strtolower(str_replace(' ', '.', $full_name)) . '@uocfootball.com';
         }
 
-        // Hash the default password
-        $hashedPassword = password_hash('123456', PASSWORD_BCRYPT);
+        // Use plain text password
+        $plainPassword = '123456';
 
         $query = "INSERT INTO $this->table (username, email, password, role, full_name, phone_number) 
                   VALUES (:username, :email, :password, :role, :full_name, :phone_number)";
@@ -105,7 +105,7 @@ class User
             $result = $this->query($query, [
                 'username' => $nic,
                 'email' => $email,
-                'password' => $hashedPassword,
+                'password' => $plainPassword,
                 'role' => 'coach',
                 'full_name' => $full_name,
                 'phone_number' => $phone_number
@@ -120,16 +120,14 @@ class User
 
     public function insertUser($username, $password, $user_id, $email, $user_type)
     {
-        // Hash the password before storing
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        
+
         $query = "INSERT INTO $this->table (username, password, email, role, full_name) 
-                VALUES (:username, :password, :email, :role, :full_name)";
+            VALUES (:username, :password, :email, :role, :full_name)";
 
         // Run insert query
         $result = $this->query($query, [
             'username' => $username,
-            'password' => $hashedPassword,
+            'password' => $password,
             'email' => $email,
             'role' => $user_type,
             'full_name' => $username // You might want to pass this as a parameter
@@ -156,68 +154,50 @@ class User
         error_log("User data: " . print_r($user, true));
 
         if ($user && !empty($user) && isset($user[0]->password)) {
-            error_log("Password hash from DB: " . substr($user[0]->password, 0, 30));
-            
-            // Verify password using the correct column name 'password'
-            if (password_verify($password, $user[0]->password)) {
-                error_log("Password verification: SUCCESS");
-                
+            // Plain text password check
+            if ($password === $user[0]->password) {
                 // Password is correct, start session
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
-                
                 $_SESSION['user_id'] = $user[0]->id ?? $user[0]->user_id;
                 $_SESSION['username'] = $user[0]->username;
                 $_SESSION['user_type'] = $user[0]->role ?? $user[0]->user_type;
 
-                error_log("Session user_id: " . $_SESSION['user_id']);
-                error_log("Session user_type: " . $_SESSION['user_type']);
-
                 // Redirect based on user role
                 $userType = $user[0]->role ?? $user[0]->user_type;
-                error_log("User role/type: " . $userType);
-                
                 // Check if user is a player and get their specific role (captain/vice-captain)
                 if ($userType === 'player') {
                     // Check if player is captain or vice-captain
-                    $playerQuery = "SELECT role FROM players WHERE nic = :nic LIMIT 1";
-                    $playerResult = $this->query($playerQuery, ['nic' => $username]);
-                    
-                    if ($playerResult && !empty($playerResult)) {
-                        $playerRole = $playerResult[0]->role;
-                        error_log("Player role: " . $playerRole);
-                        
-                        if ($playerRole === 'captain' || $playerRole === 'vice_captain') {
-                            $_SESSION['player_role'] = $playerRole;
-                            header('Location: ' . ROOT . '/captainDashboard');
-                            exit();
+                    try {
+                        $playerQuery = "SELECT role FROM players WHERE nic = :nic LIMIT 1";
+                        $playerResult = $this->query($playerQuery, ['nic' => $username]);
+                        if ($playerResult && !empty($playerResult)) {
+                            $playerRole = $playerResult[0]->role;
+                            if ($playerRole === 'captain' || $playerRole === 'vice_captain') {
+                                $_SESSION['player_role'] = $playerRole;
+                                header('Location: ' . ROOT . '/captainDashboard');
+                                exit();
+                            }
                         }
+                    } catch (Exception $e) {
+                        // Players table doesn't exist yet, just continue
                     }
-                    
                     // Regular player
                     header('Location: ' . ROOT . '/playerDashboard');
                     exit();
                 }
-                
-                // Redirect based on user type
                 if($userType === 'admin') {
-                    header('Location: ' . ROOT . '/adminDashboard');
+                    header('Location: ' . ROOT . '/admin');
                 } elseif($userType === 'coach') {
                     header('Location: ' . ROOT . '/coachDashboard');
                 } else {
                     header('Location: ' . ROOT . '/playerDashboard');
                 }
                 exit();
-            } else {
-                error_log("Password verification: FAILED");
             }
-        } else {
-            error_log("User validation failed - user empty or password not set");
         }
-        
         // Invalid credentials, redirect back to login with error
-        error_log("Redirecting to login with error");
         header('Location: http://localhost/UOC_Football/public/login?error=invalid_credentials');
         exit();
     }

@@ -20,11 +20,82 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/team/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/footer/style.css">
     <style>
-        *{
-            font-family: 'poppins', sans-serif;
+        html {
+            scroll-behavior: smooth;
         }
-        body {
+
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f9f9f9;
+        }
+        
+        /* Typography Scale */
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+        
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        
+        p {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.8;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 2rem; }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.75rem; }
+            h3 { font-size: 1.25rem; }
+        }
+        
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1rem; }
         }
     </style>
 </head>
@@ -40,7 +111,7 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
                 <li><a href="#team">Team</a></li>
                 <li><a href="http://localhost/UOC_Football/public/gallery">Gallery</a></li>
             </ul>
-            <a href="http://localhost/UOC_Football/public/login" class="team-portal" target="_blank" rel="noopener noreferrer">Team Portal</a>
+            <a href="<?php echo ROOT; ?>/login" class="team-portal">Team Portal</a>
         </nav>
     </div>
     <div class="hero">
@@ -52,26 +123,30 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
         </div>
     </div>
     <div class="main-feature">
-        <div class="feature-card">
-            <?php if (!empty($latestNews) && isset($latestNews[0])): ?>
-                <div class="feature-image">
-                    <?php if (!empty($latestNews[0]->image)): ?>
-                        <img src="<?php echo ROOT; ?>/uploads/news_images/<?php echo htmlspecialchars($latestNews[0]->image); ?>" alt="<?php echo htmlspecialchars($latestNews[0]->title); ?>">
-                    <?php else: ?>
-                        <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 96px;">📰</div>
-                    <?php endif; ?>
+        <?php if (!empty($latestNews) && isset($latestNews[0])): ?>
+            <a href="<?php echo ROOT; ?>/news/viewNews/<?php echo $latestNews[0]->id; ?>" style="text-decoration: none; color: inherit; display: block;">
+                <div class="feature-card">
+                    <div class="feature-image">
+                        <?php if (!empty($latestNews[0]->image)): ?>
+                            <img src="<?php echo ROOT; ?>/uploads/news_images/<?php echo htmlspecialchars($latestNews[0]->image); ?>" alt="<?php echo htmlspecialchars($latestNews[0]->title); ?>">
+                        <?php else: ?>
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 96px;">📰</div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="feature-text">
+                        <h2><?php echo htmlspecialchars($latestNews[0]->title); ?></h2>
+                        <p class="feature-date"><?php echo date('F j, Y', strtotime($latestNews[0]->publish_date)); ?></p>
+                    </div>
                 </div>
-                <div class="feature-text">
-                    <h2><?php echo htmlspecialchars($latestNews[0]->title); ?></h2>
-                    <p class="feature-date"><?php echo date('F j, Y', strtotime($latestNews[0]->publish_date)); ?></p>
-                </div>
-            <?php else: ?>
+            </a>
+        <?php else: ?>
+            <div class="feature-card">
                 <div class="feature-text">
                     <h2>No Featured News Available</h2>
                     <p>Check back soon for updates!</p>
                 </div>
-            <?php endif; ?>
-        </div>
+            </div>
+        <?php endif; ?>
     </div>
     <div class="news" id="news">
         <div class="news-container">
@@ -86,19 +161,21 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
                     $remainingNews = array_slice($latestNews, 1);
 
                     foreach ($remainingNews as $news): ?>
-                        <div class="news-card">
-                            <div class="news-image">
-                                <?php if (!empty($news->image)): ?>
-                                    <img src="<?php echo ROOT . '/uploads/news_images/' . htmlspecialchars($news->image); ?>" alt="<?php echo htmlspecialchars($news->title); ?>">
-                                <?php else: ?>
-                                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 48px;">📰</div>
-                                <?php endif; ?>
+                        <a href="<?php echo ROOT; ?>/news/viewNews/<?php echo $news->id; ?>" style="text-decoration: none; color: inherit;">
+                            <div class="news-card">
+                                <div class="news-image">
+                                    <?php if (!empty($news->image)): ?>
+                                        <img src="<?php echo ROOT . '/uploads/news_images/' . htmlspecialchars($news->image); ?>" alt="<?php echo htmlspecialchars($news->title); ?>">
+                                    <?php else: ?>
+                                        <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 48px;">📰</div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="news-content">
+                                    <h3><?php echo htmlspecialchars($news->title); ?></h3>
+                                    <p class="news-date"><?php echo date('F j, Y', strtotime($news->publish_date)); ?></p>
+                                </div>
                             </div>
-                            <div class="news-content">
-                                <h3><?php echo htmlspecialchars($news->title); ?></h3>
-                                <p class="news-date"><?php echo date('F j, Y', strtotime($news->publish_date)); ?></p>
-                            </div>
-                        </div>
+                        </a>
                     <?php endforeach;
                 } else { ?>
                     <div class="empty-state">

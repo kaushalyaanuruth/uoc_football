@@ -8,8 +8,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <title>UOC_football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/adminDashboard/style.css">
+    <style>
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('<?php echo ROOT; ?>/assets/images/common/bgimage.png');
+            background-size: 1298px 1298px;
+            background-position: -517px -125px;
+            background-repeat: no-repeat;
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 </head>
-<body>
+<body style="background: linear-gradient(135deg, #ffe6ff 0%, #FFFAFF 100%); margin: 0; padding: 0; min-height: 100vh; position: relative;">
     <div class="container">
         <div class="header">
                 <div class="left-section">
@@ -55,7 +77,7 @@
                     </div>
                     <p class="action-label">Gallery</p>
                 </a>
-                <a class="action-card icon-indigo" href="">
+                <a class="action-card icon-indigo" href="<?php echo ROOT; ?>/newsManagement">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/news.svg" alt="news icon" class="action-icon">
                     </div>
