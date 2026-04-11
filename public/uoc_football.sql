@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     zip_code VARCHAR(20)
 );
 
-CREATE TEABLE IF NOT EXISTS admins (
+CREATE TABLE IF NOT EXISTS admins (
     admin_id INT(32) PRIMARY KEY AUTO_INCREMENT,
     nic VARCHAR(16) NOT NULL,
     FOREIGN KEY (nic) REFERENCES users(nic) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -32,44 +32,52 @@ CREATE TABLE IF NOT EXISTS players (
 );
 
 CREATE TABLE IF NOT EXISTS coaches (
-    coach_id VARCHAR(32) PRIMARY KEY AUTO_INCREMENT,
+    coach_id INT AUTO_INCREMENT PRIMARY KEY,
     license VARCHAR(50) NOT NULL,
     nic VARCHAR(16) NOT NULL,
     FOREIGN KEY (nic) REFERENCES users(nic) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS teams (
-    team_id VARCHAR(32) PRIMARY KEY AUTO_INCREMENT,
+    team_id INT(32) PRIMARY KEY AUTO_INCREMENT,
     season VARCHAR(20) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL
+
+);
 CREATE TABLE IF NOT EXISTS inventory_items (
     item_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    itme_name VARCHAR(100) NOT NULL,
+    item_name VARCHAR(100) NOT NULL,
     total_count INT(32) NOT NULL,
     available_count INT(32) NOT NULL,
-    last_updated DATE NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by VARCHAR(16) NOT NULL,
+    category_id INT(32) NOT NULL,
+
+    FOREIGN KEY (category_id) REFERENCES categories(category_id),
     FOREIGN KEY (updated_by) REFERENCES users(nic) ON DELETE RESTRICT ON UPDATE CASCADE
 );
-
 CREATE TABLE IF NOT EXISTS events (
     event_id INT(32) PRIMARY KEY AUTO_INCREMENT,
     location VARCHAR(255) NOT NULL,
-    date DATE NOT NULL,
+    date DATE NOT NULL
 
 );
+
 CREATE TABLE IF NOT EXISTS team_players (
-    team_id VARCHAR(16) NOT NULL,
-    player_id VARCHAR(16) NOT NULL,
+    team_id INT(16) NOT NULL,
+    player_id INT(16) NOT NULL,
     PRIMARY KEY (team_id, player_id),
-    FOREIGN KEY (team_id) REFERENCES team(team_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-CREATE TABLE IDF NOT EXISTS team_coaches (
-    team_id VARCHAR(16) NOT NULL,
-    coach_id VARCHAR(16) NOT NULL,
+CREATE TABLE IF NOT EXISTS team_coaches (
+    team_id INT(16) NOT NULL,
+    coach_id INT(16) NOT NULL,
     PRIMARY KEY (team_id, coach_id),
     FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (coach_id) REFERENCES coaches(coach_id) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -77,15 +85,51 @@ CREATE TABLE IDF NOT EXISTS team_coaches (
 
 CREATE TABLE IF NOT EXISTS budgets (
     budget_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    team_id VARCHAR(16) NOT NULL,
+    team_id INT(16) NOT NULL,
     date DATE NOT NULL,
     FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS incomes (
+    income_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    description VARCHAR(255) NOT NULL,
+    image VARCHAR(255) DEFAULT NULL,
+amount DECIMAL(10,2) NOT NULL,
+date DATE NOT NULL,
+    budget_id INT(32) NOT NULL,
+    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS expenses (
+    expense_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    description VARCHAR(255) NOT NULL,
+    image VARCHAR(255) DEFAULT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+date DATE NOT NULL,
+    budget_id INT(32) NOT NULL,
+    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inventory_log (
+    log_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    item_id INT(32) NOT NULL,
+    taken_by INT(32) NOT NULL,
+    quantity INT(32) NOT NULL,
+    taken_date DATE NOT NULL,
+    return_date DATE DEFAULT NULL,
+    FOREIGN KEY (item_id) REFERENCES inventory_items(item_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (taken_by) REFERENCES players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
 CREATE TABLE IF NOT EXISTS captains (
     captain_id int(32) PRIMARY KEY AUTO_INCREMENT,
-    player_id VARCHAR(16) NOT NULL,
-    FOREIGN KEY (player_id) REFERENCES team_players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    team_id INT NOT NULL,
+    player_id INT(16) NOT NULL,
+    -- FOREIGN KEY (player_id) REFERENCES team_players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
+       FOREIGN KEY (team_id) REFERENCES teams(team_id),
+    FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS test_results (
@@ -96,16 +140,18 @@ CREATE TABLE IF NOT EXISTS test_results (
     player_id INT(32) NOT NULL,
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
+CREATE TABLE attendance (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    player_id INT NOT NULL,
+    event_id INT NOT NULL,
+    status ENUM('Present','Absent','Late') DEFAULT 'Absent',
+    marked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-CREATE TABLE IF NOT EXISTS inventery_log (
-    log_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    item_id INT(32) NOT NULL,
-    taken_by INT(32) NOT NULL,
-    quantity INT(32) NOT NULL,
-    taken_date DATE NOT NULL,
-    return_date DATE DEFAULT NULL,
-    FOREIGN KEY (item_id) REFERENCES inventery_items(item_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (taken_by) REFERENCES players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE,
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
+
+    UNIQUE KEY unique_player_event (player_id, event_id)
+
 );
 
 CREATE TABLE IF NOT EXISTS practices (
@@ -136,48 +182,39 @@ CREATE TABLE IF NOT EXISTS specials (
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );   
 
-CREATE TABLE IF NOT EXISTS incomes (
-    income_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    description VARCHAR(255) NOT NULL,
-    image VARCHAR(255) DEFAULT NULL,
-    budget_id INT(32) NOT NULL,
-    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE RESTRICT ON UPDATE CASCADE
-);
 
-CREATE TABLE IF NOT EXISTS expenses (
-    expense_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    description VARCHAR(255) NOT NULL,
-    image VARCHAR(255) DEFAULT NULL,
-    budget_id INT(32) NOT NULL,
-    FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE RESTRICT ON UPDATE CASCADE
-);
 
-CREATE TABLE IF NOT EXISTS breakfast (
-    breakfast_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    meal VARCHAR(255) NOT NULL,
-    amount VARCHAR(255) NOT NULL,
-    FOREIGN KEY (breakfast_id) REFERENCES meal(meal_id) ON DELETE RESTRICT ON UPDATE CASCADE
-);
 
 CREATE TABLE IF NOT EXISTS meal_plans (
     meal_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    updated_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    team_id VARCHAR(16) NOT NULL,
+updated_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    team_id INT(16) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE
-)
+);
+CREATE TABLE IF NOT EXISTS breakfast (
+    breakfast_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    meal_id INT(32) NOT NULL,
+    meal VARCHAR(255) NOT NULL,
+    amount VARCHAR(255) NOT NULL,
+    -- FOREIGN KEY (breakfast_id) REFERENCES meal_plans(meal_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    FOREIGN KEY (meal_id) REFERENCES meal_plans(meal_id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS lunch (
     lunch_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    meal_id INT(32) NOT NULL,
     meal VARCHAR(255) NOT NULL,
     amount VARCHAR(255) NOT NULL,
-    FOREIGN KEY (lunch_id) REFERENCES meal(meal_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    -- FOREIGN KEY (lunch_id) REFERENCES meal_plans(meal_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    FOREIGN KEY (meal_id) REFERENCES meal_plans(meal_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS dinner (
     dinner_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    meal_id INT(32) NOT NULL,
     meal VARCHAR(255) NOT NULL,
     amount VARCHAR(255) NOT NULL,
-    FOREIGN KEY (dinner_id) REFERENCES meal(meal_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    FOREIGN KEY (meal_id) REFERENCES meal_plans(meal_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS exercises (
@@ -185,9 +222,7 @@ CREATE TABLE IF NOT EXISTS exercises (
     exercise VARCHAR(100) NOT NULL,
     reps INT(32) NOT NULL,
     sets INT(32) NOT NULL,
-    FOREIGN KEY (execise_id) REFERENCES gyms(gym_id) ON DELETE RESTRICT ON UPDATE CASCADE
-)
-
-
-
+    gym_id INT(32) NOT NULL,
+    FOREIGN KEY (gym_id) REFERENCES gyms(gym_id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
 

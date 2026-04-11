@@ -28,7 +28,7 @@
             <a href="#" class="active">Attendance</a>
             <a href="<?= ROOT ?>/CaptainInventory">Inventory</a>
             <a href="<?= ROOT ?>/CaptainFinance">Finance</a>
-           
+
         </nav>
 
         <div class="nav-right">
@@ -42,8 +42,7 @@
     </header>
 
     <main class="content">
-
-        <!-- Page Header -->
+        <input type="hidden" id="eventId" value="<?= $data['event_id'] ?>">
         <header class="page-header">
             <div>
                 <h1>Attendance Dashboard</h1>
@@ -70,31 +69,32 @@
         <section class="stats">
             <div class="stat-card">
                 <h3>Total Players</h3>
-                <span><?= $data['totalPlayers'] ?>
+                <span>
+                    <span class="count"><?= $data['totalPlayers'] ?></span>
                     <div class="icon-container">
-                        <img src="<?php echo ROOT; ?>/assets/images/Captain/icons/teams.svg" alt="team icon"
-                            class="action-icon">
+                        <img src="<?= ROOT ?>/assets/images/Captain/icons/teams.svg" class="action-icon">
+                    </div>
                 </span>
-
-            </div>
 
             </div>
 
             <div class="stat-card success">
                 <h3>Present Players</h3>
-                <div class="icon-container"><span><?= $data['present'] ?>
-                        <img src="<?php echo ROOT; ?>/assets/images/Captain/icons/" alt="team icon"
-                            class="action-icon">
-                </div>
+                <span>
+                    <span class="count"><?= $data['present'] ?></span>
+                    <div class="icon-container">
+                        <img src="<?= ROOT ?>/assets/images/Captain/icons/green-checkmark-icon.svg" class="action-icon">
+                    </div>
                 </span>
             </div>
 
             <div class="stat-card danger">
                 <h3>Absent Players</h3>
-                <div class="icon-container"><span><?= $data['absent'] ?>
-                        <img src="<?php echo ROOT; ?>/assets/images/Captain/icons/a" alt="team icon"
-                            class="action-icon">
-                </div>
+                <span>
+                    <span class="count"><?= $data['absent'] ?></span>
+                    <div class="icon-container">
+                        <img src="<?= ROOT ?>/assets/images/Captain/icons/red-x-icon.svg" class="action-icon">
+                    </div>
                 </span>
             </div>
         </section>
@@ -120,15 +120,16 @@
 
                     <tbody>
                         <?php foreach ($data['players'] as $player): ?>
-                            <tr>
+                            <tr data-player-id="<?= $player->player_id ?>" data-original-status="<?= $player->status ?>">
+
                                 <td>
-                                    <strong><?= $player['name'] ?></strong><br>
-                                    <small>#<?= $player['number'] ?></small>
+                                    <strong><?= $player->name ?></strong><br>
+                                    <small>#<?= $player->player_id ?></small>
                                 </td>
-                                <td><?= $player['position'] ?></td>
+                                <td><?= $player->position ?></td>
                                 <td>
-                                    <span class="status <?= strtolower($player['status']) ?>">
-                                        <?= $player['status'] ?>
+                                    <span class="status <?= strtolower($player->status) ?>">
+                                        <?= $player->status ?>
                                     </span>
                                 </td>
                                 <td class="actions">
