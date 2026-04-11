@@ -158,53 +158,45 @@ body::before {
   color: #6b7280;
 }
 
-.stat-card span {
+.stat-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 30px;
   font-weight: 700;
-  justify-content: space-between;
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .stat-icon {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   display: flex;
   align-items: center;
-  background-color: #F4EAFF;
   justify-content: center;
-
-
+  flex-shrink: 0;
 }
 
+.stat-icon.purple { background: #F4EAFF; }
+.stat-icon.orange { background: #FFEFD9; }
+.stat-icon.green  { background: #DCFCE7; }
+.stat-icon.red    { background: #FEE2E2; }
 .stat-card.warning span {
   color: #EC6924;
 }
 
-.warning .stat-icon {
-  background: #FFEFD9;
 
-}
 
 .stat-card.success span {
   color: #16a34a;
 }
 
-.success .stat-icon {
-  background: #DCFCE7;
 
-}
 
 .stat-card.danger span {
   color: #dc2626;
 }
 
-.danger .stat-icon {
-  background: #FEE2E2;
 
-}
 
 
 /* ================= Dashboard Grid ================= */
@@ -312,7 +304,11 @@ button:hover {
   background: #c00a1c;
   color: white;
 }
-
+.save,
+#closeSuccess {
+  background: #4A1150;
+  color: #fff;
+}
 .modal {
   display: none;
   position: fixed;
@@ -419,8 +415,17 @@ button:hover {
 }
 
 #toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: #fff;
+  display: none;
   z-index: 2000;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
+
 
 .status {
   padding: 4px 12px;

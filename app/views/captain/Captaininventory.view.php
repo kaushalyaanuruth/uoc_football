@@ -55,34 +55,39 @@
         <section class="stats">
             <div class="stat-card">
                 <h3>Total Items</h3>
-                <span>
-                    <?= $data['total'] ?>
-                    <span class="stat-icon purple"></span>
-                </span>
+                <div class="stat-value">
+                    <span><?= $data['total'] ?></span>
+                    <div class="stat-icon purple"></div>
+                </div>
             </div>
-
             <div class="stat-card warning">
                 <h3>Items In Use</h3>
-                <span>
-                    <?= $data['in_use'] ?>
-                    <span class="stat-icon orange"></span>
-                </span>
+                <div class="stat-value">
+                    <span><?= $data['in_use'] ?></span>
+                    <div class="stat-icon orange"></div>
+                </div>
             </div>
 
             <div class="stat-card success">
                 <h3>Available Items</h3>
-                <span>
-                    <?= $data['available'] ?>
-                    <span class="stat-icon green"></span>
-                </span>
+                <div class="stat-value">
+
+                    <span>
+                        <?= $data['available'] ?></span>
+                    <div class="stat-icon green"></div>
+
+                </div>
             </div>
 
             <div class="stat-card danger">
                 <h3>Damaged Items</h3>
-                <span>
-                    <?= $data['damaged'] ?>
-                    <span class="stat-icon red"></span>
-                </span>
+                <div class="stat-value">
+
+                    <span>
+                        <?= $data['damaged'] ?> </span>
+                    <div class="stat-icon red"></div>
+
+                </div>
             </div>
         </section>
 
@@ -129,17 +134,17 @@
                 </thead>
 
                 <tbody>
-                    <?php foreach ($data['inventory'] as $inventory): ?>
-                        <tr>
-                            <td><?= $inventory['item'] ?></td>
-                            <td><?= $inventory['category'] ?></td>
-                            <td><?= $inventory['quantity'] ?></td>
+                    <?php foreach ($data['inventory'] as $item): ?>
+                        <tr data-id="<?= $item->item_id ?>">
+                            <td><?= $item->item_name ?></td>
+                            <td><?= $item->category ?></td>
+                            <td><?= $item->total_count ?></td>
                             <td>
-                                <span class="status <?= strtolower(str_replace(' ', '', $inventory['status'])) ?>">
-                                    <?= $inventory['status'] ?>
+                                <span class="status <?= strtolower(str_replace(' ', '', $item->status)) ?>">
+                                    <?= $item->status ?>
                                 </span>
                             </td>
-                            <td><?= $inventory['updated'] ?></td>
+                            <td><?= $item->last_updated ?></td>
                             <td class="actions">
                                 <button class="btn-edit">Edit</button>
                                 <button class="btn-delete">Delete</button>
@@ -149,7 +154,7 @@
                 </tbody>
             </table>
         </section>
-         <!-- ================= EDIT INVENTORY MODAL ================= -->
+        <!-- ================= EDIT INVENTORY MODAL ================= -->
         <div class="modal" id="inventoryModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -158,14 +163,14 @@
                     <span id="close">×</span>
                 </div>
 
-                <form id="inventoryForm" class="inventoryForm">
-                    <input type="hidden" id="item_id">
+                <form id="inventoryForm" method="POST" action="<?= ROOT ?>/CaptainInventory/store"> <input type="hidden"
+                        id="item_id">
 
                     <label>Item Name</label>
-                    <input type="text" id="item_name" required>
+                    <input type="text" id="item_name" name="item_name" required>
 
                     <label>Category</label>
-                    <select id="category">
+                    <select id="category" name="category">
                         <option>Kits</option>
                         <option>Balls</option>
                         <option>Equipment</option>
@@ -173,10 +178,10 @@
                     </select>
 
                     <label>Quantity</label>
-                    <input type="number" id="quantity" min="0">
+                    <input type="number" id="quantity" name="quantity" min="0">
 
                     <label>Status</label>
-                    <select id="status">
+                    <select id="status" name="status">
                         <option>Available</option>
                         <option>In Use</option>
                         <option>Damaged</option>
@@ -195,7 +200,7 @@
         <div class="modal" id="successModal">
             <div class="modal-content" style="width:300px;text-align:center">
                 <h3>Success</h3>
-                <p>User details saved successfully!</p>
+                <p id="centerToastMessage">User details saved successfully!</p>
                 <button class="save" id="closeSuccess">OK</button>
             </div>
         </div>

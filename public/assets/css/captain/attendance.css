@@ -378,18 +378,18 @@ body::before {
   gap: 12px;
 }
 /* ================= PRINT STYLES ================= */
-@media print {
+/* @media print {
     body {
         background: white;
         color: black;
     }
 
-    /* Hide everything by default */
+    
     header, .filters, .stats, .dashboard-grid > aside:not(.right-panel), .page-header,.quick-actions, .top-navbar {
         display: none !important;
     }
 
-    /* Show only Attendance Table, Quick Actions, Attendance Rate */
+    
     .attendance-section,
     
     .fitness-trends-card {
@@ -397,7 +397,7 @@ body::before {
         page-break-inside: avoid;
     }
 
-    /* Optional: Make table width 100% */
+    
     .attendance-section table {
         width: 100% !important;
         border-collapse: collapse;
@@ -408,12 +408,12 @@ body::before {
         padding: 8px;
     }
 
-    /* Quick Actions buttons style */
+    
     .quick-actions .btn {
         display: inline-block;
         margin-bottom: 10px;
     }
-}
+} */
 
 
 /* ================= Responsive Design ================= */

@@ -24,37 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /* ================= UPDATE STATS ================= */
-    //     function setStatus(row, status) {
-    //     const statusSpan = row.querySelector(".status");
-    //     statusSpan.innerText = status;
-    //     statusSpan.className = "status " + status.toLowerCase();
 
-    //     const playerId = row.dataset.playerId;
-    //     const eventId = 1; // TEMP (same as controller)
-
-    //     // 🔥 SEND TO BACKEND
-    //     fetch("/CaptainAttendance/update", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         body: JSON.stringify({
-    //             player_id: playerId,
-    //             event_id: eventId,
-    //             status: status
-    //         })
-    //     });
-
-    //     updateStats();
-    // }
-
-    /* ================= CHANGE STATUS ================= */
-    // function setStatus(row, status) {
-    //     const statusSpan = row.querySelector(".status");
-    //     statusSpan.innerText = status;
-    //     statusSpan.className = "status " + status.toLowerCase();
-    //     updateStats();
-    // }
     function setStatus(row, status) {
         const statusSpan = row.querySelector(".status");
         statusSpan.innerText = status;
@@ -62,27 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const playerId = row.dataset.playerId;
         const eventId = document.getElementById("eventId").value;
-
-        // fetch(window.location.origin + "/uoc_football/public/CaptainAttendance/update", {
-        //     method: "POST",
-        //     // method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify({
-        //         player_id: playerId,
-        //         event_id: eventId,
-        //         status: status
-        //     })
-        // })
-        //     .then(res => res.text())
-        //     .then(data => console.log("Saved:", data))
-        //     .catch(err => console.error(err));
-
-        // updateStats();
-        // location.reload();
-        // }
-        // store changes (overwrite if already exists)
         const index = changedData.findIndex(p => p.player_id == playerId);
 
         if (index !== -1) {
@@ -139,18 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(err => console.error(err));
     });
     /* ================= RESET CHANGES ================= */
-    // resetBtn.addEventListener("click", () => {
-    //     if (!confirm("Reset all unsaved attendance changes?")) return;
 
-    //     originalAttendance.forEach(item => {
-    //         const statusSpan = item.row.querySelector(".status");
-    //         statusSpan.innerText = item.status;
-    //         statusSpan.className = "status " + item.status.toLowerCase();
-    //     });
-
-    //     updateStats();
-    //     alert("Attendance changes reset successfully");
-    // });
     resetBtn.addEventListener("click", () => {
 
         if (!confirm("Reset all unsaved attendance changes?")) return;
@@ -166,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 statusSpan.className = "status " + original.status.toLowerCase();
             }
         });
-        changedData = []; // 🔥 IMPORTANT FIX
+        changedData = []; 
 
         updateStats();
     });
@@ -227,21 +165,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // });
 
     /* ================= EXPORT PDF ================= */
-    function exportPDF() {
-        window.print();
-    }
+   
 
     /* ================= EXPORT BUTTON ================= */
     exportBtn.addEventListener("click", () => {
         if (changedData.length > 0) {
             alert("You have unsaved changes. Please save before downloading.");
-            return; // 🔥 STOP export
+            return; 
         }
 
         const choice = confirm(
             "Click OK to download PDF\n"
-            // "Click OK to download PDF\n
-            // Click Cancel to download Excel (CSV)"
+            
         );
 
         if (choice) {
@@ -250,9 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = window.location.origin + "/uoc_football/public/CaptainAttendance/export";
 
         }
-        // else {
-
-        // }
+       
     });
 
 });

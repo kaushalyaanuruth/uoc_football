@@ -43,21 +43,16 @@ CREATE TABLE IF NOT EXISTS teams (
     season VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS categories (
-    category_id INT AUTO_INCREMENT PRIMARY KEY,
-    category_name VARCHAR(100) NOT NULL
 
-);
 CREATE TABLE IF NOT EXISTS inventory_items (
-    item_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    item_name VARCHAR(100) NOT NULL,
-    total_count INT(32) NOT NULL,
-    available_count INT(32) NOT NULL,
-    last_updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updated_by VARCHAR(16) NOT NULL,
-    category_id INT(32) NOT NULL,
-
-    FOREIGN KEY (category_id) REFERENCES categories(category_id),
+      item_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    item_name VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    total_count INT NOT NULL,
+    available_count INT NOT NULL,
+    status ENUM('Available','In Use','Damaged') DEFAULT 'Available',
+    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by VARCHAR(16),
     FOREIGN KEY (updated_by) REFERENCES users(nic) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 CREATE TABLE IF NOT EXISTS events (
@@ -128,7 +123,7 @@ CREATE TABLE IF NOT EXISTS captains (
     team_id INT NOT NULL,
     player_id INT(16) NOT NULL,
     -- FOREIGN KEY (player_id) REFERENCES team_players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
-       FOREIGN KEY (team_id) REFERENCES teams(team_id),
+       FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 

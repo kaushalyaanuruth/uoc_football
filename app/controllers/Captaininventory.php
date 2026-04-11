@@ -4,45 +4,64 @@ class CaptainInventory extends Controller
 {
     public function index()
     {
+        $inventoryModel = new InventoryModel();
+
+        $items = $inventoryModel->getAllItems();
+
+        $stats = $inventoryModel->getStats();
+
         $data = [
-            'total' => 248,
-            'in_use' => 142,
-            'available' => 89,
-            'damaged' => 17,
-            'inventory' => [
-                [
-                    'item' => 'Training Jerseys',
-                    'category' => 'Kits',
-                    'quantity' => 25,
-                    'status' => 'Available',
-                    'updated' => '2 hours ago'
-                ],
-                [
-                    'item' => 'Match Footballs',
-                    'category' => 'Balls',
-                    'quantity' => 12,
-                    'status' => 'In Use',
-                    'updated' => '1 day ago'
-                ],
-                [
-                    'item' => 'Training Cones',
-                    'category' => 'Equipment',
-                    'quantity' => 50,
-                    'status' => 'Available',
-                    'updated' => '3 days ago'
-                ],
-                [
-                    'item' => 'Shin Guards',
-                    'category' => 'Accessories',
-                    'quantity' => 8,
-                    'status' => 'Damaged',
-                    'updated' => '1 week ago'
-                ]
-            ]
-
-
+            'total' => $stats->total,
+            'in_use' => $stats->in_use,
+            'available' => $stats->available,
+            'damaged' => $stats->damaged,
+            'inventory' => $items
         ];
 
         $this->view('captain/CaptainInventory', $data);
     }
+    public function store()
+    {
+        $model = new InventoryModel();
+
+        $data = [
+            'item_name' => $_POST['item_name'],
+            'category' => $_POST['category'],
+            'total_count' => $_POST['quantity'],
+            'available_count' => $_POST['status'] == 'Available' ? $_POST['quantity'] : 0,
+            'status' => $_POST['status'],
+            'updated_by' => $_SESSION['user_nic'] ?? null
+        ];
+
+        $model->addItem($data);
+
+        echo json_encode(["status" => "success"]);
+    }
+public function update()
+{
+    $model = new InventoryModel();
+
+    $data = [
+        'item_id' => $_POST['item_id'],
+        'item_name' => $_POST['item_name'],
+        'category' => $_POST['category'],
+        'total_count' => $_POST['quantity'],
+        'available_count' => $_POST['status'] == 'Available' ? $_POST['quantity'] : 0,
+        'status' => $_POST['status']
+    ];
+
+    $model->updateItem($data);
+
+    echo json_encode(["status" => "success"]);
+}
+public function delete()
+{
+    $model = new InventoryModel();
+
+    $id = $_POST['item_id'];
+
+    $model->deleteItem($id);
+
+    echo json_encode(["status" => "success"]);
+}
 }
