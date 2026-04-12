@@ -9,6 +9,10 @@
     <title>UOC_football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/adminDashboard/style.css">
     <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
         body::before {
             content: '';
             position: fixed;
@@ -28,6 +32,139 @@
         .container {
             position: relative;
             z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logout-btn {
+            background: #663399;
+            color: white;
+            border: 2px solid #663399;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .logout-btn:hover {
+            background: #552288;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 51, 153, 0.3);
+            border-color: #552288;
+        }
+        
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .quickActions {
+            margin-bottom: 40px;
+        }
+        
+        .quickActions .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(102, 51, 153, 0.15);
+        }
+        
+        .action-label {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 12px;
+            color: #333;
+        }
+        
+        .welcome-banner {
+            background: linear-gradient(135deg, #663399 0%, #9966cc 100%);
+            border-radius: 12px;
+            padding: 40px;
+            color: white;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(102, 51, 153, 0.2);
+        }
+        
+        .welcome-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-datetime {
+            display: flex;
+            gap: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .card-title h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
         }
     </style>
 </head>
@@ -40,14 +177,13 @@
                     </a>
                 </div>
                 <div class="right-section">
-                    <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Admin Avatar">
-                    <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
+                    <a href="<?php echo ROOT; ?>/login" class="logout-btn">Logout</a>
                 </div>
         </div>
         <div class="quickActions">
             <h2 class="section-title">Quick Actions</h2>
             <div class="actions-grid">
-                <a class="action-card icon-purple" href="">
+                <a class="action-card icon-purple" href="<?php echo ROOT; ?>/teamManagement">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/teams.svg" alt="team icon" class="action-icon">
                     </div>
@@ -59,7 +195,7 @@
                     </div>
                     <p class="action-label">Results</p>
                 </a>
-                <a class="action-card icon-green" href="">
+                <a class="action-card icon-green" href="<?php echo ROOT; ?>/eventManagement">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/event.svg" alt="event icon" class="action-icon">
                     </div>

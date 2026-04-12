@@ -25,7 +25,7 @@
         </nav>
     </div>
     <div class="main-container">
-         <a href="../landing page/main_index.html#team" class="back-btn">
+         <a href="<?php echo ROOT; ?>/landingPage#team" class="back-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -42,237 +42,143 @@
         <section class="position-section" data-section="goalkeepers" id="goalkeepers">
             <h2 class="position-title" >GOALKEEPERS</h2>
             <div class="players-grid">
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/667eea/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Goalkeeper</div>
-                            <div class="player-name">Leão</div>
+                <?php if (!empty($data['players']['goalkeeper'])): ?>
+                    <?php foreach ($data['players']['goalkeeper'] as $player): ?>
+                        <div class="player-card">
+                            <div class="player-image">
+                                <?php if (!empty($player->image)): ?>
+                                    <img src="<?php echo htmlspecialchars($player->image); ?>" alt="<?php echo htmlspecialchars($player->full_name ?? ''); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <div class="player-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; height: 250px; width: 100%;">
+                                        <span style="font-size: 4rem; color: white; font-weight: bold;">
+                                            <?php echo strtoupper(substr($player->full_name ?? 'GK', 0, 2)); ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="player-overlay">
+                                    <div class="player-number">#<?php echo $player->jersey_number ?? 'GK'; ?></div>
+                                    <div class="player-name"><?php echo htmlspecialchars($player->full_name ?? ''); ?></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/667eea/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Goalkeeper</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/667eea/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Goalkeeper</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p style="text-align: center; color: #999; padding: 20px;">No goalkeepers added yet</p>
+                <?php endif; ?>
             </div>
         </section>
         <!-- Defenders Section -->
         <section class="position-section" data-section="defenders" id="defenders">
             <h2 class="position-title">DEFENDERS</h2>
             <div class="players-grid">
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/764ba2/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Defender</div>
-                            <div class="player-name">Leão</div>
+                <?php if (!empty($data['players']['defender'])): ?>
+                    <?php foreach ($data['players']['defender'] as $player): ?>
+                        <div class="player-card">
+                            <div class="player-image">
+                                <?php if (!empty($player->image)): ?>
+                                    <img src="<?php echo htmlspecialchars($player->image); ?>" alt="<?php echo htmlspecialchars($player->full_name ?? ''); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <div class="player-avatar" style="background: linear-gradient(135deg, #764ba2 0%, #9966cc 100%); display: flex; align-items: center; justify-content: center; height: 250px; width: 100%;">
+                                        <span style="font-size: 4rem; color: white; font-weight: bold;">
+                                            <?php echo strtoupper(substr($player->full_name ?? 'D', 0, 2)); ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="player-overlay">
+                                    <div class="player-number">#<?php echo $player->jersey_number ?? 'DEF'; ?></div>
+                                    <div class="player-name"><?php echo htmlspecialchars($player->full_name ?? ''); ?></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/764ba2/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Defender</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/764ba2/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Defender</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/764ba2/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Defender</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/764ba2/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Defender</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p style="text-align: center; color: #999; padding: 20px;">No defenders added yet</p>
+                <?php endif; ?>
             </div>
         </section>
         <!-- Midfielders Section -->
         <section class="position-section" data-section="midfielders" id="midfielders">
             <h2 class="position-title" >MIDFIELDERS</h2>
             <div class="players-grid">
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/f093fb/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Midfielder</div>
-                            <div class="player-name">Leão</div>
+                <?php if (!empty($data['players']['midfielder'])): ?>
+                    <?php foreach ($data['players']['midfielder'] as $player): ?>
+                        <div class="player-card">
+                            <div class="player-image">
+                                <?php if (!empty($player->image)): ?>
+                                    <img src="<?php echo htmlspecialchars($player->image); ?>" alt="<?php echo htmlspecialchars($player->full_name ?? ''); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <div class="player-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; height: 250px; width: 100%;">
+                                        <span style="font-size: 4rem; color: white; font-weight: bold;">
+                                            <?php echo strtoupper(substr($player->full_name ?? 'M', 0, 2)); ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="player-overlay">
+                                    <div class="player-number">#<?php echo $player->jersey_number ?? 'MID'; ?></div>
+                                    <div class="player-name"><?php echo htmlspecialchars($player->full_name ?? ''); ?></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/f093fb/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Midfielder</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/f093fb/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Midfielder</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/f093fb/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Midfielder</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/f093fb/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Midfielder</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/f093fb/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Midfielder</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/f093fb/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Midfielder</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p style="text-align: center; color: #999; padding: 20px;">No midfielders added yet</p>
+                <?php endif; ?>
             </div>
         </section>
         <!-- Strikers Section -->
         <section class="position-section" data-section="strikers"  id="strikers">
             <h2 class="position-title">STRIKERS</h2>
             <div class="players-grid">
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/4facfe/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Striker</div>
-                            <div class="player-name">Leão</div>
+                <?php if (!empty($data['players']['striker'])): ?>
+                    <?php foreach ($data['players']['striker'] as $player): ?>
+                        <div class="player-card">
+                            <div class="player-image">
+                                <?php if (!empty($player->image)): ?>
+                                    <img src="<?php echo htmlspecialchars($player->image); ?>" alt="<?php echo htmlspecialchars($player->full_name ?? ''); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <div class="player-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; height: 250px; width: 100%;">
+                                        <span style="font-size: 4rem; color: white; font-weight: bold;">
+                                            <?php echo strtoupper(substr($player->full_name ?? 'F', 0, 2)); ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="player-overlay">
+                                    <div class="player-number">#<?php echo $player->jersey_number ?? 'FWD'; ?></div>
+                                    <div class="player-name"><?php echo htmlspecialchars($player->full_name ?? ''); ?></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/4facfe/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Striker</div>
-                            <div class="player-name">Leão</div>
+                    <?php endforeach; ?>
+                <?php elseif (!empty($data['players']['forward'])): ?>
+                    <?php foreach ($data['players']['forward'] as $player): ?>
+                        <div class="player-card">
+                            <div class="player-image">
+                                <?php if (!empty($player->image)): ?>
+                                    <img src="<?php echo htmlspecialchars($player->image); ?>" alt="<?php echo htmlspecialchars($player->full_name ?? ''); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <div class="player-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; height: 250px; width: 100%;">
+                                        <span style="font-size: 4rem; color: white; font-weight: bold;">
+                                            <?php echo strtoupper(substr($player->full_name ?? 'F', 0, 2)); ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="player-overlay">
+                                    <div class="player-number">#<?php echo $player->jersey_number ?? 'FWD'; ?></div>
+                                    <div class="player-name"><?php echo htmlspecialchars($player->full_name ?? ''); ?></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/4facfe/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Striker</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/4facfe/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Striker</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/4facfe/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Striker</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/4facfe/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Striker</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/4facfe/ffffff?text=Player" alt="Player" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Striker</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p style="text-align: center; color: #999; padding: 20px;">No strikers added yet</p>
+                <?php endif; ?>
             </div>
         </section>
         <!-- Coach Section -->
         <section class="position-section" data-section="coach"  id="coach">
             <h2 class="position-title">COACH</h2>
             <div class="players-grid">
-                <div class="player-card">
-                    <div class="player-image">
-                        <img src="https://via.placeholder.com/200x250/ff9a9e/ffffff?text=Coach" alt="Coach" class="player-photo">
-                        <div class="player-overlay">
-                            <div class="player-number">Coach</div>
-                            <div class="player-name">Leão</div>
-                        </div>
-                    </div>
-                </div>
+                <p style="text-align: center; color: #999; padding: 20px;">Coach information coming soon</p>
             </div>
         </section>
     </div>

@@ -230,7 +230,13 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
                     $formattedDate = date('l, F j g:i A', $eventDateTime);
             ?>
                 <div class="event-card">
-                    <div class="event-image"><?php echo $emoji; ?></div>
+                    <div class="event-image">
+                        <?php if (!empty($event->image)): ?>
+                            <img src="<?php echo ROOT; ?>/uploads/events/<?php echo htmlspecialchars($event->image); ?>" alt="<?php echo htmlspecialchars($event->title); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                        <?php else: ?>
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 48px;"><?php echo $emoji; ?></div>
+                        <?php endif; ?>
+                    </div>
                     <div class="event-details">
                         <h4><?php echo htmlspecialchars($event->title); ?></h4>
                         <div class="event-date"><?php echo $formattedDate; ?></div>
@@ -254,21 +260,35 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
         <div class="team-container">
             <h2 class="section-title">Team</h2>
             <div class="team-grid">
-                <div class="team-member">
-                    <div class="team-avatar">JR</div>
-                    <div class="team-name">Jony Rukshan</div>
-                    <div class="team-role">Coach</div>
-                </div>
-                <div class="team-member">
-                    <div class="team-avatar">PS</div>
-                    <div class="team-name">Priyajan Srikantha</div>
-                    <div class="team-role">Captain</div>
-                </div>
-                <div class="team-member">
-                    <div class="team-avatar">CM</div>
-                    <div class="team-name">Chalitha Marambage</div>
-                    <div class="team-role">Vice Captain</div>
-                </div>
+                <?php if (!empty($data['featuredPlayers'])): ?>
+                    <?php foreach ($data['featuredPlayers'] as $player): ?>
+                        <div class="team-member">
+                            <div class="team-avatar">
+                                <?php if (!empty($player->image)): ?>
+                                    <img src="<?php echo htmlspecialchars($player->image); ?>" alt="<?php echo htmlspecialchars($player->full_name ?? ''); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                <?php else: ?>
+                                    <?php
+                                    $name = $player->full_name ?? $player->name_with_initials ?? 'P';
+                                    $initials = strtoupper(substr($name, 0, 2));
+                                    echo $initials;
+                                    ?>
+                                <?php endif; ?>
+                            </div>
+                            <div class="team-name"><?php echo htmlspecialchars($player->full_name ?? ''); ?></div>
+                            <div class="team-role">
+                                <?php 
+                                $roleMap = [
+                                    'captain' => 'Captain',
+                                    'vice-captain' => 'Vice Captain',
+                                    'player' => 'Player'
+                                ];
+                                $role = $player->role ?? 'player';
+                                echo isset($roleMap[$role]) ? $roleMap[$role] : ucfirst($role);
+                                ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
             <a href="http://localhost/UOC_Football/public/team" class="view-all-btn" style="margin-top: 2rem;">Explore full team</a>
         </div>

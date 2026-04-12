@@ -70,6 +70,15 @@ class EventManagement extends Controller
                 // Map category to event_type (match, training, meeting, etc.)
                 $eventType = $input['category'] ?? 'match';
                 
+                // Handle image upload if provided
+                $imageName = null;
+                if (!empty($input['image_data'])) {
+                    $imageName = $this->saveBase64Image($input['image_data']);
+                    if (!$imageName) {
+                        throw new Exception('Failed to save event image');
+                    }
+                }
+                
                 // Prepare event data matching database schema
                 $eventData = [
                     'title' => $input['title'],
@@ -79,7 +88,8 @@ class EventManagement extends Controller
                     'location' => $input['location'] ?? '',
                     'event_type' => $eventType,
                     'event_category' => 'general', // Default category
-                    'status' => $input['status'] ?? 'upcoming'
+                    'status' => $input['status'] ?? 'upcoming',
+                    'image' => $imageName
                 ];
                 
                 // Create event
@@ -142,6 +152,14 @@ class EventManagement extends Controller
                 if (isset($input['location'])) $data['location'] = $input['location'];
                 if (isset($input['category'])) $data['event_type'] = $input['category'];
                 if (isset($input['status'])) $data['status'] = $input['status'];
+                
+                // Handle image upload if provided
+                if (!empty($input['image_data'])) {
+                    $imageName = $this->saveBase64Image($input['image_data']);
+                    if ($imageName) {
+                        $data['image'] = $imageName;
+                    }
+                }
                 
                 // Update event
                 $result = $this->eventModel->update($id, $data);
@@ -238,5 +256,51 @@ class EventManagement extends Controller
             }
         }
         exit;
+    }
+    
+    /**
+     * Save base64 encoded image to file
+     */
+    private function saveBase64Image($base64String)
+    {
+        try {
+            // Remove data URI prefix if present
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64String, $matches)) {
+                $extension = $matches[1];
+                $base64String = substr($base64String, strpos($base64String, ',') + 1);
+            } else {
+                return false;
+            }
+            
+            // Decode base64
+            $imageData = base64_decode($base64String);
+            
+            if ($imageData === false) {
+                return false;
+            }
+            
+            // Generate unique filename
+            $filename = 'event_' . time() . '_' . uniqid() . '.' . $extension;
+            
+            // Define upload directory
+            $uploadDir = '../public/uploads/events/';
+            
+            // Create directory if it doesn't exist
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            // Save file
+            $filepath = $uploadDir . $filename;
+            
+            if (file_put_contents($filepath, $imageData)) {
+                return $filename;
+            }
+            
+            return false;
+        } catch (Exception $e) {
+            error_log("Image save error: " . $e->getMessage());
+            return false;
+        }
     }
 }

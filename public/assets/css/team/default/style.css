@@ -1,8 +1,11 @@
 /* Global Reset and Base Styles */
 
+* {
+    font-family: 'Poppins', sans-serif;
+}
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Poppins', sans-serif;
     background: #f8f9fa;
     overflow-x: hidden;
 }
@@ -70,6 +73,34 @@ body {
 .hover-lift:hover {
     transform: translateY(-10px) scale(1.02);
     box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+/* Position Tabs */
+.position-tabs {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid #ddd;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.position-tab {
+    font-family: 'Poppins', sans-serif !important;
+    padding: 1rem 0;
+    text-decoration: none;
+    color: #4c0e4c;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.position-tab.active,
+.position-tab:hover {
+    color: #4c0e4c;
+    border-bottom-color: #4c0e4c;
 }
 
 /* Global Animations */

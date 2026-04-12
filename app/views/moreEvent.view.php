@@ -63,7 +63,7 @@ $allEvents = $data['allEvents'] ?? [];
                 <div class="session-card">
                     <!-- Event Image -->
                     <?php if (!empty($event->image)): ?>
-                        <img src="<?php echo ROOT; ?>/uploads/event_images/<?php echo htmlspecialchars($event->image); ?>" alt="<?php echo htmlspecialchars($event->title); ?>" class="session-image">
+                        <img src="<?php echo ROOT; ?>/uploads/events/<?php echo htmlspecialchars($event->image); ?>" alt="<?php echo htmlspecialchars($event->title); ?>" class="session-image">
                     <?php else: ?>
                         <div class="session-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 64px;">
                             <?php

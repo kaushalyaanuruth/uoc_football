@@ -21,7 +21,13 @@ class PlayerModel
             :address, :height, :weight, :image
         )";
         
-        return $this->query($query, $data);
+        try {
+            $this->query($query, $data);
+            return true; // If no exception is thrown, insert was successful
+        } catch (Exception $e) {
+            error_log("Insert query failed: " . $e->getMessage());
+            return false;
+        }
     }
     
     /**
@@ -75,7 +81,13 @@ class PlayerModel
         $fieldsString = implode(', ', $fields);
         $query = "UPDATE {$this->table} SET {$fieldsString}, updated_at = CURRENT_TIMESTAMP WHERE id = :id";
         
-        return $this->query($query, $params);
+        try {
+            $this->query($query, $params);
+            return true; // If no exception is thrown, update was successful
+        } catch (Exception $e) {
+            error_log("Update query failed: " . $e->getMessage());
+            return false;
+        }
     }
     
     /**
@@ -83,25 +95,31 @@ class PlayerModel
      */
     public function delete($id)
     {
-        // Get player data first to delete image and user account
-        $player = $this->getById($id);
-        
-        if ($player) {
-            // Delete image if exists
-            if (!empty($player->image) && file_exists($player->image)) {
-                unlink($player->image);
+        try {
+            // Get player data first to delete image and user account
+            $player = $this->getById($id);
+            
+            if ($player) {
+                // Delete image if exists
+                if (!empty($player->image) && file_exists($player->image)) {
+                    @unlink($player->image);
+                }
+                
+                // Delete associated user account (if exists)
+                try {
+                    $userQuery = "DELETE FROM users WHERE username = :nic AND role = 'player'";
+                    $this->query($userQuery, ['nic' => $player->nic]);
+                } catch (Exception $e) {
+                    error_log("Failed to delete user account for player: " . $e->getMessage());
+                }
             }
             
-            // Delete associated user account (if exists)
-            try {
-                $userQuery = "DELETE FROM users WHERE username = :nic AND role = 'player'";
-                $this->query($userQuery, ['nic' => $player->nic]);
-            } catch (Exception $e) {
-                error_log("Failed to delete user account for player: " . $e->getMessage());
-            }
+            $this->query("DELETE FROM {$this->table} WHERE id = :id", ['id' => $id]);
+            return true; // If no exception is thrown, delete was successful
+        } catch (Exception $e) {
+            error_log("Delete query failed: " . $e->getMessage());
+            return false;
         }
-        
-        return $this->query("DELETE FROM {$this->table} WHERE id = :id", ['id' => $id]);
     }
     
     /**
