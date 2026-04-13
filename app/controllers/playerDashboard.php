@@ -13,7 +13,7 @@ class playerDashboard extends Controller {
             exit();
         }
         
-        // Load player data if needed
+        // Load player data
         $data = [
             'username' => $_SESSION['username'] ?? 'Player',
             'user_id' => $_SESSION['user_id']
