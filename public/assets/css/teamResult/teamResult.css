@@ -15,7 +15,14 @@
     --white: #ffffff;
     --white-70: rgba(255, 255, 255, 0.7);
 }
-.test-results-container {
+.container {
+    margin:0 auto!important;
+    margin-left: 64px !important;
+    margin-right: 64px !important;
+}
+
+.test-results-container,
+.match-results-container {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -64,6 +71,10 @@
     color: var(--text-medium);
     font-size: 14px;
 }
+
+
+
+/* filter groups */
 .filter-group {
     display: flex;
     flex-direction: column;
@@ -194,6 +205,8 @@ select:hover {
     transition: all 0.15s;
 }
 
+
+
 /* resultContainer */
 .results-container{
     background-color: var(--white-70);
@@ -217,6 +230,7 @@ select:hover {
     background-color: var(--bg-light);
     font-size: 11px;
     justify-content: left;
+    font-weight: 600;
     padding: 8px;
     color: var(--text-light);
 }
@@ -224,7 +238,6 @@ select:hover {
     display: flex;
     background-color: var(--white);
     font-size: 11px;
-    font-weight: 400;
     justify-content: left;
     padding: 8px;
     color: var(--text-medium);
@@ -251,6 +264,171 @@ select:hover {
     background-color:transparent;
 }
 
+.results-panel {
+    margin-top: 24px;
+    background: var(--white);
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+}
+
+.results-panel-head {
+    padding: 28px 24px 16px;
+}
+
+.results-panel-head h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-medium);
+}
+
+.results-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 980px;
+}
+
+.results-table thead tr {
+    background: #f3f4f6;
+}
+
+.results-table th,
+.results-table td {
+    text-align: left;
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+
+.results-table th {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.results-table td {
+    font-size: 11px;
+    color: var(--text-medium);
+}
+
+.result-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.result-name {
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.result-sub {
+    color: var(--text-light);
+    font-size: 11px;
+    max-width: 340px;
+}
+
+.type-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.type-match {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.type-training {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.type-meeting {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.type-other {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.date-wrap p {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-medium);
+}
+
+.date-wrap span {
+    font-size: 11px;
+    color: var(--text-light);
+}
+
+.row-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.icon-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-btn.edit-btn:hover {
+    background: #dbeafe;
+}
+
+.icon-btn.delete-btn:hover {
+    background: #fee2e2;
+}
+
+.empty-state {
+    text-align: center;
+    color: #6b7280;
+    font-size: 16px;
+    padding: 24px;
+}
+
+.result-row.is-hidden {
+    display: none;
+}
+
+.no-results {
+    text-align: center;
+    color: #6b7280;
+    font-size: 16px;
+    padding: 22px;
+}
+
+
+
 /* Modal Styles */
 .modal-overlay {
     position: fixed;
@@ -266,10 +444,6 @@ select:hover {
     visibility: hidden;
     transition: all 0.3s ease;
     scrollbar-width: none;
-}
-
-#addResultModal {
-    background: rgba(0, 0, 0, 0.5);
 }
 
 .modal-overlay::-webkit-scrollbar {

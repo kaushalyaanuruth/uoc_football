@@ -1,13 +1,13 @@
-function openAddResultModal() {
-    const modal = document.getElementById("addResultModal");
+function openAddTestResultModal() {
+    const modal = document.getElementById("addTestResultModal");
     if (modal) {
         modal.classList.add("active");
     }
 }
 
-function closeAddResultModal() {
-    const modal = document.getElementById("addResultModal");
-    const form = document.getElementById("addResultForm");
+function closeAddTestResultModal() {
+    const modal = document.getElementById("addTestResultModal");
+    const form = document.getElementById("addTestResultForm");
 
     if (modal) {
         modal.classList.remove("active");
@@ -18,49 +18,51 @@ function closeAddResultModal() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    const openBtn = document.querySelector(".add-result-btn");
-    const modal = document.getElementById("addResultModal");
-    const searchBtn = document.getElementById("searchBtn");
-    const searchInput = document.getElementById("playerSearch");
-
-    function performResultSearch() {
-        if (!searchInput) {
-            return;
-        }
-
-        const query = searchInput.value.trim().toLowerCase();
-        const rows = document.querySelectorAll(".results-container .result");
-
-        rows.forEach(function (row) {
-            const firstCell = row.querySelector("p");
-            const rowText = firstCell ? firstCell.textContent.trim().toLowerCase() : "";
-            row.style.display = rowText.includes(query) ? "grid" : "none";
-        });
+function openAddMatchResultModal() {
+    const modal = document.getElementById("addMatchResultModal");
+    if (modal) {
+        modal.classList.add("active");
     }
+}
 
-    if (openBtn) {
-        openBtn.addEventListener("click", openAddResultModal);
-    }
+function closeAddMatchResultModal() {
+    const modal = document.getElementById("addMatchResultModal");
+    const form = document.getElementById("addMatchResultForm");
 
     if (modal) {
-        modal.addEventListener("click", function (event) {
-            if (event.target === modal) {
-                closeAddResultModal();
-            }
-        });
+        modal.classList.remove("active");
     }
 
-    if (searchBtn) {
-        searchBtn.addEventListener("click", performResultSearch);
+    if (form) {
+        form.reset();
     }
+}
 
-    if (searchInput) {
-        searchInput.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                performResultSearch();
-            }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const openButtons = document.querySelectorAll(".add-result-btn");
+    const closeButtons = document.querySelectorAll(".close-modal-btn");
+    const testModal = document.getElementById("addTestResultModal");
+    const matchModal = document.getElementById("addMatchResultModal");
+    const searchBtn = document.getElementById("searchBtn");
+    const searchResultInput = document.getElementById("playerSearch");
+
+    openButtons.forEach(function (button) {
+        const buttonText = button.textContent.trim().toLowerCase();
+
+        if (buttonText.includes("match")) {
+            button.addEventListener("click", openAddMatchResultModal);
+        } else {
+            button.addEventListener("click", openAddTestResultModal);
+        }
+    });
+
+    closeButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            if(button.closest("#addTestResultModal")) {
+                closeAddTestResultModal();
+            } else if(button.closest("#addMatchResultModal")) {
+                closeAddMatchResultModal();}      
         });
-    }
+    });
 });
