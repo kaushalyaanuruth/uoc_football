@@ -6,6 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
     <title>UOC_football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/adminDashboard/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/potal/header.css">
@@ -45,7 +46,7 @@
                     </div>
                     <p class="action-label">Events</p>
                 </a>
-                <a class="action-card icon-red" href="">
+                <a class="action-card icon-red" href="<?php echo ROOT; ?>/inventoryManagement">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/inventory.svg" alt="inventory icon" class="action-icon">
                     </div>
@@ -151,7 +152,7 @@
                     <div class="inventory-item">
                         <div class="inventory-left">
                               <div class="icon-container">
-                                    <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/match.svg" alt="match icon" class="action-icon">
+                                    <span class="material-symbols-outlined inventory-symbol" aria-hidden="true">checkroom</span>
                                 </div>
                             <span class="inventory-name">Bibs</span>
                         </div>
@@ -160,7 +161,7 @@
                     <div class="inventory-item">
                         <div class="inventory-left">
                               <div class="icon-container">
-                                    <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/match.svg" alt="match icon" class="action-icon">
+                                    <span class="material-symbols-outlined inventory-symbol" aria-hidden="true">sports_soccer</span>
                                 </div>
                             <span class="inventory-name">Footballs</span>
                         </div>
@@ -170,7 +171,7 @@
                     <div class="inventory-item">
                         <div class="inventory-left">
                               <div class="icon-container">
-                                    <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/match.svg" alt="match icon" class="action-icon">
+                                    <span class="material-symbols-outlined inventory-symbol" aria-hidden="true">inventory_2</span>
                                 </div>
                             <span class="inventory-name">Markers</span>
                         </div>
@@ -179,7 +180,7 @@
                     <div class="inventory-item">
                         <div class="inventory-left">
                               <div class="icon-container">
-                                    <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/match.svg" alt="match icon" class="action-icon">
+                                    <span class="material-symbols-outlined inventory-symbol" aria-hidden="true">inventory_2</span>
                                 </div>
                             <span class="inventory-name">Cones</span>
                         </div>
@@ -188,7 +189,7 @@
                     <div class="inventory-item">
                         <div class="inventory-left">
                               <div class="icon-container">
-                                    <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/match.svg" alt="match icon" class="action-icon">
+                                    <span class="material-symbols-outlined inventory-symbol" aria-hidden="true">fitness_center</span>
                                 </div>
                             <span class="inventory-name">Resistant band</span>
                         </div>
@@ -197,7 +198,7 @@
                     <div class="inventory-item">
                         <div class="inventory-left">
                               <div class="icon-container">
-                                    <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/match.svg" alt="match icon" class="action-icon">
+                                    <span class="material-symbols-outlined inventory-symbol" aria-hidden="true">sports_bar</span>
                                 </div>
                             <span class="inventory-name">Bottles</span>
                         </div>

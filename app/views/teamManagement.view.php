@@ -6,6 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
     <title>UOC_football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/teamManagement/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/potal/header.css">
@@ -37,10 +38,10 @@
                     </div>
                     <div class="team-actions">
                             <button class="icon-btn edit-btn">
-                                <img class="" src="<?php echo ROOT; ?>/assets/images/common/edit.svg" alt="edit">
+                                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                             </button>
                             <button class="icon-btn delete-btn">
-                                <img class="" src="<?php echo ROOT; ?>/assets/images/common/delete.svg" alt="delete">
+                                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                             </button>
                     </div>
                 </div>

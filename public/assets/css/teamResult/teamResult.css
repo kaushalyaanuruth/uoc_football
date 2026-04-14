@@ -396,9 +396,17 @@ select:hover {
     transition: 0.2s ease;
 }
 
-.icon-btn img {
-    width: 20px;
-    height: 20px;
+.icon-btn .material-symbols-outlined {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.icon-btn.edit-btn .material-symbols-outlined {
+    color: #1d4ed8;
+}
+
+.icon-btn.delete-btn .material-symbols-outlined {
+    color: #dc2626;
 }
 
 .icon-btn.edit-btn:hover {

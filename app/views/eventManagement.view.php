@@ -49,6 +49,7 @@ $events = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
     <title>UOC Football - Event Management</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/eventManagement/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/potal/header.css">
@@ -69,8 +70,6 @@ $events = [
 
         <a href="<?php echo ROOT; ?>/adminDashboard" class="back-btn">&lt; Back</a>
 
-        <!-- Summary cards -->
-        <!-- Summary cards showing static counts. -->
         <section class="stats-grid">
             <article class="stat-card">
                 <div class="stat-content">
@@ -190,10 +189,10 @@ $events = [
                                     <td>
                                         <div class="row-actions">
                                             <button type="button" class="icon-btn edit-btn" data-id="<?php echo (int) $event->id; ?>" aria-label="Edit event">
-                                                <img src="<?php echo ROOT; ?>/assets/images/common/edit.svg" alt="Edit">
+                                                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                                             </button>
                                             <button type="button" class="icon-btn delete-btn" data-id="<?php echo (int) $event->id; ?>" aria-label="Delete event">
-                                                <img src="<?php echo ROOT; ?>/assets/images/common/delete.svg" alt="Delete">
+                                                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                                             </button>
                                         </div>
                                     </td>

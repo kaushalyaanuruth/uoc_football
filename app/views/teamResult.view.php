@@ -45,6 +45,7 @@ $matchResults = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
     <title>UOC_football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/teamResult/teamResult.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/potal/header.css">
@@ -136,10 +137,10 @@ $matchResults = [
                                     <td>
                                         <div class="row-actions">
                                             <button type="button" class="icon-btn edit-btn" aria-label="Edit result">
-                                                <img src="<?php echo ROOT; ?>/assets/images/common/edit.svg" alt="Edit">
+                                                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                                             </button>
                                             <button type="button" class="icon-btn delete-btn" aria-label="Delete result">
-                                                <img src="<?php echo ROOT; ?>/assets/images/common/delete.svg" alt="Delete">
+                                                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                                             </button>
                                         </div>
                                     </td>
@@ -209,10 +210,10 @@ $matchResults = [
                                     <td>
                                         <div class="row-actions">
                                             <button type="button" class="icon-btn edit-btn" aria-label="Edit result">
-                                                <img src="<?php echo ROOT; ?>/assets/images/common/edit.svg" alt="Edit">
+                                                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                                             </button>
                                             <button type="button" class="icon-btn delete-btn" aria-label="Delete result">
-                                                <img src="<?php echo ROOT; ?>/assets/images/common/delete.svg" alt="Delete">
+                                                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                                             </button>
                                         </div>
                                     </td>
