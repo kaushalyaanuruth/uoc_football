@@ -330,30 +330,30 @@ function renderFinanceChart(data, type) {
     });
 
     /* ================= TOAST ================= */
-    function showToast(message, color) {
-        let toast = document.getElementById("toast");
+    // function showToast(message, color) {
+    //     let toast = document.getElementById("toast");
 
-        if (!toast) {
-            toast = document.createElement("div");
-            toast.id = "toast";
-            toast.className = "toast";
-            document.body.appendChild(toast);
-        }
+    //     if (!toast) {
+    //         toast = document.createElement("div");
+    //         toast.id = "toast";
+    //         toast.className = "toast";
+    //         document.body.appendChild(toast);
+    //     }
 
-        toast.innerHTML = message;
-        toast.style.background = color;
-        toast.classList.add("show");
+    //     toast.innerHTML = message;
+    //     toast.style.background = color;
+    //     toast.classList.add("show");
 
-        // Attach undo click AFTER rendering
-        const undoLink = document.getElementById("undoLink");
-        if (undoLink) {
-            undoLink.onclick = () => undoDelete();
-        }
+    //     // Attach undo click AFTER rendering
+    //     const undoLink = document.getElementById("undoLink");
+    //     if (undoLink) {
+    //         undoLink.onclick = () => undoDelete();
+    //     }
 
-        setTimeout(() => {
-            toast.classList.remove("show");
-        }, 4000);
-    }
+    //     setTimeout(() => {
+    //         toast.classList.remove("show");
+    //     }, 4000);
+    // }
 
 
     /* ================= CENTER TOAST ================= */
