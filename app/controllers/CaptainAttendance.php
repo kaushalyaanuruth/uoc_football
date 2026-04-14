@@ -2,35 +2,7 @@
 
 class CaptainAttendance extends Controller
 {
-    // public function index()
-    // {
-    //     $attendanceModel = new AttendanceModel();
-
-    //     $event_id = 1;
-
-    //     $players = $attendanceModel->getPlayersWithAttendance($event_id);
-    //     $stats = $attendanceModel->getStats($event_id);
-
-    //     $data = [
-    //          'event_id' => $event_id,
-    //         'totalPlayers' => $stats->total ?? 0,
-    //         'present' => $stats->present ?? 0,
-    //         'absent' => $stats->absent ?? 0,
-    //         'players' => $players,
-    //         'weekly' => [
-    //             'Mon' => 80,
-    //             'Tue' => 70,
-    //             'Wed' => 85,
-    //             'Thu' => 75,
-    //             'Fri' => 90,
-    //             'Sat' => 60,
-    //             'Sun' => 50,
-
-    //         ] 
-    //     ];
-
-    //     $this->view('captain/attendance', $data);
-    // }
+   
     public function index()
     {
         $attendanceModel = new AttendanceModel();

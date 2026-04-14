@@ -15,9 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".attendance-table tbody tr").forEach(row => {
         originalAttendance.push({
-            // row: row,
+            
             playerId: row.dataset.playerId,
-            // status: row.querySelector(".status").innerText.trim()
             status: row.dataset.originalStatus
 
         });
@@ -145,26 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         link.click();
         document.body.removeChild(link);
     }
-    /* ================= EXPENSE SUBMIT ================= */
-    // expenseForm?.addEventListener("submit", e => {
-    //     e.preventDefault();
-
-    //     const inputs = expenseForm.querySelectorAll("select, input, textarea");
-
-    //     addRow(
-    //         "Expense",
-    //         inputs[0].value,
-    //         inputs[1].value,
-    //         inputs[2].value,
-    //         inputs[3].value
-    //     );
-
-    //     expenseForm.reset();
-    //     showCenterToast("Expense added successfully");
-    //     updateFinanceStats();
-    // });
-
-    /* ================= EXPORT PDF ================= */
+    
    
 
     /* ================= EXPORT BUTTON ================= */
@@ -180,8 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         if (choice) {
-            // exportPDF();
-            // exportCSV();
+            
             window.location.href =
     window.location.origin +
     "/uoc_football/public/CaptainAttendance/export?date=" +
@@ -193,15 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
        
     });
     
-// const dateInput = document.getElementById("attendanceDate");
 
-// dateInput.addEventListener("change", () => {
-//     const selectedDate = dateInput.value;
-
-//     window.location.href =
-//         window.location.origin +
-//         "/uoc_football/public/CaptainAttendance?date=" + selectedDate;
-// });
 const typeSelect = document.getElementById("eventType");
 const dateInput = document.getElementById("attendanceDate");
 

@@ -48,12 +48,7 @@
                 <p>Manage team expenses, funds, and overall budget</p>
             </div>
             <div class="header-actions">
-                <!-- <select>
-                    <option>This Month</option>
-                    <option>Last Month</option>
-                    <option>This Quarter</option>
-
-                </select> -->
+                
                 <button class="btn-export" id="exportReport">Export Report</button>
             </div>
         </div>

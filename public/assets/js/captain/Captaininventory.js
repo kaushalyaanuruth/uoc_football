@@ -282,6 +282,5 @@ document.addEventListener("DOMContentLoaded", () => {
        INIT
     ========================================================= */
     initCharts();
-    // loadChartFromDB();
     loadChartFromDB();
 });
