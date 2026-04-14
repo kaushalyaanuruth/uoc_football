@@ -49,4 +49,16 @@ public function deleteItem($id)
     $query = "DELETE FROM inventory_items WHERE item_id = :id";
     return $this->query($query, ['id' => $id]);
 }
+public function getCategoryStats()
+{
+    $query = "SELECT 
+        category,
+        SUM(CASE WHEN status='In Use' THEN total_count ELSE 0 END) as in_use,
+        SUM(CASE WHEN status='Available' THEN total_count ELSE 0 END) as available,
+        SUM(CASE WHEN status='Damaged' THEN total_count ELSE 0 END) as damaged
+    FROM inventory_items
+    GROUP BY category";
+
+    return $this->query($query);
+}
 }

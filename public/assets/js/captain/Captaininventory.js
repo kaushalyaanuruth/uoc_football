@@ -3,10 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /* =========================================================
        ELEMENTS
     ========================================================= */
-    const totalEl = document.querySelector(".stat-card:nth-child(1) span");
-    const inUseEl = document.querySelector(".stat-card.warning span");
-    const availableEl = document.querySelector(".stat-card.success span");
-    const damagedEl = document.querySelector(".stat-card.danger span");
 
     const modal = document.getElementById("inventoryModal");
     const toast = document.getElementById("toast");
@@ -84,88 +80,58 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function updateCharts(inUse, available, damaged) {
-        usageChart.data.datasets[0].data = [inUse, available, damaged];
-        statusChart.data.datasets[0].data = [inUse, available, damaged];
-        usageChart.update();
-        statusChart.update();
-    }
-
-
-    /* =========================================================
+ /* =========================================================
        STATS CALCULATION
     ========================================================= */
- function updateInventoryStats() {
+    
+    function loadChartFromDB() {
 
-    let categories = {
-        kits: { inUse: 0, available: 0 },
-        balls: { inUse: 0, available: 0 },
-        equipment: { inUse: 0, available: 0 },
-        accessories: { inUse: 0, available: 0 }
-    };
+        fetch(`${BASE_URL}/captainInventory/getChartData`)
+            .then(res => res.json())
+            .then(data => {
 
-    let total = 0;
-    let inUseTotal = 0;
-    let availableTotal = 0;
-    let damagedTotal = 0;
+                let categories = ["kits", "balls", "equipment", "accessories"];
 
-    document.querySelectorAll(".inventory-table tbody tr").forEach(row => {
+                let inUseData = [0, 0, 0, 0];
+                let availableData = [0, 0, 0, 0];
 
-        const qty = parseInt(row.children[2].innerText) || 0;
-        const category = row.children[1].innerText.trim().toLowerCase();
-        const status = row.children[3].innerText.trim().toLowerCase();
+                let totalInUse = 0;
+                let totalAvailable = 0;
+                let totalDamaged = 0; // ✅ ADD THIS
 
-        total += qty;
+                data.forEach(item => {
+                    const index = categories.indexOf(item.category.toLowerCase());
 
-        if (status === "in use") {
-            inUseTotal += qty;
-        } 
-        else if (status === "available") {
-            availableTotal += qty;
-        } 
-        else if (status === "damaged") {
-            damagedTotal += qty;
-        }
+                    const inUse = parseInt(item.in_use) || 0;
+                    const available = parseInt(item.available) || 0;
+                    const damaged = parseInt(item.damaged) || 0; // ✅ ADD THIS
 
-        // category chart mapping
-        if (categories[category]) {
-            if (status === "in use") {
-                categories[category].inUse += qty;
-            } else if (status === "available") {
-                categories[category].available += qty;
-            }
-        }
-    });
+                    if (index !== -1) {
+                        inUseData[index] = inUse;
+                        availableData[index] = available;
+                    }
 
-    // -------------------------
-    // UPDATE PIE CHART
-    // -------------------------
-    statusChart.data.datasets[0].data = [
-        inUseTotal,
-        availableTotal,
-        damagedTotal
-    ];
-    statusChart.update();
+                    totalInUse += inUse;
+                    totalAvailable += available;
+                    totalDamaged += damaged; // ✅ ADD THIS
+                });
 
-    // -------------------------
-    // UPDATE BAR CHART
-    // -------------------------
-    usageChart.data.datasets[0].data = [
-        categories.kits.inUse,
-        categories.balls.inUse,
-        categories.equipment.inUse,
-        categories.accessories.inUse
-    ];
+                // BAR CHART
+                usageChart.data.datasets[0].data = inUseData;
+                usageChart.data.datasets[1].data = availableData;
+                usageChart.update();
 
-    usageChart.data.datasets[1].data = [
-        categories.kits.available,
-        categories.balls.available,
-        categories.equipment.available,
-        categories.accessories.available
-    ];
+                // PIE CHART ✅ FIXED
+                statusChart.data.datasets[0].data = [
+                    totalInUse,
+                    totalAvailable,
+                    totalDamaged
+                ];
+                statusChart.update();
+            });
+    }
 
-    usageChart.update();
-}
+   
     /* =========================================================
            TOAST (SMALL NOTIFICATION)
         ========================================================= */
@@ -200,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 selected === "all" || rowCategory === selected ? "" : "none";
         });
 
-        updateInventoryStats();
+       
     });
 
 
@@ -248,7 +214,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(data => {
                     if (data.status === "success") {
                         row.remove();
-                        updateInventoryStats();
+                        // loadChartFromDB();
+                        loadChartFromDB();
                         showSuccessModal("Item deleted successfully!");
                     }
                 })
@@ -315,6 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
        INIT
     ========================================================= */
     initCharts();
-    updateInventoryStats();
-
+    // loadChartFromDB();
+    loadChartFromDB();
 });

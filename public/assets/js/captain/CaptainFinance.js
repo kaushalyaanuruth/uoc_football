@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ================= TABLE & FORMS ================= */
+    const BASE_URL = "http://localhost/uoc_football/public";
     const table = document.querySelector(".finance-table");
 
     const incomeForm = document.querySelector(".btn-income")?.closest("form");
@@ -9,36 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("financeModal");
     const editForm = document.getElementById("financeEditForm");
 
+
     let currentRow = null;
     let deletedRow = null;
     let deleteTimeout = null;
     /* ================= ADD ROW ================= */
-    function addRow(type, category, amount, date, desc) {
-
-        const row = table.insertRow(-1);
-
-        const badge =
-            type === "Income"
-                ? `<span class="badge badge-income">Income</span>`
-                : `<span class="badge badge-expense">Expense</span>`;
-
-        const amountClass = type === "Income" ? "amount_income" : "amount_expense";
-        const sign = type === "Income" ? "+" : "-";
-
-        row.innerHTML = `
-            <td>${badge}</td>
-            <td>${category}</td>
-            <td class="${amountClass}">${sign}Rs. ${amount}</td>
-            <td>${date}</td>
-            <td>${desc}</td>
-            <td class="actions">
-                <button type="button" class="btn-edit">Edit</button>
-                <button type="button" class="btn-delete">Delete</button>
-            </td>
-        `;
-
-        attachRowEvents(row);
-    }
 
     /* ================= BUDGET OVERVIEW TOGGLE ================= */
 
@@ -46,56 +22,121 @@ document.addEventListener("DOMContentLoaded", () => {
     const monthlyMonths = document.querySelectorAll(".month.monthly");
     const quarterlyMonths = document.querySelectorAll(".month.quarterly");
 
-    /* Default: Monthly */
-    monthlyMonths.forEach(month => {
-        month.style.display = "block";
-        month.querySelectorAll(".bar").forEach(bar => {
-            bar.style.height = bar.dataset.month + "%";
-        });
-    });
-    quarterlyMonths.forEach(m => m.style.display = "none");
 
-    toggleButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
+    let financeChart;
 
-            toggleButtons.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
+function loadFinanceChart() {
+    fetch(`${BASE_URL}/CaptainFinance/getChartData`)
+        .then(res => res.json())
+        .then(data => {
 
-            const view = btn.dataset.view;
+            const allMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-            if (view === "monthly") {
-                monthlyMonths.forEach(month => {
-                    month.style.display = "block";
-                    month.querySelectorAll(".bar").forEach(bar => {
-                        bar.style.height = bar.dataset.month + "%";
-                    });
-                });
-                quarterlyMonths.forEach(m => m.style.display = "none");
-            } else {
-                monthlyMonths.forEach(m => m.style.display = "none");
-                quarterlyMonths.forEach(month => {
-                    month.style.display = "block";
-                    month.querySelectorAll(".bar").forEach(bar => {
-                        bar.style.height = bar.dataset.quarter + "%";
-                    });
+            let monthlyData = allMonths.map(m => ({
+                month: m,
+                income: 0,
+                expense: 0
+            }));
+
+            data.forEach(item => {
+                const index = allMonths.indexOf(item.month);
+                if (index !== -1) {
+                    monthlyData[index].income = parseInt(item.income) || 0;
+                    monthlyData[index].expense = parseInt(item.expense) || 0;
+                }
+            });
+
+            const quarterlyData = [];
+            for (let i = 0; i < 12; i += 3) {
+                quarterlyData.push({
+                    label: `Q${(i / 3) + 1}`,
+                    income: monthlyData[i].income + monthlyData[i+1].income + monthlyData[i+2].income,
+                    expense: monthlyData[i].expense + monthlyData[i+1].expense + monthlyData[i+2].expense
                 });
             }
-        });
-    });
 
+            renderFinanceChart(monthlyData, "monthly");
+
+            document.querySelectorAll(".chart-toggle button").forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll(".chart-toggle button")
+                        .forEach(b => b.classList.remove("active"));
+
+                    btn.classList.add("active");
+
+                    if (btn.dataset.view === "monthly") {
+                        renderFinanceChart(monthlyData, "monthly");
+                    } else {
+                        renderFinanceChart(quarterlyData, "quarterly");
+                    }
+                };
+            });
+        });
+}
+function renderFinanceChart(data, type) {
+
+    const ctx = document.getElementById("financeChart").getContext("2d");
+
+    if (financeChart) financeChart.destroy();
+
+    financeChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: data.map(d => type === "monthly" ? d.month : d.label),
+
+            datasets: [
+                {
+                    label: "Income",
+                    data: data.map(d => d.income),
+                    backgroundColor: "#22c55e"
+                },
+                {
+                    label: "Expense",
+                    data: data.map(d => d.expense),
+                    backgroundColor: "#ef4444"
+                }
+            ]
+        },
+        options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { position: "top" }
+    },
+    scales: {
+        x: { stacked: false },
+        y: { beginAtZero: true }
+    }
+}
+    });
+}
+    
     /* ================= INCOME SUBMIT ================= */
     incomeForm?.addEventListener("submit", e => {
         e.preventDefault();
 
         const inputs = incomeForm.querySelectorAll("input, textarea");
 
-        addRow(
-            "Income",
-            inputs[0].value,
-            inputs[1].value,
-            inputs[2].value,
-            inputs[3].value
-        );
+        const formData = new FormData();
+        formData.append("category", inputs[0].value);
+        formData.append("amount", inputs[1].value);
+        formData.append("date", inputs[2].value);
+        formData.append("description", inputs[3].value);
+
+        fetch(`${BASE_URL}/CaptainFinance/addIncome`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    showCenterToast("Income added successfully");
+                    location.reload(); // reload like inventory
+                }
+            })
+            .catch(() => {
+                showToast("Failed to save income", "#dc2626");
+            });
 
         incomeForm.reset();
         showCenterToast("Income added successfully");
@@ -108,13 +149,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const inputs = expenseForm.querySelectorAll("select, input, textarea");
 
-        addRow(
-            "Expense",
-            inputs[0].value,
-            inputs[1].value,
-            inputs[2].value,
-            inputs[3].value
-        );
+        const formData = new FormData();
+        formData.append("category", inputs[0].value);
+        formData.append("amount", inputs[1].value);
+        formData.append("date", inputs[2].value);
+        formData.append("description", inputs[3].value);
+
+        fetch(`${BASE_URL}/CaptainFinance/addExpense`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    showCenterToast("Expense added successfully");
+                    location.reload();
+                }
+            })
+            .catch(() => {
+                showToast("Failed to save expense", "#dc2626");
+            });
 
         expenseForm.reset();
         showCenterToast("Expense added successfully");
@@ -130,7 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
             editType.value = row.cells[0].innerText.trim();
             editCategory.value = row.cells[1].innerText;
             editAmount.value = row.cells[2].innerText.replace(/[^\d]/g, "");
-            editDate.value = row.cells[3].innerText;
+            const rawDate = new Date(row.cells[3].innerText);
+            editDate.value = rawDate.toISOString().split("T")[0];
             editDescription.value = row.cells[4].innerText;
 
             modal.style.display = "flex";
@@ -139,14 +194,33 @@ document.addEventListener("DOMContentLoaded", () => {
         row.querySelector(".btn-delete").addEventListener("click", () => {
             if (confirm("Are you sure you want to delete this transaction?")) {
 
-                deletedRow = row;
-                row.style.display = "none";
+                const type = row.cells[0].innerText.trim();
+                const id = row.dataset.id; // we will set this in view
 
+                const formData = new FormData();
+                formData.append("type", type);
+                formData.append("id", id);
+
+                fetch(`${BASE_URL}/CaptainFinance/delete`, {
+                    method: "POST",
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            row.remove();
+                            showCenterToast("Transaction deleted");
+                            updateFinanceStats();
+                        }
+                    })
+                    .catch(() => {
+                        showToast("Delete failed", "#dc2626");
+                    });
                 showToast(
                     "Transaction deleted <u id='undoLink' style='cursor:pointer'>Undo</u>",
                     "#dc2626"
                 );
-updateFinanceStats();
+                updateFinanceStats();
                 // Auto remove undo after 5 seconds
                 deleteTimeout = setTimeout(() => {
                     deletedRow = null;
@@ -180,21 +254,51 @@ updateFinanceStats();
         e.preventDefault();
 
         const type = editType.value;
-        const sign = type === "Income" ? "+" : "-";
-        const badgeClass = type === "Income" ? "badge-income" : "badge-expense";
-        const amountClass = type === "Income" ? "amount_income" : "amount_expense";
+        const id = currentRow.dataset.id;
 
-        currentRow.cells[0].innerHTML =
-            `<span class="badge ${badgeClass}">${type}</span>`;
-        currentRow.cells[1].innerText = editCategory.value;
-        currentRow.cells[2].className = amountClass;
-        currentRow.cells[2].innerText = `${sign}Rs. ${editAmount.value}`;
-        currentRow.cells[3].innerText = editDate.value;
-        currentRow.cells[4].innerText = editDescription.value;
+        const formData = new FormData();
+        formData.append("type", type);
+        formData.append("id", id);
+        formData.append("category", editCategory.value);
+        formData.append("amount", editAmount.value);
+        formData.append("date", editDate.value);
+        formData.append("description", editDescription.value);
 
-        modal.style.display = "none";
-        showCenterToast("Transaction updated successfully");
-        updateFinanceStats();
+        fetch(`${BASE_URL}/CaptainFinance/update`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+
+                    // ✅ update UI AFTER DB success
+                    const sign = type === "Income" ? "+" : "-";
+                    const badgeClass = type === "Income" ? "badge-income" : "badge-expense";
+                    const amountClass = type === "Income" ? "amount_income" : "amount_expense";
+
+                    currentRow.cells[0].innerHTML =
+                        `<span class="badge ${badgeClass}">${type}</span>`;
+                    currentRow.cells[1].innerText = editCategory.value;
+                    currentRow.cells[2].className = amountClass;
+                    currentRow.cells[2].innerText = `${sign}Rs. ${editAmount.value}`;
+                    const formattedDate = new Date(editDate.value).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric"
+                    });
+
+                    currentRow.cells[3].innerText = formattedDate;
+                    currentRow.cells[4].innerText = editDescription.value;
+
+                    modal.style.display = "none";
+                    showCenterToast("Transaction updated successfully");
+                    updateFinanceStats();
+                }
+            })
+            .catch(() => {
+                showToast("Update failed", "#dc2626");
+            });
     });
 
     closeFinanceModal.onclick =
@@ -269,29 +373,29 @@ updateFinanceStats();
         }
     });
     function updateFinanceStats() {
-    let income = 0;
-    let expense = 0;
+        let income = 0;
+        let expense = 0;
 
-    document.querySelectorAll(".finance-table tr").forEach((row, index) => {
-        if (index === 0 || row.style.display === "none") return;
+        document.querySelectorAll(".finance-table tr").forEach((row, index) => {
+            if (index === 0 || row.style.display === "none") return;
 
-        const amountText = row.cells[2].innerText.replace(/[^\d]/g, "");
-        const amount = parseInt(amountText) || 0;
+            const amountText = row.cells[2].innerText.replace(/[^\d]/g, "");
+            const amount = parseInt(amountText) || 0;
 
-        if (row.cells[0].innerText.includes("Income")) {
-            income += amount;
-        } else {
-            expense += amount;
-        }
-    });
+            if (row.cells[0].innerText.includes("Income")) {
+                income += amount;
+            } else {
+                expense += amount;
+            }
+        });
 
-    document.querySelector(".stat-income .stat-value").innerText = `Rs. ${income.toLocaleString()}`;
-    document.querySelector(".stat-expense .stat-value").innerText = `Rs. ${expense.toLocaleString()}`;
-    document.querySelector(".stat-balance .stat-value").innerText =
-        `Rs. ${(income - expense).toLocaleString()}`;
-}
+        document.querySelector(".stat-income .stat-value").innerText = `Rs. ${income.toLocaleString()}`;
+        document.querySelector(".stat-expense .stat-value").innerText = `Rs. ${expense.toLocaleString()}`;
+        document.querySelector(".stat-balance .stat-value").innerText =
+            `Rs. ${(income - expense).toLocaleString()}`;
+    }
 
-
+    loadFinanceChart();
 
 });
 document.getElementById("exportReport").addEventListener("click", () => {
@@ -334,4 +438,6 @@ document.getElementById("exportReport").addEventListener("click", () => {
 
 document.getElementById("exportPDF").addEventListener("click", () => {
     window.print();
+
+
 });

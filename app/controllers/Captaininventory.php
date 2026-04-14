@@ -28,7 +28,7 @@ class CaptainInventory extends Controller
             'item_name' => $_POST['item_name'],
             'category' => $_POST['category'],
             'total_count' => $_POST['quantity'],
-            'available_count' => $_POST['status'] == 'Available' ? $_POST['quantity'] : 0,
+            'available_count' => $_POST['quantity'],
             'status' => $_POST['status'],
             'updated_by' => $_SESSION['user_nic'] ?? null
         ];
@@ -46,7 +46,7 @@ public function update()
         'item_name' => $_POST['item_name'],
         'category' => $_POST['category'],
         'total_count' => $_POST['quantity'],
-        'available_count' => $_POST['status'] == 'Available' ? $_POST['quantity'] : 0,
+        'available_count' => $_POST['quantity'],
         'status' => $_POST['status']
     ];
 
@@ -63,5 +63,13 @@ public function delete()
     $model->deleteItem($id);
 
     echo json_encode(["status" => "success"]);
+}
+public function getChartData()
+{
+    $model = new InventoryModel();
+
+    $data = $model->getCategoryStats();
+
+    echo json_encode($data);
 }
 }

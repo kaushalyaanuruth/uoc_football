@@ -78,19 +78,22 @@ CREATE TABLE IF NOT EXISTS team_coaches (
     FOREIGN KEY (coach_id) REFERENCES coaches(coach_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS budgets (
-    budget_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    team_id INT(16) NOT NULL,
+CREATE TABLE budgets (
+    budget_id INT AUTO_INCREMENT PRIMARY KEY,
+    team_id INT NOT NULL,
+    admin_id INT NOT NULL,
     date DATE NOT NULL,
-    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES admins(admin_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS incomes (
     income_id INT(32) PRIMARY KEY AUTO_INCREMENT,
     description VARCHAR(255) NOT NULL,
     image VARCHAR(255) DEFAULT NULL,
-amount DECIMAL(10,2) NOT NULL,
-date DATE NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    date DATE NOT NULL,
+    category VARCHAR(100) NOT NULL,
     budget_id INT(32) NOT NULL,
     FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -101,7 +104,8 @@ CREATE TABLE IF NOT EXISTS expenses (
     description VARCHAR(255) NOT NULL,
     image VARCHAR(255) DEFAULT NULL,
     amount DECIMAL(10,2) NOT NULL,
-date DATE NOT NULL,
+    date DATE NOT NULL,
+    category VARCHAR(100) NOT NULL,
     budget_id INT(32) NOT NULL,
     FOREIGN KEY (budget_id) REFERENCES budgets(budget_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );

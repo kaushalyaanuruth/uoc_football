@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Captain Finance Dashboard</title>
     <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/CaptainFinance.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -47,13 +48,13 @@
                 <p>Manage team expenses, funds, and overall budget</p>
             </div>
             <div class="header-actions">
-                <select>
+                <!-- <select>
                     <option>This Month</option>
                     <option>Last Month</option>
                     <option>This Quarter</option>
 
-                </select>
-<button class="btn-export" id="exportReport">Export Report</button>
+                </select> -->
+                <button class="btn-export" id="exportReport">Export Report</button>
             </div>
         </div>
 
@@ -64,7 +65,9 @@
 
                     <div>
                         <div class="stat-title">Total Income</div>
-                        <div class="stat-value">$45,250</div>
+                        <div class="stat-value">
+                            $ <?= number_format($data['stats']['income']) ?>
+                        </div>
                         <small>+12.5% from last month</small>
                     </div>
                     <div class="stat-icon income">
@@ -77,7 +80,9 @@
                 <div class="stat-content">
                     <div>
                         <div class="stat-title">Total Expenses</div>
-                        <div class="stat-value">$32,180</div>
+                        <div class="stat-value">
+                            $ <?= number_format($data['stats']['expense']) ?>
+                        </div>
                         <small>+8.2% from last month</small>
                     </div>
                     <div class="stat-icon expense">
@@ -90,7 +95,10 @@
                 <div class="stat-content">
                     <div>
                         <div class="stat-title">Current Balance</div>
-                        <div class="stat-value">$13,070</div>
+                        <div class="stat-value">
+                            $
+                            <?= number_format($data['stats']['balance']) ?>
+                        </div>
                         <small>Healthy balance</small>
                     </div>
                     <div class="stat-icon balance">
@@ -111,59 +119,8 @@
 
             </div>
 
-            <div class="bar-chart">
-
-                <?php
-                $months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"];
-                foreach ($months as $m) {
-                    $income = rand(60, 100);
-                    $expense = rand(30, 70);
-
-                    echo "
-    <div class='month monthly'>
-        <div class='bars'>
-            <div class='bar income' data-month='$income'></div>
-            <div class='bar expense' data-month='$expense'></div>
-        </div>
-        <span>$m</span>
-    </div>
-    ";
-                }
-                ?>
-
-                <!-- Quarterly -->
-                <div class="month quarterly" style="display:none">
-                    <div class="bars">
-                        <div class="bar income" data-quarter="80"></div>
-                        <div class="bar expense" data-quarter="50"></div>
-                    </div>
-                    <span>Q1</span>
-                </div>
-
-                <div class="month quarterly" style="display:none">
-                    <div class="bars">
-                        <div class="bar income" data-quarter="90"></div>
-                        <div class="bar expense" data-quarter="60"></div>
-                    </div>
-                    <span>Q2</span>
-                </div>
-
-                <div class="month quarterly" style="display:none">
-                    <div class="bars">
-                        <div class="bar income" data-quarter="85"></div>
-                        <div class="bar expense" data-quarter="55"></div>
-                    </div>
-                    <span>Q3</span>
-                </div>
-
-                <div class="month quarterly" style="display:none">
-                    <div class="bars">
-                        <div class="bar income" data-quarter="95"></div>
-                        <div class="bar expense" data-quarter="65"></div>
-                    </div>
-                    <span>Q4</span>
-                </div>
-
+            <div class="chart-wrapper">
+                <canvas id="financeChart"></canvas>
             </div>
 
         </section>
@@ -230,43 +187,44 @@
             </h2>
 
 
-           <table class="finance-table">
-    <tr>
-        <th>Type</th>
-        <th>Category</th>
-        <th>Amount</th>
-        <th>Date</th>
-        <th>Description</th>
-        <th>Actions</th>
-    </tr>
+            <table class="finance-table">
+                <tr>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
 
-    <?php foreach ($data['transactions'] as $t): ?>
-        <tr>
-            <td>
-                <?php if ($t['type'] === "Income"): ?>
-                    <span class="badge badge-income">Income</span>
-                <?php else: ?>
-                    <span class="badge badge-expense">Expense</span>
-                <?php endif; ?>
-            </td>
+                <?php foreach ($data['transactions'] as $t): ?>
+                    <tr data-id="<?= $t->id ?>">
+                        <td>
+                            <?php if ($t->type === "Income"): ?>
+                                <span class="badge badge-income">Income</span>
+                            <?php else: ?>
+                                <span class="badge badge-expense">Expense</span>
+                            <?php endif; ?>
+                        </td>
 
-            <td><?= htmlspecialchars($t['category']) ?></td>
+                        <td><?= htmlspecialchars($t->category) ?></td>
 
-            <td class="<?= $t['type'] === 'Income' ? 'amount_income' : 'amount_expense' ?>">
-                <?= $t['type'] === 'Income' ? '+' : '-' ?>Rs. <?= number_format($t['amount']) ?>
-            </td>
+                        <td class="<?= $t->type === 'Income' ? 'amount_income' : 'amount_expense' ?>">
+                            <?= $t->type === 'Income' ? '+' : '-' ?>$ <?= number_format($t->amount) ?>
+                        </td>
 
-            <td><?= date("M d, Y", strtotime($t['date'])) ?></td>
+                        <td><?= date("M d, Y", strtotime($t->date)) ?></td>
 
-            <td><?= htmlspecialchars($t['description']) ?></td>
+                        <td><?= htmlspecialchars($t->description) ?></td>
 
-            <td class="actions">
-                <button class="btn-edit">Edit</button>
-                <button class="btn-delete">Delete</button>
-            </td>
-        </tr>
-    <?php endforeach; ?>
-</table>
+                        <td class="actions">
+                            <button class="btn-edit">Edit</button>
+                            <button class="btn-delete">Delete</button>
+
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
 
         </section>
         <!-- ================= EDIT TRANSACTION MODAL ================= -->
