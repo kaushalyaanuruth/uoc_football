@@ -40,4 +40,37 @@ class AttendanceModel
 
     return $this->query($query, ['event_id' => $event_id])[0];
 }
+
+public function getOrCreateEvent($date, $type)
+{
+    $event = $this->query(
+        "SELECT * FROM events WHERE date = :date AND event_type = :type LIMIT 1",
+        [
+            'date' => $date,
+            'type' => $type
+        ]
+    );
+
+    if (!empty($event)) {
+        return $event[0];
+    }
+
+    // create new event
+    $this->query(
+        "INSERT INTO events (location, date, event_type) 
+         VALUES ('Ground', :date, :type)",
+        [
+            'date' => $date,
+            'type' => $type
+        ]
+    );
+
+    return $this->query(
+        "SELECT * FROM events WHERE date = :date AND event_type = :type LIMIT 1",
+        [
+            'date' => $date,
+            'type' => $type
+        ]
+    )[0];
+}
 }

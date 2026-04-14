@@ -50,13 +50,13 @@
             </div>
 
             <div class="filters">
-                <select>
-                    <option>Practice</option>
-                    <option>Match</option>
-                    <option>Training</option>
-                    <option>Fitness</option>
+                <select id="eventType">
+                    <option <?= $data['selected_type'] == 'Practice' ? 'selected' : '' ?>>Practice</option>
+                    <option <?= $data['selected_type'] == 'Match' ? 'selected' : '' ?>>Match</option>
+                    <option <?= $data['selected_type'] == 'Training' ? 'selected' : '' ?>>Training</option>
+                    <option <?= $data['selected_type'] == 'Fitness' ? 'selected' : '' ?>>Fitness</option>
                 </select>
-                <input type="date" value="<?= date('Y-m-d') ?>">
+                <input type="date" id="attendanceDate" value="<?= $data['selected_date'] ?>">
                 <select>
                     <option>All Teams</option>
                     <!-- <option value="">Team A</option>

@@ -225,3 +225,5 @@ CREATE TABLE IF NOT EXISTS exercises (
     FOREIGN KEY (gym_id) REFERENCES gyms(gym_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
+ALTER TABLE events 
+ADD COLUMN event_type ENUM('Practice','Match','Training','Fitness') DEFAULT 'Practice';

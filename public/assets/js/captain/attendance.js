@@ -182,10 +182,41 @@ document.addEventListener("DOMContentLoaded", () => {
         if (choice) {
             // exportPDF();
             // exportCSV();
-            window.location.href = window.location.origin + "/uoc_football/public/CaptainAttendance/export";
+            window.location.href =
+    window.location.origin +
+    "/uoc_football/public/CaptainAttendance/export?date=" +
+    dateInput.value +
+    "&type=" +
+    typeSelect.value;
 
         }
        
     });
+    
+// const dateInput = document.getElementById("attendanceDate");
 
+// dateInput.addEventListener("change", () => {
+//     const selectedDate = dateInput.value;
+
+//     window.location.href =
+//         window.location.origin +
+//         "/uoc_football/public/CaptainAttendance?date=" + selectedDate;
+// });
+const typeSelect = document.getElementById("eventType");
+const dateInput = document.getElementById("attendanceDate");
+
+function reloadPage() {
+    const date = dateInput.value;
+    const type = typeSelect.value;
+
+    window.location.href =
+        window.location.origin +
+        "/uoc_football/public/CaptainAttendance?date=" +
+        date +
+        "&type=" +
+        type;
+}
+
+typeSelect.addEventListener("change", reloadPage);
+dateInput.addEventListener("change", reloadPage);
 });
