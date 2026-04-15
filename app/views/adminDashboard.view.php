@@ -70,7 +70,7 @@
                     </div>
                     <p class="action-label">Store</p>
                 </a>
-                <a class="action-card icon-orange" href="">
+                <a class="action-card icon-orange" href="<?php echo ROOT; ?>/budgetManagement">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/budget.svg" alt="budget icon" class="action-icon">
                     </div>
