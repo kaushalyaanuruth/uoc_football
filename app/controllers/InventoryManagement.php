@@ -22,7 +22,7 @@ class InventoryManagement extends Controller
                     'status' => 'available',
                     'location' => 'Equipment Room',
                     'description' => 'Training bibs for session drills.',
-                    'icon' => 'checkroom'
+                    'icon' => 'bips'
                 ],
                 [
                     'id' => 2,
@@ -33,7 +33,7 @@ class InventoryManagement extends Controller
                     'status' => 'low',
                     'location' => 'Storage Room',
                     'description' => 'Official footballs for practice and matches.',
-                    'icon' => 'sports_soccer'
+                    'icon' => 'football'
                 ],
                 [
                     'id' => 3,
@@ -44,7 +44,7 @@ class InventoryManagement extends Controller
                     'status' => 'low',
                     'location' => 'Equipment Room',
                     'description' => 'Used for pitch marking drills.',
-                    'icon' => 'inventory_2'
+                    'icon' => 'markers'
                 ],
                 [
                     'id' => 4,
@@ -55,7 +55,7 @@ class InventoryManagement extends Controller
                     'status' => 'available',
                     'location' => 'Training Store',
                     'description' => 'Flexible training cones for drills.',
-                    'icon' => 'inventory_2'
+                    'icon' => 'cones'
                 ],
                 [
                     'id' => 5,
@@ -66,7 +66,7 @@ class InventoryManagement extends Controller
                     'status' => 'reserved',
                     'location' => 'Gym Locker',
                     'description' => 'Used for warm-up and strength work.',
-                    'icon' => 'fitness_center'
+                    'icon' => 'resistance_band'
                 ],
                 [
                     'id' => 6,
@@ -77,10 +77,53 @@ class InventoryManagement extends Controller
                     'status' => 'available',
                     'location' => 'Kitchen Area',
                     'description' => 'Bottles for hydration during sessions.',
-                    'icon' => 'inventory_2'
+                    'icon' => 'water_bottle'
                 ]
             ];
         }
+    }
+
+    private function iconFromName($name)
+    {
+        $normalizedName = strtolower(trim((string) $name));
+
+        $nameMap = [
+            'bibs' => 'checkroom',
+            'footballs' => 'sports_soccer',
+            'markers' => 'sports_bar',
+            'cones' => 'sports_bar',
+            'resistance band' => 'fitness_center',
+            'water bottles' => 'sports_bar'
+        ];
+
+        return $nameMap[$normalizedName] ?? 'inventory_2';
+    }
+
+    private function normalizeStoredIcon($icon, $name)
+    {
+        $normalizedIcon = strtolower(trim((string) $icon));
+
+        $iconMap = [
+            'bips' => 'checkroom',
+            'bibs' => 'checkroom',
+            'football' => 'sports_soccer',
+            'footballs' => 'sports_soccer',
+            'sports_soccer' => 'sports_soccer',
+            'checkroom' => 'checkroom',
+            'resistance_band' => 'fitness_center',
+            'fitness_center' => 'fitness_center',
+            'markers' => 'sports_bar',
+            'cones' => 'sports_bar',
+            'sports_bar' => 'sports_bar',
+            'water_bottle' => 'sports_bar',
+            'sports_bottle' => 'sports_bar'
+        ];
+
+        if ($normalizedIcon === '' || $normalizedIcon === 'inventory_2' || $normalizedIcon === 'inventory.svg') {
+            return $this->iconFromName($name);
+        }
+
+        return $iconMap[$normalizedIcon] ?? $this->iconFromName($name);
     }
 
     private function jsonInput()
@@ -108,6 +151,12 @@ class InventoryManagement extends Controller
         }
 
         $this->seedInventory();
+
+        // Normalize existing session icon values so legacy data does not render all rows with one icon.
+        foreach ($_SESSION['inventory_items'] as &$item) {
+            $item['icon'] = $this->normalizeStoredIcon($item['icon'] ?? '', $item['name'] ?? '');
+        }
+        unset($item);
 
         $items = $_SESSION['inventory_items'];
         $totalItems = count($items);

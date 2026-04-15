@@ -1,560 +1,509 @@
-// Gallery Management JavaScript
-
-// DOM Elements
-const uploadForm = document.getElementById('uploadForm');
-const uploadArea = document.getElementById('uploadArea');
-const imageInput = document.getElementById('imageInput');
-const browseBtn = document.getElementById('browseBtn');
-const uploadBtn = document.getElementById('uploadBtn');
-const preview = document.getElementById('preview');
-const previewGrid = document.getElementById('previewGrid');
-const fileCount = document.getElementById('fileCount');
-const galleryGrid = document.getElementById('galleryGrid');
-
-// Store selected files
-let selectedFiles = [];
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    setupUploadHandlers();
-    setupCardActions();
-});
-
-// Upload Handlers
-function setupUploadHandlers() {
-    if (!browseBtn || !imageInput || !uploadForm || !uploadBtn) {
-        console.error('Upload elements not found:', {
-            browseBtn: !!browseBtn,
-            imageInput: !!imageInput,
-            uploadForm: !!uploadForm,
-            uploadBtn: !!uploadBtn,
-            uploadArea: !!uploadArea,
-            preview: !!preview,
-            previewGrid: !!previewGrid,
-            fileCount: !!fileCount
-        });
-        return;
+(function () {
+    /**
+     * Returns a DOM element by ID to keep selectors concise and consistent.
+     */
+    function byId(id) {
+        return document.getElementById(id);
     }
 
-    // Browse button click
-    browseBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        imageInput.click();
-    });
+    /**
+     * Builds absolute endpoint URLs using root config injected from the PHP view.
+     */
+    function buildEndpoint(path) {
+        const config = window.GALLERY_MANAGEMENT_CONFIG || {};
+        return (config.root || '') + path;
+    }
 
-    // File input change
-    imageInput.addEventListener('change', function(e) {
-        handleMultipleFiles(Array.from(e.target.files));
-    });
+    const uploadForm = byId('uploadForm');
+    const uploadArea = byId('uploadArea');
+    const imageInput = byId('imageInput');
+    const browseBtn = byId('browseBtn');
+    const uploadBtn = byId('uploadBtn');
+    const preview = byId('preview');
+    const previewGrid = byId('previewGrid');
+    const fileCount = byId('fileCount');
+    const galleryGrid = byId('galleryGrid');
+    const filterCategory = byId('filterCategory');
+    const editModal = byId('editModal');
+    const editForm = byId('editForm');
+    const closeEditModalBtn = byId('closeEditModalBtn');
+    const cancelEditBtn = byId('cancelEditBtn');
+    const saveEditBtn = byId('saveEditBtn');
+    const deleteModal = byId('deleteModal');
+    const deleteForm = byId('deleteForm');
+    const closeDeleteModalBtn = byId('closeDeleteModalBtn');
+    const cancelDeleteBtn = byId('cancelDeleteBtn');
+    const confirmDeleteBtn = byId('confirmDeleteBtn');
 
-    // Drag and drop
-    uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#667eea';
-        uploadArea.style.background = '#f8f9ff';
-    });
+    let selectedFiles = [];
 
-    uploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#ddd';
-        uploadArea.style.background = 'transparent';
-    });
+    /**
+     * Displays a temporary success/error message at the top of the page.
+     */
+    function showMessage(message, type) {
+        const old = document.querySelectorAll('.message');
+        old.forEach(function (node) {
+            node.remove();
+        });
 
-    uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#ddd';
-        uploadArea.style.background = 'transparent';
-        
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) {
-            handleMultipleFiles(files);
+        const box = document.createElement('div');
+        box.className = 'message ' + type + ' show';
+        box.textContent = message;
+
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(box, container.firstChild);
         }
-    });
 
-    // Form submit
-    uploadForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        uploadImage();
-    });
-}
+        setTimeout(function () {
+            box.classList.remove('show');
+            setTimeout(function () {
+                box.remove();
+            }, 250);
+        }, 3500);
+    }
 
-// Handle Multiple Files
-function handleMultipleFiles(files) {
-    if (!files || files.length === 0) return;
+    /**
+     * Updates message text and style inside modal forms.
+     */
+    function setFormMessage(element, message, type) {
+        if (!element) {
+            return;
+        }
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    const validFiles = [];
-    const errors = [];
+        element.textContent = message || '';
+        element.className = 'form-message' + (type ? ' ' + type : '');
+    }
 
-    // Validate each file
-    files.forEach(file => {
+    /**
+     * Validates one file and returns an error string when invalid, otherwise empty string.
+     */
+    function validateFile(file) {
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const maxBytes = 10 * 1024 * 1024;
+
         if (!validTypes.includes(file.type)) {
-            errors.push(`${file.name}: Invalid file type`);
-            return;
+            return file.name + ': invalid file type';
         }
-        if (file.size > 10 * 1024 * 1024) {
-            errors.push(`${file.name}: Exceeds 10MB limit`);
-            return;
+
+        if (file.size > maxBytes) {
+            return file.name + ': exceeds 10MB limit';
         }
-        validFiles.push(file);
-    });
 
-    // Show errors if any
-    if (errors.length > 0) {
-        showMessage(errors.join('\n'), 'error');
+        return '';
     }
 
-    if (validFiles.length === 0) return;
+    /**
+     * Stores valid files and immediately renders thumbnails so users can review selection.
+     */
+    function setSelectedFiles(files) {
+        const validFiles = [];
+        const errors = [];
 
-    // Store files
-    selectedFiles = validFiles;
-
-    // Show previews
-    previewGrid.innerHTML = '';
-    validFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const previewItem = document.createElement('div');
-            previewItem.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
-            previewItem.setAttribute('data-file-index', index);
-            
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.cssText = 'width: 100%; height: 150px; object-fit: cover;';
-            
-            const name = document.createElement('p');
-            name.textContent = file.name;
-            name.style.cssText = 'font-size: 11px; padding: 5px; margin: 0; background: #f5f5f5; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
-            
-            // Remove button
-            const removeBtn = document.createElement('button');
-            removeBtn.innerHTML = '✕';
-            removeBtn.style.cssText = 'position: absolute; top: 5px; right: 5px; width: 25px; height: 25px; border-radius: 50%; background: rgba(255,0,0,0.8); color: white; border: none; cursor: pointer; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10;';
-            removeBtn.setAttribute('title', 'Remove this image');
-            removeBtn.onclick = function(e) {
-                e.preventDefault();
-                removeFileFromSelection(index);
-            };
-            
-            previewItem.appendChild(img);
-            previewItem.appendChild(name);
-            previewItem.appendChild(removeBtn);
-            previewGrid.appendChild(previewItem);
-        };
-        reader.readAsDataURL(file);
-    });
-
-    fileCount.textContent = `${validFiles.length} image(s) selected`;
-    preview.style.display = 'block';
-}
-
-// Remove file from selection
-function removeFileFromSelection(index) {
-    // Remove from selectedFiles array
-    selectedFiles.splice(index, 1);
-    
-    // Update preview
-    if (selectedFiles.length > 0) {
-        // Re-render previews with updated indices
-        previewGrid.innerHTML = '';
-        selectedFiles.forEach((file, newIndex) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const previewItem = document.createElement('div');
-                previewItem.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
-                previewItem.setAttribute('data-file-index', newIndex);
-                
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.cssText = 'width: 100%; height: 150px; object-fit: cover;';
-                
-                const name = document.createElement('p');
-                name.textContent = file.name;
-                name.style.cssText = 'font-size: 11px; padding: 5px; margin: 0; background: #f5f5f5; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.innerHTML = '✕';
-                removeBtn.style.cssText = 'position: absolute; top: 5px; right: 5px; width: 25px; height: 25px; border-radius: 50%; background: rgba(255,0,0,0.8); color: white; border: none; cursor: pointer; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10;';
-                removeBtn.setAttribute('title', 'Remove this image');
-                removeBtn.onclick = function(e) {
-                    e.preventDefault();
-                    removeFileFromSelection(newIndex);
-                };
-                
-                previewItem.appendChild(img);
-                previewItem.appendChild(name);
-                previewItem.appendChild(removeBtn);
-                previewGrid.appendChild(previewItem);
-            };
-            reader.readAsDataURL(file);
-        });
-        
-        fileCount.textContent = `${selectedFiles.length} image(s) selected`;
-    } else {
-        // No files left, hide preview
-        preview.style.display = 'none';
-        fileCount.textContent = '';
-        previewGrid.innerHTML = '';
-    }
-}
-
-// Upload Image
-function uploadImage() {
-    console.log('Upload function called');
-    console.log('Selected files:', selectedFiles);
-    
-    // Validate required fields
-    if (!selectedFiles || selectedFiles.length === 0) {
-        showMessage('Please select at least one image', 'error');
-        return;
-    }
-
-    const category = document.getElementById('category').value;
-    console.log('Category:', category);
-    
-    if (!category) {
-        showMessage('Please select a category', 'error');
-        return;
-    }
-
-    const description = document.getElementById('description').value;
-    const tags = document.getElementById('tags').value;
-
-    console.log('Starting upload...', { 
-        fileCount: selectedFiles.length, 
-        description, 
-        category, 
-        tags 
-    });
-
-    uploadBtn.disabled = true;
-    uploadBtn.textContent = `Uploading ${selectedFiles.length} image(s)...`;
-
-    // Create FormData and append all files
-    const formData = new FormData();
-    selectedFiles.forEach((file, index) => {
-        console.log(`Adding file ${index}:`, file.name);
-        formData.append('images[]', file);
-    });
-    formData.append('description', description);
-    formData.append('category', category);
-    formData.append('tags', tags);
-
-    console.log('Sending request...');
-
-    fetch('../galleryManagement/uploadMultiple', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text().then(text => {
-            console.log('Response text:', text);
-            try {
-                return JSON.parse(text);
-            } catch (e) {
-                console.error('JSON parse error:', e);
-                console.error('Response was:', text);
-                throw new Error('Invalid JSON response from server');
+        files.forEach(function (file) {
+            const validationError = validateFile(file);
+            if (validationError) {
+                errors.push(validationError);
+                return;
             }
+
+            validFiles.push(file);
         });
-    })
-    .then(data => {
-        console.log('Parsed data:', data);
-        if (data.success) {
-            showMessage(`${data.uploaded} image(s) uploaded successfully!`, 'success');
-            resetForm();
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        } else {
-            showMessage(data.message || 'Upload failed', 'error');
+
+        if (errors.length) {
+            showMessage(errors.join(' | '), 'error');
+        }
+
+        selectedFiles = validFiles;
+        renderPreview();
+    }
+
+    /**
+     * Rebuilds the preview grid and allows removing individual files from the selection.
+     */
+    function renderPreview() {
+        if (!preview || !previewGrid || !fileCount) {
+            return;
+        }
+
+        previewGrid.innerHTML = '';
+
+        if (!selectedFiles.length) {
+            preview.style.display = 'none';
+            fileCount.textContent = '';
+            return;
+        }
+
+        selectedFiles.forEach(function (file, index) {
+            const card = document.createElement('div');
+            card.className = 'gallery-card';
+            card.style.position = 'relative';
+
+            const img = document.createElement('img');
+            img.className = 'gallery-image';
+            img.alt = file.name;
+            img.src = URL.createObjectURL(file);
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'action-btn delete-btn';
+            removeButton.style.position = 'absolute';
+            removeButton.style.top = '8px';
+            removeButton.style.right = '8px';
+            removeButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">close</span>';
+            removeButton.addEventListener('click', function () {
+                selectedFiles.splice(index, 1);
+                renderPreview();
+            });
+
+            card.appendChild(img);
+            card.appendChild(removeButton);
+            previewGrid.appendChild(card);
+        });
+
+        preview.style.display = 'block';
+        fileCount.textContent = selectedFiles.length + ' image(s) selected';
+    }
+
+    /**
+     * Sends selected images and form metadata to the uploadMultiple controller endpoint.
+     */
+    async function uploadImages() {
+        if (!selectedFiles.length) {
+            showMessage('Please select at least one image', 'error');
+            return;
+        }
+
+        const categoryInput = byId('category');
+        const descriptionInput = byId('description');
+        const tagsInput = byId('tags');
+
+        if (!categoryInput || !categoryInput.value) {
+            showMessage('Please select a category', 'error');
+            return;
+        }
+
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Uploading...';
+
+        const formData = new FormData();
+        selectedFiles.forEach(function (file) {
+            formData.append('images[]', file);
+        });
+        formData.append('category', categoryInput.value);
+        formData.append('description', descriptionInput ? descriptionInput.value : '');
+        formData.append('tags', tagsInput ? tagsInput.value : '');
+
+        try {
+            const response = await fetch(buildEndpoint('/galleryManagement/uploadMultiple'), {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Request failed with status ' + response.status);
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message || 'Upload failed');
+            }
+
+            showMessage(result.message || 'Images uploaded successfully', 'success');
+            setTimeout(function () {
+                window.location.reload();
+            }, 700);
+        } catch (error) {
+            showMessage(error.message, 'error');
             uploadBtn.disabled = false;
             uploadBtn.textContent = 'Upload Images';
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showMessage('An error occurred during upload: ' + error.message, 'error');
-        uploadBtn.disabled = false;
-        uploadBtn.textContent = 'Upload Images';
-    });
-}
-
-// Reset Form
-function resetForm() {
-    uploadForm.reset();
-    preview.style.display = 'none';
-    uploadBtn.style.display = 'none';
-    imageInput.value = '';
-    selectedFiles = [];
-    previewGrid.innerHTML = '';
-    fileCount.textContent = '';
-}
-
-// Filter Handlers
-function setupFilterHandlers() {
-    if (applyFilterBtn) {
-        applyFilterBtn.addEventListener('click', applyFilters);
     }
-}
 
-function applyFilters() {
-    const category = filterCategory ? filterCategory.value : '';
-    const status = filterStatus ? filterStatus.value : '';
-    const dateFrom = filterDateFrom ? filterDateFrom.value : '';
-    const dateTo = filterDateTo ? filterDateTo.value : '';
+    /**
+     * Deletes a gallery image by ID through the controller delete endpoint.
+     */
+    async function deleteImage(id) {
+        try {
+            const response = await fetch(buildEndpoint('/galleryManagement/delete'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
 
-    const params = new URLSearchParams();
-    if (category) params.append('category', category);
-    if (status) params.append('status', status);
-    if (dateFrom) params.append('dateFrom', dateFrom);
-    if (dateTo) params.append('dateTo', dateTo);
-
-    const url = '../galleryManagement/filter?' + params.toString();
-    
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                renderGallery(data.images);
-            } else {
-                showMessage('Filter failed', 'error');
+            if (!response.ok) {
+                throw new Error('Request failed with status ' + response.status);
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showMessage('An error occurred while filtering', 'error');
-        });
-}
 
-// Render Gallery
-function renderGallery(images) {
-    if (!images || images.length === 0) {
-        galleryGrid.innerHTML = `
-            <div class="empty-state">
-                <div style="font-size: 64px; margin-bottom: 20px;">📷</div>
-                <h3>No images found</h3>
-                <p>Try adjusting your filters</p>
-            </div>
-        `;
-        return;
-    }
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message || 'Delete failed');
+            }
 
-    galleryGrid.innerHTML = images.map(image => `
-        <div class="gallery-card" data-image-id="${image.id}">
-            <div class="card-image-container" style="position: relative;">
-                <img src="../${image.filepath}" alt="${escapeHtml(image.description)}" class="gallery-image">
-                <div class="card-overlay">
-                    <button class="action-btn edit-btn" data-id="${image.id}" title="Edit">✏️</button>
-                    <button class="action-btn delete-btn" data-id="${image.id}" title="Delete">🗑️</button>
-                </div>
-            </div>
-            <div class="card-content">
-                <p class="card-description">${escapeHtml(image.description)}</p>
-                <div class="card-meta">
-                    <span class="category-badge category-${image.category}">
-                        ${capitalizeFirst(image.category)}
-                    </span>
-                    <span class="card-date">${formatDate(image.created_at)}</span>
-                </div>
-                ${image.tags ? `
-                    <div class="card-tags">
-                        ${image.tags.split(',').map(tag => `<span class="tag">${escapeHtml(tag.trim())}</span>`).join('')}
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `).join('');
-
-    setupCardActions();
-}
-
-// Bulk Actions
-function setupBulkActions() {
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.image-checkbox');
-            checkboxes.forEach(cb => cb.checked = this.checked);
-        });
-    }
-
-    if (bulkDeleteBtn) {
-        bulkDeleteBtn.addEventListener('click', bulkDelete);
-    }
-}
-
-function bulkDelete() {
-    const checkedBoxes = document.querySelectorAll('.image-checkbox:checked');
-    if (checkedBoxes.length === 0) {
-        showMessage('Please select images to delete', 'error');
-        return;
-    }
-
-    if (!confirm(`Are you sure you want to delete ${checkedBoxes.length} image(s)?`)) {
-        return;
-    }
-
-    const ids = Array.from(checkedBoxes).map(cb => cb.value);
-
-    fetch('../galleryManagement/bulkDelete', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ids })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showMessage('Images deleted successfully', 'success');
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            showMessage(data.message || 'Delete failed', 'error');
+            showMessage(result.message || 'Image deleted successfully', 'success');
+            setTimeout(function () {
+                window.location.reload();
+            }, 500);
+            return true;
+        } catch (error) {
+            setFormMessage(byId('deleteFormMessage'), error.message, 'error');
+            return false;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showMessage('An error occurred during deletion', 'error');
-    });
-}
-
-// Card Actions
-function setupCardActions() {
-    // Delete Button
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            deleteImage(id);
-        });
-    });
-
-    // Edit Button
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            editImage(id);
-        });
-    });
-}
-
-// Delete Image
-function deleteImage(id) {
-    if (!confirm('Are you sure you want to delete this image?')) {
-        return;
     }
 
-    fetch('../galleryManagement/delete', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showMessage('Image deleted successfully', 'success');
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            showMessage(data.message || 'Delete failed', 'error');
+    /**
+     * Opens the edit modal and pre-fills the form using data from the selected card.
+     */
+    function openEditModal(card, id) {
+        if (!editModal || !card) {
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showMessage('An error occurred during deletion', 'error');
-    });
-}
 
-// Edit Image (placeholder - can be expanded with a modal)
-function editImage(id) {
-    // Find the card
-    const card = document.querySelector(`[data-image-id="${id}"]`);
-    if (!card) return;
+        byId('editImageId').value = id;
+        byId('editDescription').value = card.getAttribute('data-description') || '';
+        byId('editCategory').value = (card.getAttribute('data-category') || 'events').toLowerCase();
+        byId('editTags').value = card.getAttribute('data-tags') || '';
+        setFormMessage(byId('editFormMessage'), '', '');
 
-    // Get current values
-    const description = card.querySelector('.card-description').textContent;
-    const category = card.querySelector('.category-badge').textContent.toLowerCase();
-    const tags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent).join(', ');
+        editModal.classList.add('active');
+    }
 
-    // Simple prompt-based edit (can be replaced with a modal)
-    const newDescription = prompt('Edit Description:', description);
-    if (newDescription === null) return;
-
-    const newTags = prompt('Edit Tags (comma-separated):', tags);
-    if (newTags === null) return;
-
-    const data = {
-        id: id,
-        description: newDescription,
-        tags: newTags
-    };
-
-    fetch('../galleryManagement/update', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showMessage('Image updated successfully', 'success');
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            showMessage(data.message || 'Update failed', 'error');
+    /**
+     * Closes edit modal and clears temporary message state.
+     */
+    function closeEditModal() {
+        if (!editModal || !editForm) {
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showMessage('An error occurred during update', 'error');
+
+        editModal.classList.remove('active');
+        editForm.reset();
+        setFormMessage(byId('editFormMessage'), '', '');
+        if (saveEditBtn) {
+            saveEditBtn.disabled = false;
+            saveEditBtn.textContent = 'Update Photo';
+        }
+    }
+
+    /**
+     * Sends edited photo metadata to the update endpoint from modal form values.
+     */
+    async function submitEditForm() {
+        const id = byId('editImageId').value;
+        const descriptionValue = byId('editDescription').value.trim();
+        const categoryValue = byId('editCategory').value;
+        const tagsValue = byId('editTags').value.trim();
+
+        if (!id) {
+            setFormMessage(byId('editFormMessage'), 'Image ID is missing', 'error');
+            return;
+        }
+
+        saveEditBtn.disabled = true;
+        saveEditBtn.textContent = 'Updating...';
+
+        try {
+            const response = await fetch(buildEndpoint('/galleryManagement/update'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: id,
+                    description: descriptionValue,
+                    category: categoryValue,
+                    tags: tagsValue
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Request failed with status ' + response.status);
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message || 'Update failed');
+            }
+
+            setFormMessage(byId('editFormMessage'), result.message || 'Photo updated successfully', 'success');
+            setTimeout(function () {
+                window.location.reload();
+            }, 600);
+        } catch (error) {
+            setFormMessage(byId('editFormMessage'), error.message, 'error');
+            saveEditBtn.disabled = false;
+            saveEditBtn.textContent = 'Update Photo';
+        }
+    }
+
+    /**
+     * Opens the delete modal and stores the target image id in hidden input.
+     */
+    function openDeleteModal(id) {
+        if (!deleteModal) {
+            return;
+        }
+
+        byId('deleteImageId').value = id;
+        setFormMessage(byId('deleteFormMessage'), '', '');
+        deleteModal.classList.add('active');
+    }
+
+    /**
+     * Closes delete modal and clears temporary message state.
+     */
+    function closeDeleteModal() {
+        if (!deleteModal || !deleteForm) {
+            return;
+        }
+
+        deleteModal.classList.remove('active');
+        deleteForm.reset();
+        setFormMessage(byId('deleteFormMessage'), '', '');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.disabled = false;
+            confirmDeleteBtn.textContent = 'Delete Photo';
+        }
+    }
+
+    /**
+     * Submits delete request for the selected image id from delete modal form.
+     */
+    async function submitDeleteForm() {
+        const id = byId('deleteImageId').value;
+        if (!id) {
+            setFormMessage(byId('deleteFormMessage'), 'Image ID is missing', 'error');
+            return;
+        }
+
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.textContent = 'Deleting...';
+
+        const deleted = await deleteImage(id);
+        if (!deleted) {
+            confirmDeleteBtn.disabled = false;
+            confirmDeleteBtn.textContent = 'Delete Photo';
+        }
+    }
+
+    /**
+     * Filters visible cards on the page by selected category without another server request.
+     */
+    function filterCardsByCategory() {
+        if (!galleryGrid || !filterCategory) {
+            return;
+        }
+
+        const selected = filterCategory.value;
+        const cards = galleryGrid.querySelectorAll('.gallery-card');
+
+        cards.forEach(function (card) {
+            const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
+            const matches = selected === 'all' || selected === cardCategory;
+            card.style.display = matches ? '' : 'none';
+        });
+    }
+
+    /**
+     * Registers all page event listeners for uploading, filtering, and card actions.
+     */
+    function bindEvents() {
+        if (browseBtn && imageInput) {
+            browseBtn.addEventListener('click', function () {
+                imageInput.click();
+            });
+
+            imageInput.addEventListener('change', function (event) {
+                setSelectedFiles(Array.from(event.target.files || []));
+            });
+        }
+
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', function (event) {
+                event.preventDefault();
+                uploadArea.style.borderColor = '#7c3aed';
+                uploadArea.style.background = '#faf5ff';
+            });
+
+            uploadArea.addEventListener('dragleave', function () {
+                uploadArea.style.borderColor = '#d1d5db';
+                uploadArea.style.background = '#fafafa';
+            });
+
+            uploadArea.addEventListener('drop', function (event) {
+                event.preventDefault();
+                uploadArea.style.borderColor = '#d1d5db';
+                uploadArea.style.background = '#fafafa';
+                setSelectedFiles(Array.from(event.dataTransfer.files || []));
+            });
+        }
+
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                uploadImages();
+            });
+        }
+
+        if (filterCategory) {
+            filterCategory.addEventListener('change', filterCardsByCategory);
+        }
+
+        if (galleryGrid) {
+            galleryGrid.addEventListener('click', function (event) {
+                const editBtn = event.target.closest('.edit-btn');
+                if (editBtn) {
+                    const id = editBtn.getAttribute('data-id');
+                    const card = editBtn.closest('.gallery-card');
+                    openEditModal(card, id);
+                    return;
+                }
+
+                const deleteBtn = event.target.closest('.delete-btn');
+                if (deleteBtn) {
+                    openDeleteModal(deleteBtn.getAttribute('data-id'));
+                }
+            });
+        }
+
+        if (editForm) {
+            editForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                submitEditForm();
+            });
+        }
+
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                submitDeleteForm();
+            });
+        }
+
+        if (closeEditModalBtn) {
+            closeEditModalBtn.addEventListener('click', closeEditModal);
+        }
+
+        if (cancelEditBtn) {
+            cancelEditBtn.addEventListener('click', closeEditModal);
+        }
+
+        if (closeDeleteModalBtn) {
+            closeDeleteModalBtn.addEventListener('click', closeDeleteModal);
+        }
+
+        if (cancelDeleteBtn) {
+            cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeEditModal();
+                closeDeleteModal();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        bindEvents();
+        filterCardsByCategory();
     });
-}
-
-// Utility Functions
-function showMessage(message, type) {
-    // Remove existing messages
-    const existingMessages = document.querySelectorAll('.message');
-    existingMessages.forEach(msg => msg.remove());
-
-    // Create message element
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type} show`;
-    messageDiv.textContent = message;
-
-    // Insert at the top of the container
-    const container = document.querySelector('.container');
-    container.insertBefore(messageDiv, container.firstChild);
-
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        messageDiv.classList.remove('show');
-        setTimeout(() => messageDiv.remove(), 300);
-    }, 5000);
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0];
-}
+})();

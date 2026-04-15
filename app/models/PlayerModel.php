@@ -6,9 +6,6 @@ class PlayerModel
     
     protected $table = 'players';
     
-    /**
-     * Create a new player
-     */
     public function create($data)
     {
         $query = "INSERT INTO {$this->table} (
@@ -24,9 +21,6 @@ class PlayerModel
         return $this->query($query, $data);
     }
     
-    /**
-     * Get all players
-     */
     public function getAll($limit = null, $offset = 0)
     {
         if ($limit) {
@@ -38,9 +32,6 @@ class PlayerModel
         return $this->query("SELECT * FROM {$this->table} ORDER BY created_at DESC");
     }
     
-    /**
-     * Get player by ID
-     */
     public function getById($id)
     {
         $result = $this->query("SELECT * FROM {$this->table} WHERE id = :id", ['id' => $id]);

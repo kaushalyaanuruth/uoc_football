@@ -52,7 +52,7 @@
                     </div>
                     <p class="action-label">Inventory</p>
                 </a>
-                <a class="action-card icon-pink" href="">
+                <a class="action-card icon-pink" href="<?php echo ROOT; ?>/galleryManagement">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/gallery.svg" alt="gallery icon" class="action-icon">
                     </div>

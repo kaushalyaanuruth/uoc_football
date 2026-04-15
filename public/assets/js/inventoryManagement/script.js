@@ -86,6 +86,49 @@
         return root + path;
     }
 
+    function normalizeIcon(icon, itemName) {
+        const value = String(icon || '').trim().toLowerCase();
+        const normalizedName = String(itemName || '').trim().toLowerCase();
+        const iconMap = {
+            'inventory.svg': 'inventory_2',
+            'inventory_2': 'inventory_2',
+            'inventory': 'inventory_2',
+            'footballs': 'sports_soccer',
+            'football': 'sports_soccer',
+            'sports_soccer.svg': 'sports_soccer',
+            'sports_soccer': 'sports_soccer',
+            'bibs': 'checkroom',
+            'bips': 'checkroom',
+            'checkroom.svg': 'checkroom',
+            'checkroom': 'checkroom',
+            'resistance_band': 'fitness_center',
+            'fitness_center.svg': 'fitness_center',
+            'fitness_center': 'fitness_center',
+            'markers': 'sports_bar',
+            'cones': 'sports_bar',
+            'sports_bar.svg': 'sports_bar',
+            'sports_bar': 'sports_bar',
+            'water_bottle.svg': 'sports_bar',
+            'water_bottle': 'sports_bar',
+            'sports_bottle': 'sports_bar'
+        };
+
+        const nameFallbackMap = {
+            'bibs': 'checkroom',
+            'footballs': 'sports_soccer',
+            'markers': 'sports_bar',
+            'cones': 'sports_bar',
+            'resistance band': 'fitness_center',
+            'water bottles': 'sports_bar'
+        };
+
+        if (!value || value === 'inventory_2' || value === 'inventory.svg') {
+            return nameFallbackMap[normalizedName] || 'inventory_2';
+        }
+
+        return iconMap[value] || nameFallbackMap[normalizedName] || 'inventory_2';
+    }
+
 
     function itemToRow(item) {
         const row = document.createElement('div');
@@ -98,7 +141,7 @@
         row.innerHTML = [
             '<div class="item-main">',
             '    <div class="item-icon">',
-            '        <span class="material-symbols-outlined" aria-hidden="true">' + escapeHtml(normalizeIcon(item.icon)) + '</span>',
+            '        <span class="material-symbols-outlined" aria-hidden="true">' + escapeHtml(normalizeIcon(item.icon, item.name)) + '</span>',
             '    </div>',
             '    <div class="item-text">',
             '        <h3 class="item-name">' + escapeHtml(item.name || '') + '</h3>',
@@ -156,7 +199,7 @@
         byId('itemUnit').value = item.unit || 'pcs';
         byId('itemStatus').value = item.status || 'available';
         byId('itemLocation').value = item.location || '';
-        byId('itemIcon').value = item.icon || '';
+        byId('itemIcon').value = normalizeIcon(item.icon, item.name);
         byId('itemDescription').value = item.description || '';
     }
 

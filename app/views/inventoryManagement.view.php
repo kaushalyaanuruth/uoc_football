@@ -1,11 +1,55 @@
 <?php
 $items = $data['items'] ?? [];
-$stats = $data['stats'] ?? [
-    'totalItems' => 0,
-    'availableItems' => 0,
-    'lowStockItems' => 0,
-    'reservedItems' => 0
-];
+
+/**
+ * This helper converts stored inventory icon values into Material Symbols names.
+ * It keeps older icon values working while the UI renders the newer font-based icons.
+ */
+function inventoryIconSymbol($icon, $itemName = '')
+{
+    $iconMap = [
+        'inventory.svg' => 'inventory_2',
+        'inventory_2' => 'inventory_2',
+        'inventory' => 'inventory_2',
+        'footballs' => 'sports_soccer',
+        'football' => 'sports_soccer',
+        'sports_soccer.svg' => 'sports_soccer',
+        'sports_soccer' => 'sports_soccer',
+        'bibs' => 'checkroom',
+        'bips' => 'checkroom',
+        'checkroom.svg' => 'checkroom',
+        'checkroom' => 'checkroom',
+        'resistance_band' => 'fitness_center',
+        'fitness_center.svg' => 'fitness_center',
+        'fitness_center' => 'fitness_center',
+        'markers' => 'inventory_2',
+        'cones' => 'inventory_2',
+        'sports_bar.svg' => 'sports_bar',
+        'sports_bar' => 'sports_bar',
+        'water_bottle.svg' => 'sports_bar',
+        'water_bottle' => 'sports_bar',
+        'sports_bottle' => 'sports_bar'
+    ];
+
+    $normalized = strtolower(trim((string) $icon));
+
+    $nameFallbackMap = [
+        'bibs' => 'checkroom',
+        'footballs' => 'sports_soccer',
+        'markers' => 'inventory_2',
+        'cones' => 'inventory_2',
+        'resistance band' => 'fitness_center',
+        'water bottles' => 'sports_bar'
+    ];
+
+    $normalizedName = strtolower(trim((string) $itemName));
+
+    if ($normalized === '' || $normalized === 'inventory_2' || $normalized === 'inventory.svg') {
+        return $nameFallbackMap[$normalizedName] ?? 'inventory_2';
+    }
+
+    return $iconMap[$normalized] ?? ($nameFallbackMap[$normalizedName] ?? 'inventory_2');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -81,7 +125,7 @@ $stats = $data['stats'] ?? [
                         <div class="inventory-item" data-item-id="<?php echo (int) $item['id']; ?>" data-name="<?php echo htmlspecialchars(strtolower($item['name']), ENT_QUOTES, 'UTF-8'); ?>" data-category="<?php echo htmlspecialchars($item['category'], ENT_QUOTES, 'UTF-8'); ?>" data-status="<?php echo htmlspecialchars($item['status'], ENT_QUOTES, 'UTF-8'); ?>">
                             <div class="item-main">
                                 <div class="item-icon">
-                                    <span class="material-symbols-outlined" aria-hidden="true"><?php echo htmlspecialchars(inventoryIconSymbol($item['icon'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <span class="material-symbols-outlined" aria-hidden="true"><?php echo htmlspecialchars(inventoryIconSymbol($item['icon'] ?? '', $item['name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                 </div>
                                 <div class="item-text">
                                     <h3 class="item-name"><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></h3>
@@ -159,6 +203,7 @@ $stats = $data['stats'] ?? [
                             <option value="sports_soccer">Football</option>
                             <option value="checkroom">Bib</option>
                             <option value="fitness_center">Gym</option>
+                            <option value="sports_bar">Bottle</option>
                         </select>
                     </div>
                 </div>
