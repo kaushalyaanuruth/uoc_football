@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS events (
     date DATE NOT NULL
 
 );
-
+ALTER TABLE events 
+ADD COLUMN event_type ENUM('Practice','Match','Training','Fitness') DEFAULT 'Practice';
 CREATE TABLE IF NOT EXISTS team_players (
     team_id INT(16) NOT NULL,
     player_id INT(16) NOT NULL,
@@ -145,10 +146,8 @@ CREATE TABLE attendance (
     event_id INT NOT NULL,
     status ENUM('Present','Absent','Late') DEFAULT 'Absent',
     marked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
-
     UNIQUE KEY unique_player_event (player_id, event_id)
 
 );
@@ -225,5 +224,3 @@ CREATE TABLE IF NOT EXISTS exercises (
     FOREIGN KEY (gym_id) REFERENCES gyms(gym_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-ALTER TABLE events 
-ADD COLUMN event_type ENUM('Practice','Match','Training','Fitness') DEFAULT 'Practice';
