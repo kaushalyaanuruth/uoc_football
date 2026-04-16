@@ -30,8 +30,8 @@ body::before {
 }
 
 .container {
-    margin:0 auto;
-    margin-left: 64px;
-    margin-right: 64px;
+    margin:0 auto!important;
+    margin-left: 64px !important;
+    margin-right: 64px !important;
 }
 
