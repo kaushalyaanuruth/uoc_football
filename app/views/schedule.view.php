@@ -8,13 +8,16 @@
     $base = rtrim(ROOT, '/');
     $cssFile = __DIR__ . '/../../public/assets/css/schedule.css';
     $cssVersion = file_exists($cssFile) ? filemtime($cssFile) : time();
+    $commonFile = __DIR__ . '/../../public/assets/css/playerCommon.css';
+    $commonVersion = file_exists($commonFile) ? filemtime($commonFile) : time();
     ?>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/schedule.css?v=<?php echo $cssVersion; ?>">
+    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/playerCommon.css?v=<?php echo $commonVersion; ?>">
 </head>
 <body>
     <div class="dashboard-container">
-        <header>
+        <header class="player-header">
             <div class="logo-section">
                 <img src="<?php echo $base; ?>/assets/images/landingPage/header/uoclogo.png" alt="UOC Football Logo">
             </div>

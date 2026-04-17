@@ -1,0 +1,169 @@
+:root {
+    --portal-primary: #7c3aed;
+    --portal-primary-dark: #5b21b6;
+    --portal-text: #310037;
+    --portal-text-soft: #6b7280;
+    --portal-border: #e5e5ef;
+    --portal-surface: #ffffff;
+    --portal-shadow: 0 8px 22px rgba(49, 0, 55, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #ffffff;
+    color: var(--portal-text);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/common/bgimage.png');
+    background-size: 1298px 1298px;
+    background-position: -517px -125px;
+    background-repeat: no-repeat;
+    opacity: 0.06;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.dashboard-container,
+.analyze-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 32px 36px;
+}
+
+.player-header,
+.analyze-header,
+.dashboard-container > header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 6px;
+    padding: 0 0 16px;
+    border-bottom: 1px solid var(--portal-border);
+    margin-bottom: 24px;
+}
+
+.logo-section img {
+    height: 40px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    margin-left: 28px;
+}
+
+.nav-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: #4b5563;
+    background: #f6f4f8;
+    border: 1px solid #ebe6f3;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #fff;
+    background: #340134;
+    border-color: transparent;
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.25);
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notification-icon,
+.user-profile {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f6f4f8;
+    border: 1px solid #ebe6f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-icon img {
+    width: 22px;
+    height: 22px;
+}
+
+.user-profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.card,
+.section-card,
+.event-card,
+.notice-card,
+.meal-day-card,
+.overview-item,
+.stat-card,
+.nutrition-card,
+.tip-card,
+.updates-card,
+.comp-item {
+    border: 1px solid var(--portal-border) !important;
+    box-shadow: var(--portal-shadow) !important;
+    border-radius: 14px !important;
+}
+
+.page-header h1,
+.section-title {
+    color: #4a0059;
+}
+
+.welcome-banner h1 {
+    color: #ffffff;
+}
+
+.notification-overlay {
+    border: 1px solid var(--portal-border) !important;
+    box-shadow: 0 18px 40px rgba(31, 41, 55, 0.14) !important;
+    border-radius: 12px !important;
+}
+
+@media (max-width: 900px) {
+    .dashboard-container,
+    .analyze-container {
+        padding: 16px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+}

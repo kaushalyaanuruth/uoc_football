@@ -4,49 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Player Dashboard - UOC Football</title>
+    <?php
+    $base = rtrim(ROOT, '/');
+    $commonFile = __DIR__ . '/../../public/assets/css/playerCommon.css';
+    $commonVersion = file_exists($commonFile) ? filemtime($commonFile) : time();
+    ?>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/playerDashboard.css">
+    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/playerDashboard.css">
+    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/playerCommon.css?v=<?php echo $commonVersion; ?>">
 </head>
-<body style="background: linear-gradient(135deg, #ffe6ff 0%, #FFFAFF 100%); margin: 0; padding: 0; min-height: 100vh; position: relative;">
-    <style>
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('<?php echo ROOT; ?>/assets/images/common/bgimage.png');
-            background-size: 1298px 1298px;
-            background-position: -517px -125px;
-            background-repeat: no-repeat;
-            opacity: 0.1;
-            z-index: 0;
-            pointer-events: none;
-        }
-        .dashboard-container {
-            position: relative;
-            z-index: 1;
-        }
-    </style>
+<body>
     <div class="dashboard-container">
-        <header>
+        <header class="player-header">
             <div class="logo-section">
-                <img src="<?php echo ROOT; ?>/assets/images/landingPage/header/uoclogo.png" alt="UOC Football Logo">
+                <img src="<?php echo $base; ?>/assets/images/landingPage/header/uoclogo.png" alt="UOC Football Logo">
             </div>
             <nav class="nav-links">
-                <a href="<?php echo ROOT; ?>/PlayerDashboard" class="active">Home</a>
-                <a href="<?php echo ROOT; ?>/Schedule">Schedule</a>
-                <a href="<?php echo ROOT; ?>/Analyze">Analyze</a>
-                <a href="<?php echo ROOT; ?>/Notices">Notices</a>
-                <a href="<?php echo ROOT; ?>/MealPlan">Meal Plan</a>
+                <a href="<?php echo $base; ?>/PlayerDashboard" class="active">Home</a>
+                <a href="<?php echo $base; ?>/Schedule">Schedule</a>
+                <a href="<?php echo $base; ?>/Analyze">Analyze</a>
+                <a href="<?php echo $base; ?>/Notices">Notices</a>
+                <a href="<?php echo $base; ?>/MealPlan">Meal Plan</a>
             </nav>
             <div class="user-section">
                 <div class="notification-icon" id="notificationBell">
-                    <img src="<?php echo ROOT; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
+                    <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                 </div>
                 <div class="user-profile">
-                    <img src="<?php echo ROOT; ?>/assets/images/user-placeholder.jpg" alt="User Profile">
+                    <img src="<?php echo $base; ?>/assets/images/user-placeholder.jpg" alt="User Profile">
                 </div>
             </div>
         </header>

@@ -25,19 +25,7 @@ body {
 body.analyze-page {
     font-family: 'Poppins', sans-serif;
     color: var(--text-dark);
-    background: linear-gradient(135deg, #ffe6ff 0%, #fffaff 100%);
-}
-
-.analyze-bg {
-    position: fixed;
-    inset: 0;
-    background-image: url('../images/common/bgimage.png');
-    background-repeat: no-repeat;
-    background-position: -500px -110px;
-    background-size: 1250px;
-    opacity: 0.08;
-    pointer-events: none;
-    z-index: 0;
+    background: transparent;
 }
 
 .analyze-container {
