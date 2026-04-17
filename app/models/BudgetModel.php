@@ -51,6 +51,23 @@ class BudgetModel
         return $result;
     }
 
+
+    public function getByIdIncome($budget_id)
+    {
+        $query = "SELECT * FROM {$this->income_table} as t
+                WHERE t.budget_id = :budget_id";
+        $result = $this->query($query, ['budget_id' => $budget_id]);
+        return $result;
+    }
+
+    public function getByIdExpense($budget_id)
+    {
+        $query = "SELECT * FROM {$this->expense_table} as t
+                WHERE t.budget_id = :budget_id";
+        $result = $this->query($query, ['budget_id' => $budget_id]);
+        return $result;
+    }
+
     public function getIncomeTotalsByMonth()
         {
             $query = "SELECT 
@@ -153,24 +170,39 @@ class BudgetModel
 
     public function deleteIncome($id)
     {
-        $income = $this->getById($id);
+        $income = $this->getByIdIncome($id);
         
-        if (income) {
-            if (!empty($coach->image) && file_exists($coach->image)) {
-                unlink($coach->image);
+        if ($income) {
+            if (!empty($income->image) && file_exists($income->image)) {
+                unlink($income->image);
             }
             
-            // Delete associated user account (if exists)
-            try {
-                $userQuery = "DELETE FROM users WHERE username = :nic AND role = 'coach'";
-                $this->query($userQuery, ['nic' => $coach->nic]);
-            } catch (Exception $e) {
-                error_log("Failed to delete user account for coach: " . $e->getMessage());
-            }
+            $result = $this->query("DELETE FROM {$this->income_table} WHERE income_id = :income_id", ['income_id' => $income->income_id]);
         }
+
+        if ($result) {
+            $this->query("DELETE FROM {$this->parent_table} WHERE budget_id = :budget_id", ['budget_id' => $income->budget_id]);
+        }
+
+        return false;
+    }
+    public function deleteExpense($id)
+    {
+        $expense = $this->getByIdExpense($id);
         
-        // Delete coach record (will also delete team_coaches relationships due to CASCADE)
-        return $this->query("DELETE FROM {$this->table} WHERE id = :id", ['id' => $id]);
+        if ($expense) {
+            if (!empty($expense->image) && file_exists($expense->image)) {
+                unlink($expense->image);
+            }
+            
+            $result = $this->query("DELETE FROM {$this->expense_table} WHERE expense_id = :expense_id", ['expense_id' => $expense->expense_id]);
+        }
+
+        if ($result) {
+            $this->query("DELETE FROM {$this->parent_table} WHERE budget_id = :budget_id", ['budget_id' => $expense->budget_id]);
+        }
+
+        return false;
     }
 
 }
