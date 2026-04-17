@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captain Finance Dashboard</title>
+    <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/CaptainFinance.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- ================= TOP NAVBAR ================= -->
+    <header class="top-navbar">
+        <div class="nav-left">
+            <a href="<?= ROOT ?>/captainDashboard">
+                <img class="header-logo" src="<?= ROOT ?>/assets/images/adminDashboard/header/uoclogo.png"
+                    alt="UOC Football Logo">
+            </a>
+        </div>
+
+        <nav class="nav-center">
+            <a href="<?= ROOT ?>/CaptainDashboard">Home</a>
+            <a href="<?= ROOT ?>/captain/dashboard">Schedule</a>
+            <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
+            <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
+            <a href="<?= ROOT ?>/CaptainInventory">Inventory</a>
+            <a href="#" class="active">Finance</a>
+        </nav>
+
+        <div class="nav-right">
+            <button class="icon-btn">🔔</button>
+            <div class="profile">
+                <img class="avatar" src="<?= ROOT ?>../assets/images/adminDashboard/header/avatar.jpg"
+                    alt="Admin Avatar">
+
+            </div>
+        </div>
+    </header>
+
+    <main class="content">
+
+        <!-- ================= Header ================= -->
+        <div class="page-header">
+            <div>
+                <h1>Finance Dashboard</h1>
+                <p>Manage team expenses, funds, and overall budget</p>
+            </div>
+            <div class="header-actions">
+                
+                <button class="btn-export" id="exportReport">Export Report</button>
+            </div>
+        </div>
+
+        <!-- ================= Stats ================= -->
+        <section class="stats">
+            <div class="card stat-income">
+                <div class="stat-content">
+
+                    <div>
+                        <div class="stat-title">Total Income</div>
+                        <div class="stat-value">
+                            $ <?= number_format($data['stats']['income']) ?>
+                        </div>
+                        <small>+12.5% from last month</small>
+                    </div>
+                    <div class="stat-icon income">
+                        $
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stat-expense">
+                <div class="stat-content">
+                    <div>
+                        <div class="stat-title">Total Expenses</div>
+                        <div class="stat-value">
+                            $ <?= number_format($data['stats']['expense']) ?>
+                        </div>
+                        <small>+8.2% from last month</small>
+                    </div>
+                    <div class="stat-icon expense">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card stat-balance">
+                <div class="stat-content">
+                    <div>
+                        <div class="stat-title">Current Balance</div>
+                        <div class="stat-value">
+                            $
+                            <?= number_format($data['stats']['balance']) ?>
+                        </div>
+                        <small>Healthy balance</small>
+                    </div>
+                    <div class="stat-icon balance">
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Budget Overview -->
+        <section class="finance-card">
+            <div class="chart-header">
+                <h2>Budget Overview</h2>
+                <div class="chart-toggle">
+                    <button class="active" data-view="monthly">Monthly</button>
+                    <button data-view="quarterly">Quarterly</button>
+                </div>
+
+            </div>
+
+            <div class="chart-wrapper">
+                <canvas id="financeChart"></canvas>
+            </div>
+
+        </section>
+
+        <!-- ================= Forms ================= -->
+        <section class="form-grid">
+
+            <!-- Income Form -->
+            <div class="finance-card">
+                <h2><span class="finance-icon green">+</span>Record Income</h2>
+
+                <form class="finance-form">
+                    <label>Source Name</label>
+                    <input type="text" placeholder="Sponsorship, Fundraising" required />
+
+                    <label>Amount</label>
+                    <input type="number" placeholder="5000" min="0" required />
+
+                    <label>Date</label>
+                    <input type="date" required />
+
+                    <label>Description</label>
+                    <textarea placeholder="Optional notes"></textarea>
+
+                    <button class="btn-income">Add Income</button>
+                </form>
+            </div>
+
+            <!-- Expense Form -->
+            <div class="finance-card">
+                <h2><span class="finance-icon red">-</span>Record Expense</h2>
+
+                <form class="finance-form">
+                    <label>Expense Type</label>
+                    <select>
+                        <option>Equipment</option>
+                        <option>Travel</option>
+                        <option>Food</option>
+                    </select>
+
+                    <label>Amount</label>
+                    <input type="number" placeholder="1200" min="0" required />
+
+                    <label>Date</label>
+                    <input type="date" required />
+
+                    <label>Notes</label>
+                    <textarea placeholder="Optional notes"></textarea>
+
+                    <button class="btn-expense">Add Expense</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= Table ================= -->
+        <section class="finance-card">
+
+            <h2 class="finance-history">Transaction History
+                <div class="finance-charttoggle">
+                    <button class="">All</button>
+                    <button class="finance_income">Income</button>
+                    <button class="finance_expense">Expense</button>
+                </div>
+            </h2>
+
+
+            <table class="finance-table">
+                <tr>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+
+                <?php foreach ($data['transactions'] as $t): ?>
+                    <tr data-id="<?= $t->id ?>">
+                        <td>
+                            <?php if ($t->type === "Income"): ?>
+                                <span class="badge badge-income">Income</span>
+                            <?php else: ?>
+                                <span class="badge badge-expense">Expense</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <td><?= htmlspecialchars($t->category) ?></td>
+
+                        <td class="<?= $t->type === 'Income' ? 'amount_income' : 'amount_expense' ?>">
+                            <?= $t->type === 'Income' ? '+' : '-' ?>$ <?= number_format($t->amount) ?>
+                        </td>
+
+                        <td><?= date("M d, Y", strtotime($t->date)) ?></td>
+
+                        <td><?= htmlspecialchars($t->description) ?></td>
+
+                        <td class="actions">
+                            <button class="btn-edit">Edit</button>
+                            <button class="btn-delete">Delete</button>
+
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+
+        </section>
+        <!-- ================= EDIT TRANSACTION MODAL ================= -->
+        <div class="modal" id="financeModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Edit Transaction</span>
+                    <span id="closeFinanceModal">×</span>
+                </div>
+
+                <form id="financeEditForm">
+                    <input type="hidden" id="editRowIndex">
+
+                    <label>Type</label>
+                    <select id="editType">
+                        <option>Income</option>
+                        <option>Expense</option>
+                    </select>
+
+                    <label>Category</label>
+                    <input type="text" id="editCategory" required>
+
+                    <label>Amount</label>
+                    <input type="number" id="editAmount" min="0" required>
+
+                    <label>Date</label>
+                    <input type="date" id="editDate" required>
+
+                    <label>Description</label>
+                    <textarea id="editDescription"></textarea>
+
+                    <div class="modal-actions">
+                        <button type="button" id="cancelFinanceEdit">Cancel</button>
+                        <button type="submit" class="save">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Cash Flow -->
+        <section class="finance-card">
+            <h2>Cash Flow Trend</h2>
+            <div class=" cashflow">
+                <div>
+                    <h3 class="grow">+15%</h3>
+                    <p>Monthly Growth</p>
+                </div>
+                <div>
+                    <h3 class="surplus">$2,890</h3>
+                    <p>Avg Monthly Surplus</p>
+                </div>
+                <div>
+                    <h3 class="expense">71%</h3>
+                    <p>Expense Ratio</p>
+                </div>
+            </div>
+        </section>
+        <!-- ================= Summary ================= -->
+
+        <div class="balance-summary">
+            ✅ This month’s balance is up by 15%. Great financial management!
+        </div>
+
+    </main>
+    <!-- CENTER SUCCESS POPUP -->
+    <div class="modal" id="centerToast">
+        <div class="modal-content center-toast">
+            <h3>Success</h3>
+            <p id="centerToastMessage">Action completed successfully</p>
+            <button class="save" id="centerToastOk">OK</button>
+        </div>
+    </div>
+
+</body>
+<script>
+    window.APP_ROOT = "<?= ROOT ?>";
+</script>
+
+<script src="<?= ROOT ?>/assets/js/captain/CaptainFinance.js"></script>
+
+</html>

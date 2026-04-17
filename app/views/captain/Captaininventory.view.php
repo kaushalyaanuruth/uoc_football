@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+
+    <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/Captaininventory.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- ================= TOP NAVBAR ================= -->
+    <header class="top-navbar">
+        <div class="nav-left">
+            <a href="<?php echo ROOT; ?>/captainDashboard">
+                <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png"
+                    alt="UOC Football Logo">
+            </a>
+        </div>
+
+        <nav class="nav-center">
+            <a href="<?= ROOT ?>/Captaindashboard">Home</a>
+            <a href="<?= ROOT ?>/dashboard">Schedule</a>
+            <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
+            <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
+            <a href="#" class="active">Inventory</a>
+            <a href="<?= ROOT ?>/CaptainFinance">Finance</a>
+        </nav>
+
+        <div class="nav-right">
+            <button class="icon-btn">🔔</button>
+            <div class="profile">
+                <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
+                    alt="Admin Avatar">
+
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="content">
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <div>
+                <h1>Inventory Management</h1>
+                <p>Manage team equipment and supplies</p>
+            </div>
+        </header>
+
+        <!-- ================= STATS ================= -->
+        <section class="stats">
+            <div class="stat-card">
+                <h3>Total Items</h3>
+                <div class="stat-value">
+                    <span><?= $data['total'] ?></span>
+                    <div class="stat-icon purple"></div>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <h3>Items In Use</h3>
+                <div class="stat-value">
+                    <span><?= $data['in_use'] ?></span>
+                    <div class="stat-icon orange"></div>
+                </div>
+            </div>
+
+            <div class="stat-card success">
+                <h3>Available Items</h3>
+                <div class="stat-value">
+
+                    <span>
+                        <?= $data['available'] ?></span>
+                    <div class="stat-icon green"></div>
+
+                </div>
+            </div>
+
+            <div class="stat-card danger">
+                <h3>Damaged Items</h3>
+                <div class="stat-value">
+
+                    <span>
+                        <?= $data['damaged'] ?> </span>
+                    <div class="stat-icon red"></div>
+
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= CHARTS ================= -->
+        <div class="dashboard-grid">
+            <section class="chart-card">
+                <h2>Equipment Usage</h2>
+                <canvas id="equipmentUsageChart"></canvas>
+            </section>
+
+            <section class="chart-card">
+                <h2>Item Status Distribution</h2>
+                <canvas id="statusDistributionChart"></canvas>
+            </section>
+        </div>
+
+        <!-- ================= INVENTORY TABLE ================= -->
+        <section class="inventory-section">
+            <div class="section-header">
+                <h2>Inventory Items
+                    <button class="btn-add" id="addItem">Add New Item</button>
+                </h2>
+                <select id="categoryFilter">
+                    <option value="all">All Categories</option>
+                    <option value="kits">Kits</option>
+                    <option value="balls">Balls</option>
+                    <option value="equipment">Equipment</option>
+                    <option value="accessories">Accessories</option>
+                </select>
+
+            </div>
+
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php foreach ($data['inventory'] as $item): ?>
+                        <tr data-id="<?= $item->item_id ?>">
+                            <td><?= $item->item_name ?></td>
+                            <td><?= $item->category ?></td>
+                            <td><?= $item->total_count ?></td>
+                            <td>
+                                <span class="status <?= strtolower(str_replace(' ', '', $item->status)) ?>">
+                                    <?= $item->status ?>
+                                </span>
+                            </td>
+                            <td><?= $item->last_updated ?></td>
+                            <td class="actions">
+                                <button class="btn-edit">Edit</button>
+                                <button class="btn-delete">Delete</button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </section>
+        <!-- ================= EDIT INVENTORY MODAL ================= -->
+        <div class="modal" id="inventoryModal">
+            <div class="modal-content">
+                <div class="modal-header">
+
+                    <span>Edit Inventory Item</span>
+                    <span id="close">×</span>
+                </div>
+
+                <form id="inventoryForm" method="POST" action="<?= ROOT ?>/CaptainInventory/store"> <input type="hidden"
+                        id="item_id">
+
+                    <label>Item Name</label>
+                    <input type="text" id="item_name" name="item_name" required>
+
+                    <label>Category</label>
+                    <select id="category" name="category">
+                        <option>Kits</option>
+                        <option>Balls</option>
+                        <option>Equipment</option>
+                        <option>Accessories</option>
+                    </select>
+
+                    <label>Quantity</label>
+                    <input type="number" id="quantity" name="quantity" min="0">
+
+                    <label>Status</label>
+                    <select id="status" name="status">
+                        <option>Available</option>
+                        <option>In Use</option>
+                        <option>Damaged</option>
+                    </select>
+
+                    <div class="modal-actions">
+                        <button type="button" id="closeModal">Cancel</button>
+                        <button type="submit" class="save">Save</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+        <div id="toast"></div>
+        <!-- SUCCESS MODAL -->
+        <div class="modal" id="successModal">
+            <div class="modal-content" style="width:300px;text-align:center">
+                <h3>Success</h3>
+                <p id="centerToastMessage">User details saved successfully!</p>
+                <button class="save" id="closeSuccess">OK</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="<?= ROOT ?>/assets/js/captain/Captaininventory.js" defer></script>
+</body>
+
+</html>
