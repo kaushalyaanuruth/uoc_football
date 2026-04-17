@@ -35,7 +35,7 @@ body::before {
 /* ================= Top Navbar ================= */
 .top-navbar {
   height: 70px;
-  background: #FFF7FF;
+  margin-top: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,18 +62,26 @@ body::before {
 }
 
 .nav-center a {
-  border-radius: 50px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  color: rgb(65, 65, 65);
-  font-size: 13px;
-  padding: 4px 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 14px;
   text-decoration: none;
+  color: #4b5563;
+  background: #f6f4f8;
+  border: 1px solid #ebe6f3;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 
 }
 
 .nav-center a.active {
   background: #4A1150;
   color: #fff;
+  border-color: #4A1150;
   box-shadow: 0 4px 10px rgba(74, 17, 80, 0.4);
 
 }
