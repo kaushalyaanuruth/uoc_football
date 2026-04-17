@@ -156,7 +156,7 @@ $events = [
                                 $title = $event->title ?? 'Untitled Event';
                                 $description = $event->description ?? '';
                                 $location = $event->location ?? 'TBA';
-                                $eventDate = $event->event_date ?? '';
+                                $eventDate = $event->date ?? '';
                                 $eventTime = $event->event_time ?? '00:00:00';
 
                                 $formattedDate = $eventDate ? date('M d, Y', strtotime($eventDate)) : 'Date not set';
@@ -164,7 +164,7 @@ $events = [
                                 ?>
                                 <tr
                                     class="event-row"
-                                    data-event-id="<?php echo (int) $event->id; ?>"
+                                    data-event-id="<?php echo (int) ($event->event_id ?? $event->id ?? 0); ?>"
                                     data-title="<?php echo htmlspecialchars(strtolower($title), ENT_QUOTES, 'UTF-8'); ?>"
                                     data-type="<?php echo htmlspecialchars($type, ENT_QUOTES, 'UTF-8'); ?>"
                                 >
@@ -188,10 +188,10 @@ $events = [
                                     <td><?php echo htmlspecialchars($location, ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <div class="row-actions">
-                                            <button type="button" class="icon-btn edit-btn" data-id="<?php echo (int) $event->id; ?>" aria-label="Edit event">
+                                            <button type="button" class="icon-btn edit-btn" data-id="<?php echo (int) ($event->event_id ?? $event->id ?? 0); ?>" aria-label="Edit event">
                                                 <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                                             </button>
-                                            <button type="button" class="icon-btn delete-btn" data-id="<?php echo (int) $event->id; ?>" aria-label="Delete event">
+                                            <button type="button" class="icon-btn delete-btn" data-id="<?php echo (int) ($event->event_id ?? $event->id ?? 0); ?>" aria-label="Delete event">
                                                 <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                                             </button>
                                         </div>
@@ -255,6 +255,14 @@ $events = [
                 <div class="form-group">
                     <label class="input-label" for="eventLocation">Location</label>
                     <input type="text" class="form-input" id="eventLocation" name="location" value="Camp Nou Stadium" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="input-label" for="eventImage">Event Image</label>
+                    <input type="file" class="form-input" id="eventImage" name="image" accept="image/*">
+                    <div id="eventImagePreview" class="image-preview-wrap" style="display: none; margin-top: 10px;">
+                        <img id="eventImagePreviewImg" src="" alt="Event preview" class="image-preview" style="max-width: 100%; max-height: 200px; border-radius: 6px;">
+                    </div>
                 </div>
 
                 <div class="form-group notes-group">

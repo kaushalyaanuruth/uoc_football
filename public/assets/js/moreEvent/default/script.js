@@ -1,51 +1,67 @@
-// Component Loader Function
-function loadComponent(elementId, componentPath) {
-    const loadHTML = (filePath) => {
-        return fetch(filePath)
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                return response.text();
-            });
-    };
-
-    const loadCSS = (filePath) => {
-        return new Promise((resolve, reject) => {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = filePath;
-            link.onload = () => resolve();
-            link.onerror = () => reject(new Error(`Failed to load CSS: ${filePath}`));
-            document.head.appendChild(link);
-        });
-    };
-
-    const loadJS = (filePath) => {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = filePath;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error(`Failed to load JS: ${filePath}`));
-            document.body.appendChild(script);
-        });
-    };
-
-    // Load component files
-    Promise.all([
-        loadHTML(`${componentPath}/index.html`),
-        loadCSS(`${componentPath}/style.css`),
-        loadJS(`${componentPath}/script.js`)
-    ]).then(([html]) => {
-        document.getElementById(elementId).innerHTML = html;
-    }).catch(err => {
-        console.error(`Error loading component ${elementId}:`, err);
-    });
-}
-
-// Load all components when DOM is ready
+// Event Modal Functionality
 document.addEventListener('DOMContentLoaded', () => {
-    loadComponent('header', 'header');
-    loadComponent('containers', 'containers');
-    loadComponent('footer', 'footer');
+    const eventModal = document.getElementById('eventModal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalClose = document.getElementById('modalClose');
+
+    // Get all read more buttons
+    const readMoreButtons = document.querySelectorAll('.read-more-btn');
+
+    // Open modal when read more button is clicked
+    readMoreButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const eventId = this.dataset.id;
+            const title = this.dataset.title;
+            const date = this.dataset.date;
+            const time = this.dataset.time;
+            const location = this.dataset.location;
+            const image = this.dataset.image;
+            const description = this.dataset.description;
+
+            // Populate modal with event data
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalDate').textContent = date + (time ? ' at ' + time : '');
+            document.getElementById('modalLocation').textContent = location ? '📍 ' + location : '';
+            
+            // Handle image
+            const modalImageDiv = document.getElementById('modalImage');
+            if (image) {
+                modalImageDiv.innerHTML = `<img src="${ROOT}/uploads/event_images/${image}" alt="${title}">`;
+            } else {
+                // Show emoji placeholder
+                const eventEmojis = {
+                    'match': '⚽',
+                    'tournament': '🏆',
+                    'training': '🏃',
+                    'meeting': '🎯',
+                    'social': '🎉',
+                    'other': '📅'
+                };
+                modalImageDiv.innerHTML = `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 120px;">${eventEmojis['match'] || '📅'}</div>`;
+            }
+
+            document.getElementById('modalText').innerHTML = description.replace(/\n/g, '<br>');
+
+            // Show modal
+            eventModal.classList.add('open');
+        });
+    });
+
+    // Close modal when close button or overlay is clicked
+    modalClose.addEventListener('click', () => {
+        eventModal.classList.remove('open');
+    });
+
+    modalOverlay.addEventListener('click', () => {
+        eventModal.classList.remove('open');
+    });
+
+    // Close modal on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && eventModal.classList.contains('open')) {
+            eventModal.classList.remove('open');
+        }
+    });
 });
 
 // Shared functionality

@@ -8,7 +8,7 @@ $allEvents = $data['allEvents'] ?? [];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>University of Colombo Football</title>
+    <title>All Events - UOC Football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreEvent/header/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreEvent/footer/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/moreEvent/containers/style.css">
@@ -26,33 +26,33 @@ $allEvents = $data['allEvents'] ?? [];
     <div class="header">
         <nav class="nav-container">
             <div class="left-section">
-                <a href="http://localhost/UOC_Football/public/landingPage"><img class="header-logo" src="<?php echo ROOT; ?>/assets/images/landingPage/header/uoclogo.png" alt="Football Player"></a>
+                <a href="<?php echo ROOT; ?>/landingPage"><img class="header-logo" src="<?php echo ROOT; ?>/assets/images/landingPage/header/uoclogo.png" alt="UOC Logo"></a>
             </div>
             <ul class="nav-menu">
                 <li><a href="<?php echo ROOT; ?>/moreNews">News</a></li>
-                <li><a href="http://localhost/UOC_Football/public/event">Events</a></li>
-                <li><a href="http://localhost/UOC_Football/public/team">Team</a></li>
-                <li><a href="http://localhost/UOC_Football/public/gallery">Gallery</a></li>
+                <li><a href="<?php echo ROOT; ?>/moreEvent">Events</a></li>
+                <li><a href="<?php echo ROOT; ?>/team">Team</a></li>
+                <li><a href="<?php echo ROOT; ?>/gallery">Gallery</a></li>
             </ul>
-            <a href="http://localhost/UOC_Football/public/login" class="team-portal" target="_blank" rel="noopener noreferrer">Team Portal</a>
+            <a href="<?php echo ROOT; ?>/login" class="team-portal" target="_blank" rel="noopener noreferrer">Team Portal</a>
         </nav>
     </div>
-    <section class="containers-section">
+
+    <section class="events-section">
         <div class="main-container">
-            <a href="http://localhost/UOC_Football/public/landingPage#events" class="back-button">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Back
+            <a href="<?php echo ROOT; ?>/landingPage#events" class="back-button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back
             </a>
 
-        
-            <div class="sessions-grid">
+            <div class="events-grid">
                 <?php
                 if (!empty($allEvents)) {
                     foreach ($allEvents as $event):
                         // Format date
-                        $formattedDate = date('F j, Y', strtotime($event->event_date));
+                        $formattedDate = date('F j, Y', strtotime($event->date ?? $event->event_date));
                         
                         // Format time if available
                         $timeDisplay = '';
@@ -60,76 +60,82 @@ $allEvents = $data['allEvents'] ?? [];
                             $timeDisplay = ' at ' . date('g:i A', strtotime($event->event_time));
                         }
                 ?>
-                <div class="session-card">
+                <div class="event-card" data-event-id="<?php echo $event->event_id; ?>">
                     <!-- Event Image -->
-                    <?php if (!empty($event->image)): ?>
-                        <img src="<?php echo ROOT; ?>/uploads/event_images/<?php echo htmlspecialchars($event->image); ?>" alt="<?php echo htmlspecialchars($event->title); ?>" class="session-image">
-                    <?php else: ?>
-                        <div class="session-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 64px;">
-                            <?php
-                            // Display emoji based on event type
-                            $eventEmojis = [
-                                'match' => '⚽',
-                                'tournament' => '🏆',
-                                'training' => '🏃',
-                                'meeting' => '🎯',
-                                'social' => '🎉',
-                                'other' => '📅'
-                            ];
-                            echo $eventEmojis[strtolower($event->event_type)] ?? '📅';
-                            ?>
-                        </div>
-                    <?php endif; ?>
+                    <div class="event-image">
+                        <?php if (!empty($event->image)): ?>
+                            <img src="<?php echo ROOT; ?>/uploads/event_images/<?php echo htmlspecialchars($event->image); ?>" alt="<?php echo htmlspecialchars($event->title); ?>">
+                        <?php else: ?>
+                            <div class="event-image-placeholder">
+                                <?php
+                                // Display emoji based on event type
+                                $eventEmojis = [
+                                    'match' => '⚽',
+                                    'tournament' => '🏆',
+                                    'training' => '🏃',
+                                    'meeting' => '🎯',
+                                    'social' => '🎉',
+                                    'other' => '📅'
+                                ];
+                                echo $eventEmojis[strtolower($event->event_type ?? 'match')] ?? '📅';
+                                ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
 
                     <!-- Event Content -->
-                    <div class="session-content">
-                        <h3 class="session-title"><?php echo htmlspecialchars($event->title); ?></h3>
-                        <p class="session-description">
-                            <?php echo htmlspecialchars($event->description ?? 'Event details coming soon...'); ?>
+                    <div class="event-content">
+                        <h3 class="event-title"><?php echo htmlspecialchars($event->title); ?></h3>
+                        <p class="event-date"><?php echo $formattedDate . $timeDisplay; ?></p>
+                        <?php if (!empty($event->location)): ?>
+                            <p class="event-location">📍 <?php echo htmlspecialchars($event->location); ?></p>
+                        <?php endif; ?>
+                        <p class="event-excerpt">
+                            <?php 
+                            $excerpt = strip_tags($event->description ?? '');
+                            echo htmlspecialchars(substr($excerpt, 0, 120) . (strlen($excerpt) > 120 ? '...' : '')); 
+                            ?>
                         </p>
-                        
-                        <!-- Event Details -->
-                        <div class="session-details">
-                            <div class="detail-item">
-                                <!-- Calendar icon -->
-                                <svg class="detail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 
-                                        2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <?php echo $formattedDate . $timeDisplay; ?>
-                            </div>
-                            <?php if (!empty($event->location)): ?>
-                            <div class="detail-item">
-                                <!-- Location icon -->
-                                <svg class="detail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                        d="M12 11c1.657 0 3-1.343 3-3S13.657 5 
-                                        12 5s-3 1.343-3 3 1.343 3 
-                                        3 3z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                        d="M12 22s8-4.5 8-10a8 8 0 
-                                        10-16 0c0 5.5 8 10 8 10z"/>
-                                </svg>
-                                <?php echo htmlspecialchars($event->location); ?>
-                            </div>
-                            <?php endif; ?>
-                        </div>
+                        <button class="read-more-btn" 
+                                data-id="<?php echo $event->event_id; ?>"
+                                data-title="<?php echo htmlspecialchars($event->title); ?>"
+                                data-date="<?php echo $formattedDate; ?>"
+                                data-time="<?php echo htmlspecialchars($event->event_time ?? ''); ?>"
+                                data-location="<?php echo htmlspecialchars($event->location ?? ''); ?>"
+                                data-image="<?php echo htmlspecialchars($event->image ?? ''); ?>"
+                                data-description="<?php echo htmlspecialchars($event->description ?? ''); ?>">
+                            Details
+                        </button>
                     </div>
                 </div>
                 <?php 
                     endforeach;
                 } else {
                 ?>
-                <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #666; font-size: 1.2rem;">
+                <div class="empty-state">
                     <p>No upcoming events at the moment. Check back soon!</p>
                 </div>
                 <?php } ?>
             </div>
-            
-
         </div>
-     <footer class="footer">
+    </section>
+
+    <!-- Event Modal/Popup -->
+    <div class="event-modal" id="eventModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div class="modal-image" id="modalImage"></div>
+            <div class="modal-body">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <p class="modal-date" id="modalDate"></p>
+                <p class="modal-location" id="modalLocation"></p>
+                <div class="modal-text" id="modalText"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
         <div class="footer-row">
             <!-- Left: UOC Logos -->
             <div class="footer-left">
@@ -164,7 +170,6 @@ $allEvents = $data['allEvents'] ?? [];
     </footer>
     <script src="<?php echo ROOT; ?>/assets/js/moreEvent/header/script.js"></script>
     <script src="<?php echo ROOT; ?>/assets/js/moreEvent/footer/script.js"></script>
-    <script src="<?php echo ROOT; ?>/assets/js/moreEvent/containers/script.js"></script>
     <script src="<?php echo ROOT; ?>/assets/js/moreEvent/default/script.js"></script>
 </body>
 </html>

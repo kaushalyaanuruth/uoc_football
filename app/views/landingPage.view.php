@@ -146,18 +146,18 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
 
                 foreach ($upcomingEvents as $event):
                     // Get emoji based on event type, default to 📅
-                    $emoji = $eventEmojis[strtolower($event->event_type)] ?? '📅';
+                    $emoji = $eventEmojis[strtolower($event->event_type ?? 'match')] ?? '📅';
                     
                     // Format date and time
-                    $eventDateTime = strtotime($event->event_date . ' ' . $event->event_time);
+                    $eventDateTime = strtotime($event->date . ' ' . ($event->event_time ?? '15:00:00'));
                     $formattedDate = date('l, F j g:i A', $eventDateTime);
             ?>
                 <div class="event-card">
                     <div class="event-image"><?php echo $emoji; ?></div>
                     <div class="event-details">
-                        <h4><?php echo htmlspecialchars($event->title); ?></h4>
+                        <h4><?php echo htmlspecialchars($event->title ?? 'UOC Football Event'); ?></h4>
                         <div class="event-date"><?php echo $formattedDate; ?></div>
-                        <div class="event-type"><?php echo htmlspecialchars(ucfirst($event->event_type)); ?></div>
+                        <div class="event-type"><?php echo htmlspecialchars(ucfirst($event->event_type ?? 'match')); ?></div>
                         <?php if (!empty($event->location)): ?>
                             <div class="event-location">📍 <?php echo htmlspecialchars($event->location); ?></div>
                         <?php endif; ?>

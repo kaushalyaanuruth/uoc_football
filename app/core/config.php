@@ -13,4 +13,4 @@ define('DB_NAME', 'uoc_football');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
-define('ROOT', 'http://localhost/UOC_football/public');
+define('ROOT', 'http://localhost/UOC_Football/public');

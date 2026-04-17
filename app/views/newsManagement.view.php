@@ -41,7 +41,7 @@ function newsDateParts($date)
             </div>
         </div>
 
-        <a href="<?php echo ROOT; ?>/inventoryManagement" class="back-btn">&lt; Back</a>
+        <a href="<?php echo ROOT; ?>/adminDashboard" class="back-btn">&lt; Back</a>
 
         <section class="toolbar-card">
             <div class="toolbar-left">

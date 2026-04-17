@@ -5,7 +5,16 @@ require_once __DIR__ . '/../models/User.php';
 class login extends Controller {
 
     public function index() {
-        $this->view('login');
+        $data = [];
+        
+        // Check if there's an error message from failed login
+        if (isset($_GET['error'])) {
+            $data['error'] = $_GET['error'] === 'invalid_credentials' 
+                ? 'Invalid username or password. Please try again.' 
+                : 'An error occurred. Please try again.';
+        }
+        
+        $this->view('login', $data);
     }
 
     public function authenticate() {

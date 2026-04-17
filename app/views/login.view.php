@@ -10,7 +10,7 @@
     <div class="container">
 
         <div class="home-button">
-            <a href="http://localhost/UOC_Football/public/landingPage" id="homeBtn">Home</a>
+            <a href="<?php echo ROOT; ?>/landingPage" id="homeBtn">Home</a>
         </div>
 
         <div class="login-container">
@@ -20,7 +20,13 @@
                 <p class="subtitle">login</p>
             </div>
 
-            <form class="login-form" id="loginForm" action="login/authenticate" method="POST">
+            <form class="login-form" id="loginForm" action="<?php echo ROOT; ?>/login/authenticate" method="POST">
+                <?php if (!empty($data['error'])): ?>
+                    <div class="error-message" style="background-color: #fee; border: 1px solid #fcc; color: #c33; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; font-weight: 500; text-align: center;">
+                         <?php echo htmlspecialchars($data['error']); ?>
+                    </div>
+                <?php endif; ?>
+
                 <div class="input-group">
                     <input type="text" id="indexNumber" name="username" placeholder="Username" required>
                 </div>

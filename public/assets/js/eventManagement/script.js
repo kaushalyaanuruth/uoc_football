@@ -27,9 +27,13 @@
     const searchInput = byId('eventSearch');
     const typeFilter = byId('typeFilter');
     const tableBody = byId('eventsTableBody');
+    const eventImageInput = byId('eventImage');
+    const eventImagePreview = byId('eventImagePreview');
+    const eventImagePreviewImg = byId('eventImagePreviewImg');
 
     let isEditMode = false;
     let currentEventId = null;
+    let selectedImageBase64 = null;
 
     function clearMessage() {
         if (!formMessage) {
@@ -79,10 +83,31 @@
         isEditMode = false;
         currentEventId = null;
         byId('eventId').value = '';
+        selectedImageBase64 = null;
+        if (eventImagePreview) {
+            eventImagePreview.style.display = 'none';
+        }
     }
 
     function buildEndpoint(path) {
         return root + path;
+    }
+
+    function handleImageSelect(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            selectedImageBase64 = null;
+            eventImagePreview.style.display = 'none';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            selectedImageBase64 = e.target.result;
+            eventImagePreviewImg.src = selectedImageBase64;
+            eventImagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
     }
 
     async function fetchEvent(eventId) {
@@ -108,9 +133,9 @@
     }
 
     function fillForm(data) {
-        byId('eventId').value = data.id || '';
+        byId('eventId').value = data.id || data.event_id || '';
         byId('eventTitle').value = data.title || '';
-        byId('eventDate').value = toDateTimeLocal(data.event_date, data.event_time);
+        byId('eventDate').value = toDateTimeLocal(data.date || data.event_date, data.event_time);
         byId('eventCategory').value = normalizeType(data.event_type);
         byId('eventStatus').value = (data.status || 'upcoming').toLowerCase();
         byId('eventLocation').value = data.location || '';
@@ -138,7 +163,7 @@
     }
 
     function collectFormData() {
-        return {
+        const data = {
             id: byId('eventId').value,
             title: byId('eventTitle').value.trim(),
             event_date: byId('eventDate').value,
@@ -147,6 +172,12 @@
             location: byId('eventLocation').value.trim(),
             description: byId('eventDescription').value.trim()
         };
+
+        if (selectedImageBase64) {
+            data.image_data = selectedImageBase64;
+        }
+
+        return data;
     }
 
     function validateForm(formData) {
@@ -341,6 +372,10 @@
 
         if (eventForm) {
             eventForm.addEventListener('submit', handleSubmit);
+        }
+
+        if (eventImageInput) {
+            eventImageInput.addEventListener('change', handleImageSelect);
         }
 
         if (searchInput) {

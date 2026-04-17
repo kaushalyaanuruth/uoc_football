@@ -167,9 +167,9 @@ class User
                     session_start();
                 }
                 
-                $_SESSION['user_id'] = $user[0]->id ?? $user[0]->user_id;
+                $_SESSION['user_id'] = $user[0]->user_id;
                 $_SESSION['username'] = $user[0]->username;
-                $_SESSION['user_type'] = $user[0]->role ?? $user[0]->user_type;
+                $_SESSION['user_type'] = $user[0]->role;
 
                 error_log("Session user_id: " . $_SESSION['user_id']);
                 error_log("Session user_type: " . $_SESSION['user_type']);
