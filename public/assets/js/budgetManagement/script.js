@@ -11,6 +11,7 @@
     const modalTitle = byId('modalTitle');
     const formMessage = byId('formMessage');
     const submitBtn = byId('entrySubmitBtn');
+    const billImageHint = byId('billImageHint');
 
     const openModalBtn = byId('openEntryModalBtn');
     const closeModalBtn = byId('closeEntryModalBtn');
@@ -54,10 +55,12 @@
             entryForm.reset();
             byId('entryId').value = '';
             byId('entryDate').value = new Date().toISOString().slice(0, 10);
-            const nowYear = new Date().getFullYear();
-            byId('entrySeason').value = nowYear + '/' + (nowYear + 1);
             modalTitle.textContent = 'Add Budget Entry';
             submitBtn.textContent = 'Save Entry';
+
+            if (billImageHint) {
+                billImageHint.textContent = 'Attach a bill image if available.';
+            }
         }
 
         entryModal.classList.add('active');
@@ -81,10 +84,9 @@
             id: byId('entryId').value,
             date: byId('entryDate').value,
             type: byId('entryType').value,
-            category: byId('entryCategory').value.trim(),
+            team_id: byId('entryTeam').value,
             description: byId('entryDescription').value.trim(),
-            amount: Number(byId('entryAmount').value),
-            season: byId('entrySeason').value.trim()
+            amount: Number(byId('entryAmount').value)
         };
     }
 
@@ -92,17 +94,14 @@
         if (!formData.date) {
             return 'Date is required';
         }
-        if (!formData.category) {
-            return 'Category is required';
+        if (!formData.team_id) {
+            return 'Team is required';
         }
         if (!formData.description) {
             return 'Description is required';
         }
         if (!formData.amount || Number.isNaN(formData.amount) || formData.amount <= 0) {
             return 'Amount must be greater than 0';
-        }
-        if (!formData.season) {
-            return 'Season is required';
         }
 
         return '';
@@ -125,10 +124,13 @@
         byId('entryId').value = item.id || '';
         byId('entryDate').value = item.date || '';
         byId('entryType').value = item.type || 'income';
-        byId('entryCategory').value = item.category || '';
+        byId('entryTeam').value = item.team_id || '';
         byId('entryDescription').value = item.description || '';
         byId('entryAmount').value = item.amount || '';
-        byId('entrySeason').value = item.season || '';
+
+        if (billImageHint) {
+            billImageHint.textContent = item.bill_image ? 'Current bill image is saved. Upload another image to replace it.' : 'Attach a bill image if available.';
+        }
     }
 
     async function openEditModal(id) {
@@ -149,14 +151,17 @@
         }
     }
 
-    async function saveEntry(formData) {
+    async function saveEntry() {
         const endpoint = isEditMode && currentId ? '/budgetManagement/update' : '/budgetManagement/add';
-        const payload = isEditMode && currentId ? { ...formData, id: currentId } : formData;
+        const payload = new FormData(entryForm);
+
+        if (isEditMode && currentId) {
+            payload.set('id', String(currentId));
+        }
 
         const response = await fetch(buildEndpoint(endpoint), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: payload
         });
 
         if (!response.ok) {
@@ -180,7 +185,7 @@
         submitBtn.textContent = isEditMode ? 'Updating...' : 'Saving...';
 
         try {
-            const result = await saveEntry(formData);
+            const result = await saveEntry();
             if (!result.success) {
                 throw new Error(result.message || 'Unable to save entry');
             }

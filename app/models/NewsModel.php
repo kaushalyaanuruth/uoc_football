@@ -1,187 +1,124 @@
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <?php
 
 class NewsModel
 {
     use Model;
 
-    protected $table = "news";
+    protected $table = 'news';
 
-    /**
-     * Create a new news article
-     */
+    private function normalizePayload(array $data)
+    {
+        return [
+            'title' => trim((string) ($data['title'] ?? $data['news_heading'] ?? '')),
+            'date' => $data['date'] ?? $data['news_date'] ?? date('Y-m-d'),
+            'description' => trim((string) ($data['description'] ?? $data['discription'] ?? $data['news_body'] ?? '')),
+            'image' => $data['image'] ?? $data['image_name'] ?? null
+        ];
+    }
+
     public function create($data)
     {
-        // Required fields - map from form fields to database columns
-        if (empty($data['news_heading'])) {
+        $payload = $this->normalizePayload($data);
+
+        if ($payload['title'] === '' || $payload['description'] === '') {
             return false;
         }
-        
-        // Map form fields to database columns
-        $newsData = [
-            'title' => $data['news_heading'],
-            'content' => $data['news_body'] ?? '',
-            'publish_date' => $data['news_date'] ?? date('Y-m-d'),
-            'image' => $data['image_name'] ?? null,
-            'author_id' => $data['author'] ?? null,
-            'status' => $data['status'] ?? 'published'
-        ];
-        
-        $query = "INSERT INTO {$this->table} 
-                  (title, content, publish_date, image, author_id, status) 
-                  VALUES 
-                  (:title, :content, :publish_date, :image, :author_id, :status)";
-        
+
+        $query = "INSERT INTO {$this->table} (title, `date`, description, image) VALUES (:title, :date, :description, :image)";
+
         try {
-            $this->query($query, $newsData);
+            $this->query($query, $payload);
             return true;
         } catch (Exception $e) {
-            error_log("NewsModel::create() error: " . $e->getMessage());
+            error_log('NewsModel::create() error: ' . $e->getMessage());
             throw $e;
         }
     }
 
-    /**
-     * Update news article
-     */
     public function update($id, $data)
     {
-        if (empty($data)) {
-            return false;
-        }
-        
-        // Map form fields to database columns
-        $mappedData = [];
-        $mapping = [
-            'news_heading' => 'title',
-            'news_body' => 'content',
-            'news_date' => 'publish_date',
-            'image_name' => 'image',
-            'author' => 'author_id',
-            'category' => 'category',
-            'status' => 'status'
-        ];
-        
-        foreach ($data as $key => $value) {
-            $dbColumn = $mapping[$key] ?? $key;
-            $mappedData[$dbColumn] = $value;
-        }
-        
+        $payload = $this->normalizePayload($data);
         $fields = [];
         $params = ['id' => $id];
-        
-        foreach ($mappedData as $key => $value) {
-            $fields[] = "$key = :$key";
+
+        foreach ($payload as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $fields[] = ($key === 'date' ? '`date`' : $key) . ' = :' . $key;
             $params[$key] = $value;
         }
-        
-        $fieldString = implode(', ', $fields);
-        $query = "UPDATE {$this->table} SET $fieldString WHERE id = :id";
-        
+
+        if (empty($fields)) {
+            return false;
+        }
+
+        $query = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = :id";
+
         try {
             $this->query($query, $params);
             return true;
         } catch (Exception $e) {
-            error_log("NewsModel::update() error: " . $e->getMessage());
+            error_log('NewsModel::update() error: ' . $e->getMessage());
             throw $e;
         }
     }
 
-    /**
-     * Get all news articles
-     */
     public function getAll()
     {
-        return $this->query("SELECT * FROM {$this->table} ORDER BY publish_date DESC, id DESC");
+        $query = "SELECT id, title, `date`, description, description AS discription, image, `date` AS publish_date, description AS content FROM {$this->table} ORDER BY `date` DESC, id DESC";
+        return $this->query($query);
     }
 
-    /**
-     * Get news by ID
-     */
     public function getById($id)
     {
-        $result = $this->query("SELECT * FROM {$this->table} WHERE id = :id LIMIT 1", ['id' => $id]);
+        $query = "SELECT id, title, `date`, description, description AS discription, image, `date` AS publish_date, description AS content FROM {$this->table} WHERE id = :id LIMIT 1";
+        $result = $this->query($query, ['id' => $id]);
         return $result ? $result[0] : null;
     }
 
-    /**
-     * Delete news article
-     */
     public function delete($id)
     {
         try {
             $this->query("DELETE FROM {$this->table} WHERE id = :id", ['id' => $id]);
             return true;
         } catch (Exception $e) {
-            error_log("NewsModel::delete() error: " . $e->getMessage());
+            error_log('NewsModel::delete() error: ' . $e->getMessage());
             throw $e;
         }
     }
 
-    /**
-     * Get latest news articles
-     */
     public function getLatestNews($limit = 3)
     {
-        $limit = (int)$limit;
-        $query = "SELECT * FROM {$this->table} ORDER BY publish_date DESC, id DESC LIMIT $limit";
-        
+        $limit = (int) $limit;
+        $query = "SELECT id, title, `date`, description, description AS discription, image, `date` AS publish_date, description AS content FROM {$this->table} ORDER BY `date` DESC, id DESC LIMIT $limit";
+
         try {
             return $this->query($query);
         } catch (Exception $e) {
-            error_log("NewsModel::getLatestNews() error: " . $e->getMessage());
+            error_log('NewsModel::getLatestNews() error: ' . $e->getMessage());
             return [];
         }
     }
 
-    /**
-     * Get news by status
-     */
-    public function getByStatus($status)
-    {
-        return $this->query("SELECT * FROM {$this->table} WHERE status = :status ORDER BY publish_date DESC", [
-            'status' => $status
-        ]);
-    }
-
-    /**
-     * Search news
-     */
     public function search($keyword)
     {
         $keyword = '%' . $keyword . '%';
         return $this->query(
-            "SELECT * FROM {$this->table} 
-             WHERE title LIKE :keyword OR content LIKE :keyword
-             ORDER BY publish_date DESC",
+            "SELECT id, title, `date`, description, description AS discription, image, `date` AS publish_date, description AS content FROM {$this->table} WHERE title LIKE :keyword OR description LIKE :keyword ORDER BY `date` DESC",
             ['keyword' => $keyword]
         );
     }
 
-    /**
-     * Legacy method for compatibility
-     */
     public function insertNews($heading, $body, $date, $imageName)
     {
         return $this->create([
-            'news_heading' => $heading,
-            'news_body' => $body,
-            'news_date' => $date,
-            'image_name' => $imageName
+            'title' => $heading,
+            'description' => $body,
+            'date' => $date,
+            'image' => $imageName
         ]);
     }
 }

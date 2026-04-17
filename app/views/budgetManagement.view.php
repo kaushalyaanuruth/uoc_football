@@ -1,13 +1,12 @@
 <?php
 $transactions = $data['transactions'] ?? [];
 $summary = $data['summary'] ?? [];
-
 $totalIncome = (float) ($summary['totalIncome'] ?? 0);
 $totalExpense = (float) ($summary['totalExpense'] ?? 0);
 $netFlow = (float) ($summary['netFlow'] ?? 0);
-$seasonTotals = $summary['seasonTotals'] ?? [];
 $monthWise = $summary['monthWise'] ?? [];
-$categoryWise = $summary['categoryWise'] ?? [];
+$teamWise = $summary['teamWise'] ?? [];
+$teams = $data['teams'] ?? [];
 
 function budgetMoney($amount)
 {
@@ -65,7 +64,7 @@ function budgetMoney($amount)
             <div class="toolbar-right">
                 <div class="search-wrap">
                     <span class="search-icon material-symbols-outlined" aria-hidden="true">search</span>
-                    <input type="text" id="entrySearch" class="search-input" placeholder="Search by description/category...">
+                    <input type="text" id="entrySearch" class="search-input" placeholder="Search by description/team...">
                 </div>
                 <select id="typeFilter" class="type-filter" aria-label="Filter by type">
                     <option value="all">All Types</option>
@@ -83,22 +82,28 @@ function budgetMoney($amount)
                 <div class="budget-list-head">
                     <span>Date</span>
                     <span>Type</span>
-                    <span>Category</span>
+                    <span>Team</span>
                     <span>Description</span>
-                    <span>Season</span>
                     <span>Amount</span>
+                    <span>Bill</span>
                     <span>Actions</span>
                 </div>
                 <div id="budgetListBody">
                     <?php foreach ($transactions as $item): ?>
-                        <div class="budget-item" data-id="<?php echo (int) $item['id']; ?>" data-type="<?php echo htmlspecialchars($item['type'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower(($item['description'] ?? '') . ' ' . ($item['category'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>">
+                        <div class="budget-item" data-id="<?php echo (int) $item['id']; ?>" data-type="<?php echo htmlspecialchars($item['type'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower(($item['description'] ?? '') . ' ' . ($item['team_name'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>">
                             <span><?php echo htmlspecialchars(date('M d, Y', strtotime($item['date'])), ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="type-badge type-<?php echo htmlspecialchars($item['type'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo ucfirst(htmlspecialchars($item['type'], ENT_QUOTES, 'UTF-8')); ?></span>
-                            <span><?php echo htmlspecialchars($item['category'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span><?php echo htmlspecialchars($item['team_name'] ?? 'Unknown Team', ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="entry-description"><?php echo htmlspecialchars($item['description'], ENT_QUOTES, 'UTF-8'); ?></span>
-                            <span><?php echo htmlspecialchars($item['season'], ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="amount <?php echo $item['type'] === 'income' ? 'amount-income' : 'amount-expense'; ?>">
                                 <?php echo htmlspecialchars(budgetMoney((float) $item['amount']), ENT_QUOTES, 'UTF-8'); ?>
+                            </span>
+                            <span>
+                                <?php if (!empty($item['bill_image'])): ?>
+                                    <a href="<?php echo ROOT . '/' . htmlspecialchars($item['bill_image'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer">View Bill</a>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
                             </span>
                             <div class="row-actions">
                                 <button type="button" class="icon-btn edit-btn" data-id="<?php echo (int) $item['id']; ?>" aria-label="Edit entry">
@@ -154,23 +159,23 @@ function budgetMoney($amount)
 
             <article class="summary-card">
                 <div class="summary-head">
-                    <h3>Category Wise Summary</h3>
+                    <h3>Team Wise Summary</h3>
                 </div>
                 <div class="summary-table-wrap">
                     <table class="summary-table">
                         <thead>
                             <tr>
-                                <th>Category</th>
+                                <th>Team</th>
                                 <th>Income</th>
                                 <th>Expense</th>
                                 <th>Net</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (!empty($categoryWise)): ?>
-                                <?php foreach ($categoryWise as $row): ?>
+                            <?php if (!empty($teamWise)): ?>
+                                <?php foreach ($teamWise as $row): ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['team'], ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td><?php echo htmlspecialchars(budgetMoney($row['income']), ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td><?php echo htmlspecialchars(budgetMoney($row['expense']), ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td class="<?php echo $row['net'] >= 0 ? 'net-positive' : 'net-negative'; ?>"><?php echo htmlspecialchars(budgetMoney($row['net']), ENT_QUOTES, 'UTF-8'); ?></td>
@@ -178,41 +183,7 @@ function budgetMoney($amount)
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="4">No category summary available.</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </article>
-
-            <article class="summary-card">
-                <div class="summary-head">
-                    <h3>Total By Season</h3>
-                </div>
-                <div class="summary-table-wrap">
-                    <table class="summary-table">
-                        <thead>
-                            <tr>
-                                <th>Season</th>
-                                <th>Income</th>
-                                <th>Expense</th>
-                                <th>Net</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($seasonTotals)): ?>
-                                <?php foreach ($seasonTotals as $row): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($row['season'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td><?php echo htmlspecialchars(budgetMoney($row['income']), ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td><?php echo htmlspecialchars(budgetMoney($row['expense']), ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td class="<?php echo $row['net'] >= 0 ? 'net-positive' : 'net-negative'; ?>"><?php echo htmlspecialchars(budgetMoney($row['net']), ENT_QUOTES, 'UTF-8'); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="4">No season totals available.</td>
+                                    <td colspan="4">No team summary available.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -223,7 +194,7 @@ function budgetMoney($amount)
     </div>
 
     <div class="modal-overlay" id="entryModal">
-        <form class="modal" id="entryForm">
+        <form class="modal" id="entryForm" enctype="multipart/form-data">
             <button type="button" class="close-modal-btn" id="closeEntryModalBtn">&times;</button>
             <div class="modal-header">
                 <img class="logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
@@ -248,8 +219,15 @@ function budgetMoney($amount)
 
                 <div class="form-group two-col">
                     <div>
-                        <label class="input-label" for="entryCategory">Category</label>
-                        <input type="text" class="form-input" id="entryCategory" name="category" placeholder="Sponsorship, Equipment, Travel..." required>
+                        <label class="input-label" for="entryTeam">Team</label>
+                        <select class="form-input" id="entryTeam" name="team_id" required>
+                            <option value="">Select Team</option>
+                            <?php foreach ($teams as $team): ?>
+                                <option value="<?php echo htmlspecialchars((string) ($team['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                    <?php echo htmlspecialchars((string) ($team['name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div>
                         <label class="input-label" for="entryAmount">Amount (LKR)</label>
@@ -263,8 +241,9 @@ function budgetMoney($amount)
                 </div>
 
                 <div class="form-group">
-                    <label class="input-label" for="entrySeason">Season</label>
-                    <input type="text" class="form-input" id="entrySeason" name="season" placeholder="2025/2026" required>
+                    <label class="input-label" for="entryBillImage">Bill Image (Optional)</label>
+                    <input type="file" class="form-input" id="entryBillImage" name="bill_image" accept="image/png,image/jpeg,image/webp">
+                    <small class="input-note" id="billImageHint">Attach a bill image if available.</small>
                 </div>
 
                 <p class="form-message" id="formMessage" aria-live="polite"></p>

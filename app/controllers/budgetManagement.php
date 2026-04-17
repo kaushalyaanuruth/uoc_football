@@ -2,73 +2,148 @@
 
 class BudgetManagement extends Controller
 {
+    private $teamModel;
+
     public function __construct()
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+
+        $this->teamModel = $this->model('TeamModel');
+    }
+
+    private function getTeams()
+    {
+        if (!$this->teamModel) {
+            return [];
+        }
+
+        try {
+            $rows = $this->teamModel->getAll();
+            $teams = [];
+
+            foreach ($rows as $row) {
+                $teamId = isset($row->id) ? (string) $row->id : (isset($row->team_id) ? (string) $row->team_id : '');
+                $teamName = isset($row->team_name) ? trim((string) $row->team_name) : (isset($row->name) ? trim((string) $row->name) : '');
+
+                if ($teamId !== '' && $teamName !== '') {
+                    $teams[] = [
+                        'id' => $teamId,
+                        'name' => $teamName
+                    ];
+                }
+            }
+
+            return $teams;
+        } catch (Exception $e) {
+            error_log('Failed to load teams for budget module: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    private function getTeamMap()
+    {
+        $map = [];
+        foreach ($this->getTeams() as $team) {
+            $map[(string) $team['id']] = $team['name'];
+        }
+        return $map;
     }
 
     private function seedTransactions()
     {
+        $teamMap = $this->getTeamMap();
+        $defaultTeamId = '';
+        $defaultTeamName = 'Unknown Team';
+
+        if (!empty($teamMap)) {
+            $defaultTeamId = (string) array_key_first($teamMap);
+            $defaultTeamName = (string) $teamMap[$defaultTeamId];
+        }
+
         if (!isset($_SESSION['budget_transactions']) || !is_array($_SESSION['budget_transactions']) || empty($_SESSION['budget_transactions'])) {
             $_SESSION['budget_transactions'] = [
                 [
                     'id' => 1,
                     'date' => date('Y-m-d', strtotime('first day of this month')),
                     'type' => 'income',
-                    'category' => 'Sponsorship',
+                    'team_id' => $defaultTeamId,
+                    'team_name' => $defaultTeamName,
                     'description' => 'Monthly sponsor installment',
                     'amount' => 150000,
-                    'season' => '2025/2026'
+                    'bill_image' => null
                 ],
                 [
                     'id' => 2,
                     'date' => date('Y-m-d', strtotime('first day of this month +2 days')),
                     'type' => 'expense',
-                    'category' => 'Equipment',
+                    'team_id' => $defaultTeamId,
+                    'team_name' => $defaultTeamName,
                     'description' => 'Training cones and bibs',
                     'amount' => 23500,
-                    'season' => '2025/2026'
+                    'bill_image' => null
                 ],
                 [
                     'id' => 3,
                     'date' => date('Y-m-d', strtotime('first day of this month +5 days')),
                     'type' => 'expense',
-                    'category' => 'Travel',
+                    'team_id' => $defaultTeamId,
+                    'team_name' => $defaultTeamName,
                     'description' => 'Away match transport',
                     'amount' => 38000,
-                    'season' => '2025/2026'
+                    'bill_image' => null
                 ],
                 [
                     'id' => 4,
                     'date' => date('Y-m-d', strtotime('first day of last month +1 day')),
                     'type' => 'income',
-                    'category' => 'Ticket Sales',
+                    'team_id' => $defaultTeamId,
+                    'team_name' => $defaultTeamName,
                     'description' => 'Home match ticket income',
                     'amount' => 92000,
-                    'season' => '2025/2026'
+                    'bill_image' => null
                 ],
                 [
                     'id' => 5,
                     'date' => date('Y-m-d', strtotime('first day of last month +4 days')),
                     'type' => 'expense',
-                    'category' => 'Medical',
+                    'team_id' => $defaultTeamId,
+                    'team_name' => $defaultTeamName,
                     'description' => 'Physio and medical consumables',
                     'amount' => 14000,
-                    'season' => '2025/2026'
+                    'bill_image' => null
                 ],
                 [
                     'id' => 6,
                     'date' => date('Y-m-d', strtotime('first day of last month +8 days')),
                     'type' => 'income',
-                    'category' => 'Donations',
+                    'team_id' => $defaultTeamId,
+                    'team_name' => $defaultTeamName,
                     'description' => 'Alumni football fund contribution',
                     'amount' => 30000,
-                    'season' => '2025/2026'
+                    'bill_image' => null
                 ]
             ];
         }
+
+        foreach ($_SESSION['budget_transactions'] as &$item) {
+            if (!isset($item['team_id'])) {
+                $item['team_id'] = $defaultTeamId;
+            }
+
+            if (!isset($item['team_name']) || trim((string) $item['team_name']) === '') {
+                $resolvedName = isset($teamMap[(string) $item['team_id']]) ? $teamMap[(string) $item['team_id']] : $defaultTeamName;
+                $item['team_name'] = $resolvedName;
+            }
+
+            if (!isset($item['bill_image'])) {
+                $item['bill_image'] = null;
+            }
+
+            unset($item['category'], $item['season']);
+        }
+        unset($item);
     }
 
     private function jsonInput()
@@ -105,14 +180,63 @@ class BudgetManagement extends Controller
         return $date;
     }
 
-    private function sanitizeSeason($value)
+    private function sanitizeTeam($value, array $teamMap)
     {
-        $season = trim((string) $value);
-        if ($season === '') {
-            return date('Y') . '/' . ((int) date('Y') + 1);
+        $teamId = trim((string) $value);
+        if ($teamId === '') {
+            throw new Exception('Team is required');
         }
 
-        return $season;
+        if (!isset($teamMap[$teamId])) {
+            throw new Exception('Selected team is invalid');
+        }
+
+        return [
+            'id' => $teamId,
+            'name' => $teamMap[$teamId]
+        ];
+    }
+
+    private function uploadBillImage($fileKey, $existingPath = null)
+    {
+        if (!isset($_FILES[$fileKey]) || !is_array($_FILES[$fileKey]) || ($_FILES[$fileKey]['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return $existingPath;
+        }
+
+        $file = $_FILES[$fileKey];
+        if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+            throw new Exception('Bill image upload failed');
+        }
+
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+        $originalName = (string) ($file['name'] ?? '');
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if (!in_array($extension, $allowed, true)) {
+            throw new Exception('Bill image must be JPG, PNG, or WEBP');
+        }
+
+        $uploadDir = __DIR__ . '/../../public/uploads/budget_bills';
+        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true)) {
+            throw new Exception('Unable to create bill image upload directory');
+        }
+
+        $fileName = 'bill_' . bin2hex(random_bytes(12)) . '.' . $extension;
+        $absolutePath = $uploadDir . '/' . $fileName;
+        $relativePath = 'uploads/budget_bills/' . $fileName;
+
+        if (!move_uploaded_file((string) $file['tmp_name'], $absolutePath)) {
+            throw new Exception('Unable to save bill image');
+        }
+
+        if (!empty($existingPath)) {
+            $oldPath = __DIR__ . '/../../public/' . ltrim((string) $existingPath, '/');
+            if (is_file($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+
+        return $relativePath;
     }
 
     private function buildSummary(array $transactions)
@@ -121,27 +245,18 @@ class BudgetManagement extends Controller
             'totalIncome' => 0,
             'totalExpense' => 0,
             'netFlow' => 0,
-            'seasonTotals' => [],
             'monthWise' => [],
-            'categoryWise' => []
+            'teamWise' => []
         ];
 
         foreach ($transactions as $entry) {
             $amount = (float) ($entry['amount'] ?? 0);
             $type = $this->sanitizeType($entry['type'] ?? 'income');
-            $season = $entry['season'] ?? 'Unknown';
+            $teamId = (string) ($entry['team_id'] ?? '');
+            $teamName = trim((string) ($entry['team_name'] ?? 'Unknown Team'));
+            $teamKey = $teamId !== '' ? $teamId : strtolower($teamName);
             $monthKey = date('Y-m', strtotime($entry['date'] ?? date('Y-m-d')));
             $monthLabel = date('M Y', strtotime($entry['date'] ?? date('Y-m-d')));
-            $category = trim((string) ($entry['category'] ?? 'General'));
-
-            if (!isset($summary['seasonTotals'][$season])) {
-                $summary['seasonTotals'][$season] = [
-                    'season' => $season,
-                    'income' => 0,
-                    'expense' => 0,
-                    'net' => 0
-                ];
-            }
 
             if (!isset($summary['monthWise'][$monthKey])) {
                 $summary['monthWise'][$monthKey] = [
@@ -153,10 +268,9 @@ class BudgetManagement extends Controller
                 ];
             }
 
-            $categoryKey = strtolower($category);
-            if (!isset($summary['categoryWise'][$categoryKey])) {
-                $summary['categoryWise'][$categoryKey] = [
-                    'category' => $category,
+            if (!isset($summary['teamWise'][$teamKey])) {
+                $summary['teamWise'][$teamKey] = [
+                    'team' => $teamName,
                     'income' => 0,
                     'expense' => 0,
                     'net' => 0
@@ -165,44 +279,33 @@ class BudgetManagement extends Controller
 
             if ($type === 'income') {
                 $summary['totalIncome'] += $amount;
-                $summary['seasonTotals'][$season]['income'] += $amount;
                 $summary['monthWise'][$monthKey]['income'] += $amount;
-                $summary['categoryWise'][$categoryKey]['income'] += $amount;
+                $summary['teamWise'][$teamKey]['income'] += $amount;
             } else {
                 $summary['totalExpense'] += $amount;
-                $summary['seasonTotals'][$season]['expense'] += $amount;
                 $summary['monthWise'][$monthKey]['expense'] += $amount;
-                $summary['categoryWise'][$categoryKey]['expense'] += $amount;
+                $summary['teamWise'][$teamKey]['expense'] += $amount;
             }
         }
 
         $summary['netFlow'] = $summary['totalIncome'] - $summary['totalExpense'];
-
-        foreach ($summary['seasonTotals'] as &$seasonRow) {
-            $seasonRow['net'] = $seasonRow['income'] - $seasonRow['expense'];
-        }
-        unset($seasonRow);
 
         foreach ($summary['monthWise'] as &$monthRow) {
             $monthRow['net'] = $monthRow['income'] - $monthRow['expense'];
         }
         unset($monthRow);
 
-        foreach ($summary['categoryWise'] as &$categoryRow) {
-            $categoryRow['net'] = $categoryRow['income'] - $categoryRow['expense'];
+        foreach ($summary['teamWise'] as &$teamRow) {
+            $teamRow['net'] = $teamRow['income'] - $teamRow['expense'];
         }
-        unset($categoryRow);
-
-        usort($summary['seasonTotals'], function ($a, $b) {
-            return strcmp($b['season'], $a['season']);
-        });
+        unset($teamRow);
 
         usort($summary['monthWise'], function ($a, $b) {
             return strcmp($b['monthKey'], $a['monthKey']);
         });
 
-        usort($summary['categoryWise'], function ($a, $b) {
-            return strcmp($a['category'], $b['category']);
+        usort($summary['teamWise'], function ($a, $b) {
+            return strcmp($a['team'], $b['team']);
         });
 
         return $summary;
@@ -224,10 +327,12 @@ class BudgetManagement extends Controller
         });
 
         $summary = $this->buildSummary($transactions);
+        $teams = $this->getTeams();
 
         $data = [
             'transactions' => $transactions,
             'summary' => $summary,
+            'teams' => $teams,
             'title' => 'Budget Management'
         ];
 
@@ -242,7 +347,13 @@ class BudgetManagement extends Controller
 
         try {
             $this->seedTransactions();
-            $input = $this->jsonInput();
+            $teamMap = $this->getTeamMap();
+
+            if (empty($teamMap)) {
+                throw new Exception('No teams found. Please create a team first.');
+            }
+
+            $input = $_POST;
 
             $description = trim((string) ($input['description'] ?? ''));
             if ($description === '') {
@@ -260,14 +371,18 @@ class BudgetManagement extends Controller
                 $nextId = max($nextId, (int) $item['id'] + 1);
             }
 
+            $team = $this->sanitizeTeam($input['team_id'] ?? '', $teamMap);
+            $billImage = $this->uploadBillImage('bill_image');
+
             $transaction = [
                 'id' => $nextId,
                 'date' => $this->sanitizeDate($input['date'] ?? ''),
                 'type' => $this->sanitizeType($input['type'] ?? 'income'),
-                'category' => trim((string) ($input['category'] ?? 'General')),
+                'team_id' => $team['id'],
+                'team_name' => $team['name'],
                 'description' => $description,
                 'amount' => $amount,
-                'season' => $this->sanitizeSeason($input['season'] ?? '')
+                'bill_image' => $billImage
             ];
 
             $_SESSION['budget_transactions'][] = $transaction;
@@ -293,11 +408,16 @@ class BudgetManagement extends Controller
 
         try {
             $this->seedTransactions();
-            $input = $this->jsonInput();
+            $teamMap = $this->getTeamMap();
+            $input = $_POST;
             $id = (int) ($input['id'] ?? 0);
 
             if (!$id) {
                 throw new Exception('Entry ID is required');
+            }
+
+            if (empty($teamMap)) {
+                throw new Exception('No teams found. Please create a team first.');
             }
 
             $description = trim((string) ($input['description'] ?? ''));
@@ -313,12 +433,15 @@ class BudgetManagement extends Controller
             $updated = null;
             foreach ($_SESSION['budget_transactions'] as &$item) {
                 if ((int) $item['id'] === $id) {
+                    $team = $this->sanitizeTeam($input['team_id'] ?? ($item['team_id'] ?? ''), $teamMap);
+
                     $item['date'] = $this->sanitizeDate($input['date'] ?? $item['date']);
                     $item['type'] = $this->sanitizeType($input['type'] ?? $item['type']);
-                    $item['category'] = trim((string) ($input['category'] ?? $item['category']));
+                    $item['team_id'] = $team['id'];
+                    $item['team_name'] = $team['name'];
                     $item['description'] = $description;
                     $item['amount'] = $amount;
-                    $item['season'] = $this->sanitizeSeason($input['season'] ?? $item['season']);
+                    $item['bill_image'] = $this->uploadBillImage('bill_image', $item['bill_image'] ?? null);
                     $updated = $item;
                     break;
                 }
@@ -362,6 +485,13 @@ class BudgetManagement extends Controller
                 $_SESSION['budget_transactions'],
                 function ($item) use ($id, &$found) {
                     if ((int) ($item['id'] ?? 0) === $id) {
+                        $imagePath = $item['bill_image'] ?? null;
+                        if (!empty($imagePath)) {
+                            $absolutePath = __DIR__ . '/../../public/' . ltrim((string) $imagePath, '/');
+                            if (is_file($absolutePath)) {
+                                @unlink($absolutePath);
+                            }
+                        }
                         $found = true;
                         return false;
                     }

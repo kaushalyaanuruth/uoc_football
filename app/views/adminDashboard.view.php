@@ -58,7 +58,7 @@
                     </div>
                     <p class="action-label">Gallery</p>
                 </a>
-                <a class="action-card icon-indigo" href="">
+                <a class="action-card icon-indigo" href="<?php echo ROOT; ?>/newsManagement">
                     <div class="icon-container">
                         <img src="<?php echo ROOT; ?>/assets/images/adminDashboard/icons/news.svg" alt="news icon" class="action-icon">
                     </div>

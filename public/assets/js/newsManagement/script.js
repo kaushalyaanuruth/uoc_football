@@ -1,458 +1,374 @@
-// News Management JavaScript
-
-// Global variables
-let currentNewsId = null;
-let isEditMode = false;
-
-// DOM Elements
-const modal = document.getElementById('newsModal');
-const modalTitle = document.getElementById('modalTitle');
-const newsForm = document.getElementById('newsForm');
-const addNewsBtn = document.querySelector('.add-news-btn');
-const closeBtn = document.querySelector('.close-btn');
-const cancelBtn = document.querySelector('.btn-secondary');
-const imageInput = document.getElementById('newsImage');
-const imagePreview = document.getElementById('imagePreview');
-const previewImg = document.getElementById('previewImg');
-const removeImageBtn = document.getElementById('removeImageBtn');
-const existingImageInput = document.getElementById('existingImage');
-
-let currentImageData = null;
-
-// Initialize event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    initializeEventListeners();
-    
-    // Set today's date as default
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('newsDate').value = today;
-});
-
-// Initialize event listeners
-function initializeEventListeners() {
-    // Add news button
-    if (addNewsBtn) {
-        addNewsBtn.addEventListener('click', openAddModal);
+(function () {
+    function byId(id) {
+        return document.getElementById(id);
     }
 
-    // Close modal buttons
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', closeModal);
+    const config = window.NEWS_MANAGEMENT_CONFIG || {};
+    const root = config.root || '';
+
+    const modal = byId('newsModal');
+    const form = byId('newsForm');
+    const modalTitle = byId('modalTitle');
+    const formMessage = byId('formMessage');
+    const submitBtn = byId('newsSubmitBtn');
+
+    const openBtn = byId('openNewsModalBtn');
+    const closeBtn = byId('closeNewsModalBtn');
+    const cancelBtn = byId('cancelNewsModalBtn');
+
+    const searchInput = byId('newsSearch');
+    const listBody = byId('newsListBody');
+    const emptyState = byId('emptyState');
+
+    const imageInput = byId('newsImage');
+    const existingImage = byId('existingImage');
+    const imagePreview = byId('imagePreview');
+    const previewImg = byId('previewImg');
+    const removeImageBtn = byId('removeImageBtn');
+
+    let isEditMode = false;
+    let currentId = null;
+    let currentImageData = null;
+
+    function buildEndpoint(path) {
+        return root + path;
     }
 
-    // Click outside modal to close
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-    }
-
-    // Form submission
-    if (newsForm) {
-        newsForm.addEventListener('submit', handleFormSubmit);
-    }
-    
-    // Image input change
-    if (imageInput) {
-        imageInput.addEventListener('change', handleImageSelect);
-    }
-    
-    // Remove image button
-    if (removeImageBtn) {
-        removeImageBtn.addEventListener('click', removeImage);
-    }
-
-    // Edit buttons - use event delegation
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.edit-btn')) {
-            const btn = e.target.closest('.edit-btn');
-            const newsId = btn.getAttribute('data-id');
-            if (newsId) {
-                openEditModal(newsId);
-            }
+    function setMessage(text, type) {
+        if (!formMessage) {
+            return;
         }
-    });
 
-    // Delete buttons - use event delegation
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.delete-btn')) {
-            const btn = e.target.closest('.delete-btn');
-            const newsId = btn.getAttribute('data-id');
-            if (newsId) {
-                deleteNews(newsId);
-            }
+        formMessage.textContent = text || '';
+        formMessage.className = type ? 'form-message ' + type : 'form-message';
+    }
+
+    function clearMessage() {
+        setMessage('', '');
+    }
+
+    function resetImageState() {
+        currentImageData = null;
+        if (imageInput) {
+            imageInput.value = '';
         }
-    });
-}
-
-// Open modal for adding new news
-function openAddModal() {
-    isEditMode = false;
-    currentNewsId = null;
-    currentImageData = null;
-    
-    if (modalTitle) {
-        modalTitle.textContent = 'Add New Article';
-    }
-    
-    // Reset form
-    if (newsForm) {
-        newsForm.reset();
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('newsDate').value = today;
-    }
-    
-    // Reset image preview
-    if (imagePreview) {
-        imagePreview.style.display = 'none';
-    }
-    if (existingImageInput) {
-        existingImageInput.value = '';
-    }
-    
-    // Show modal
-    if (modal) {
-        modal.classList.add('show');
-    }
-}
-
-// Open modal for editing news
-function openEditModal(newsId) {
-    isEditMode = true;
-    currentNewsId = newsId;
-    
-    if (modalTitle) {
-        modalTitle.textContent = 'Edit Article';
-    }
-    
-    // Fetch news data
-    fetchNewsData(newsId);
-    
-    // Show modal
-    if (modal) {
-        modal.classList.add('show');
-    }
-}
-
-// Close modal
-function closeModal() {
-    if (modal) {
-        modal.classList.remove('show');
-    }
-    
-    // Reset form and state
-    if (newsForm) {
-        newsForm.reset();
-    }
-    
-    // Reset image preview
-    if (imagePreview) {
-        imagePreview.style.display = 'none';
-    }
-    currentImageData = null;
-    
-    isEditMode = false;
-    currentNewsId = null;
-}
-
-// Handle image selection
-function handleImageSelect(e) {
-    const file = e.target.files[0];
-    
-    if (!file) {
-        return;
-    }
-    
-    // Validate file type
-    if (!file.type.match('image.*')) {
-        showMessage('Please select an image file', 'error');
-        e.target.value = '';
-        return;
-    }
-    
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-        showMessage('Image size must be less than 5MB', 'error');
-        e.target.value = '';
-        return;
-    }
-    
-    // Read and preview image
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        currentImageData = event.target.result;
-        
+        if (existingImage) {
+            existingImage.value = '';
+        }
         if (previewImg) {
-            previewImg.src = event.target.result;
+            previewImg.src = '';
         }
-        if (imagePreview) {
-            imagePreview.style.display = 'inline-block';
-        }
-    };
-    reader.readAsDataURL(file);
-}
-
-// Remove image
-function removeImage() {
-    currentImageData = null;
-    
-    if (imageInput) {
-        imageInput.value = '';
-    }
-    if (imagePreview) {
-        imagePreview.style.display = 'none';
-    }
-    if (previewImg) {
-        previewImg.src = '';
-    }
-    if (existingImageInput) {
-        existingImageInput.value = '';
-    }
-}
-
-// Handle form submission
-async function fetchNewsData(newsId) {
-    try {
-        console.log('Fetching news data for ID:', newsId);
-        
-        const response = await fetch(`../newsManagement/get?id=${newsId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Fetched news data:', data);
-
-        if (data.success) {
-            populateForm(data.data);
-        } else {
-            showMessage('Failed to fetch news data: ' + (data.message || 'Unknown error'), 'error');
-        }
-    } catch (error) {
-        console.error('Error fetching news:', error);
-        showMessage('Error fetching news data: ' + error.message, 'error');
-    }
-}
-
-// Populate form with news data
-function populateForm(newsData) {
-    if (document.getElementById('newsHeading')) {
-        document.getElementById('newsHeading').value = newsData.title || '';
-    }
-    
-    if (document.getElementById('newsDate')) {
-        document.getElementById('newsDate').value = newsData.publish_date || '';
-    }
-    
-    if (document.getElementById('newsBody')) {
-        document.getElementById('newsBody').value = newsData.content || '';
-    }
-    
-    if (document.getElementById('newsStatus')) {
-        document.getElementById('newsStatus').value = newsData.status || 'published';
-    }
-    
-    // Handle existing image
-    if (newsData.image && newsData.image !== '') {
-        if (existingImageInput) {
-            existingImageInput.value = newsData.image;
-        }
-        
-        // Show image preview
-        if (previewImg && imagePreview) {
-            previewImg.src = `${window.location.origin}/uploads/news_images/${newsData.image}`;
-            imagePreview.style.display = 'inline-block';
-        }
-    } else {
-        // No existing image
         if (imagePreview) {
             imagePreview.style.display = 'none';
         }
     }
-}
 
-// Handle form submission
-async function handleFormSubmit(e) {
-    e.preventDefault();
-    
-    // Get form data
-    const formData = {
-        news_heading: document.getElementById('newsHeading').value.trim(),
-        news_date: document.getElementById('newsDate').value,
-        news_body: document.getElementById('newsBody').value.trim(),
-        status: document.getElementById('newsStatus').value
-    };
-    
-    // Add image data if available
-    if (currentImageData) {
-        formData.image_data = currentImageData;
-    } else if (existingImageInput && existingImageInput.value) {
-        formData.existing_image = existingImageInput.value;
-    }
-
-    console.log('Form data:', formData);
-
-    // Validation
-    if (!formData.news_heading) {
-        showMessage('Please enter news heading', 'error');
-        return;
-    }
-
-    if (!formData.news_date) {
-        showMessage('Please select date', 'error');
-        return;
-    }
-
-    try {
-        let url, method;
-        
-        if (isEditMode && currentNewsId) {
-            // Update existing news
-            url = '../newsManagement/update';
-            method = 'POST';
-            formData.id = currentNewsId;
-        } else {
-            // Add new news
-            url = '../newsManagement/add';
-            method = 'POST';
+    function openModal(mode) {
+        if (!modal || !form) {
+            return;
         }
 
-        console.log('Submitting to:', url);
-        console.log('Method:', method);
+        clearMessage();
 
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (mode === 'add') {
+            isEditMode = false;
+            currentId = null;
+            form.reset();
+            byId('newsId').value = '';
+            byId('newsDate').value = new Date().toISOString().slice(0, 10);
+            modalTitle.textContent = 'Add News';
+            submitBtn.textContent = 'Save News';
+            resetImageState();
         }
 
-        const data = await response.json();
-        console.log('Response data:', data);
-
-        if (data.success) {
-            showMessage(data.message || 'Article saved successfully!', 'success');
-            
-            setTimeout(() => {
-                closeModal();
-                window.location.reload();
-            }, 500);
-        } else {
-            showMessage('Error: ' + (data.message || 'Failed to save article'), 'error');
-        }
-    } catch (error) {
-        console.error('Error saving news:', error);
-        showMessage('Error saving article: ' + error.message, 'error');
-    }
-}
-
-// Delete news
-async function deleteNews(newsId) {
-    // Confirm deletion
-    if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
-        return;
+        modal.classList.add('active');
     }
 
-    try {
-        console.log('Deleting news ID:', newsId);
-
-        const response = await fetch('../newsManagement/delete', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ id: newsId })
-        });
-
-        console.log('Response status:', response.status);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+    function closeModal() {
+        if (!modal || !form) {
+            return;
         }
 
-        const data = await response.json();
-        console.log('Response data:', data);
+        modal.classList.remove('active');
+        form.reset();
+        clearMessage();
+        isEditMode = false;
+        currentId = null;
+        byId('newsId').value = '';
+        resetImageState();
+    }
 
-        if (data.success) {
-            // Remove the news card from DOM immediately
-            const newsCard = document.querySelector(`.news-card[data-news-id="${newsId}"]`);
-            if (newsCard) {
-                newsCard.style.opacity = '0';
-                newsCard.style.transform = 'scale(0.8)';
-                setTimeout(() => {
-                    newsCard.remove();
-                    
-                    // Check if there are no more news articles, show empty state
-                    const newsGrid = document.querySelector('.news-grid');
-                    if (newsGrid && newsGrid.children.length === 0) {
-                        window.location.reload();
-                    }
-                }, 300);
+    function handleImageSelect(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        if (!file.type.match('image.*')) {
+            setMessage('Please select an image file', 'error');
+            imageInput.value = '';
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setMessage('Image size must be less than 5MB', 'error');
+            imageInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            currentImageData = e.target.result;
+            if (previewImg) {
+                previewImg.src = currentImageData;
             }
-            
-            showMessage(data.message || 'Article deleted successfully!', 'success');
+            if (imagePreview) {
+                imagePreview.style.display = 'flex';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function collectFormData() {
+        return {
+            id: byId('newsId').value,
+            title: byId('newsTitle').value.trim(),
+            date: byId('newsDate').value,
+            discription: byId('newsDescription').value.trim()
+        };
+    }
+
+    function validateForm(data) {
+        if (!data.title) {
+            return 'Title is required';
+        }
+        if (!data.date) {
+            return 'Date is required';
+        }
+        if (!data.discription) {
+            return 'Description is required';
+        }
+        return '';
+    }
+
+    async function fetchNews(id) {
+        const response = await fetch(buildEndpoint('/newsManagement/get?id=' + encodeURIComponent(id)), {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error('Request failed with status ' + response.status);
+        }
+
+        return response.json();
+    }
+
+    function fillForm(item) {
+        byId('newsId').value = item.id || '';
+        byId('newsTitle').value = item.title || '';
+        byId('newsDate').value = item.date || item.publish_date || '';
+        byId('newsDescription').value = item.discription || item.content || '';
+
+        if (item.image) {
+            if (existingImage) {
+                existingImage.value = item.image;
+            }
+            if (previewImg) {
+                previewImg.src = buildEndpoint('/uploads/news_images/' + item.image);
+            }
+            if (imagePreview) {
+                imagePreview.style.display = 'flex';
+            }
         } else {
-            showMessage('Error: ' + (data.message || 'Failed to delete article'), 'error');
+            resetImageState();
         }
-    } catch (error) {
-        console.error('Error deleting news:', error);
-        showMessage('Error deleting article: ' + error.message, 'error');
     }
-}
 
-// Show message
-function showMessage(message, type = 'success') {
-    // Check if message container exists in form
-    let messageDiv = document.querySelector('#newsForm .message');
-    
-    if (!messageDiv) {
-        // Create message div if it doesn't exist
-        messageDiv = document.createElement('div');
-        messageDiv.className = 'message';
-        
-        // Insert at the beginning of the form
-        const form = document.getElementById('newsForm');
+    async function openEditModal(id) {
+        try {
+            const result = await fetchNews(id);
+            if (!result.success || !result.data) {
+                throw new Error(result.message || 'Unable to load news article');
+            }
+
+            isEditMode = true;
+            currentId = id;
+            fillForm(result.data);
+            modalTitle.textContent = 'Edit News';
+            submitBtn.textContent = 'Update News';
+            modal.classList.add('active');
+        } catch (error) {
+            setMessage(error.message, 'error');
+        }
+    }
+
+    async function saveNews(data) {
+        const endpoint = isEditMode && currentId ? '/newsManagement/update' : '/newsManagement/add';
+        const payload = isEditMode && currentId ? { ...data, id: currentId } : data;
+
+        if (currentImageData) {
+            payload.image_data = currentImageData;
+        } else if (existingImage && existingImage.value) {
+            payload.existing_image = existingImage.value;
+        }
+
+        const response = await fetch(buildEndpoint(endpoint), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error('Request failed with status ' + response.status);
+        }
+
+        return response.json();
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const payload = collectFormData();
+        const validationError = validateForm(payload);
+        if (validationError) {
+            setMessage(validationError, 'error');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = isEditMode ? 'Updating...' : 'Saving...';
+
+        try {
+            const result = await saveNews(payload);
+            if (!result.success) {
+                throw new Error(result.message || 'Unable to save news article');
+            }
+
+            setMessage(result.message || 'Saved successfully', 'success');
+            setTimeout(function () {
+                window.location.reload();
+            }, 350);
+        } catch (error) {
+            setMessage(error.message, 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = isEditMode ? 'Update News' : 'Save News';
+        }
+    }
+
+    async function deleteNews(id) {
+        const confirmed = window.confirm('Delete this news article? This action cannot be undone.');
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch(buildEndpoint('/newsManagement/delete'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+
+            if (!response.ok) {
+                throw new Error('Request failed with status ' + response.status);
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message || 'Unable to delete news article');
+            }
+
+            window.location.reload();
+        } catch (error) {
+            setMessage(error.message, 'error');
+        }
+    }
+
+    function filterRows() {
+        if (!listBody) {
+            return;
+        }
+
+        const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+        const rows = listBody.querySelectorAll('.news-item');
+
+        let visibleCount = 0;
+        rows.forEach(function (row) {
+            const searchData = row.dataset.search || '';
+            const fullText = (row.textContent || '').toLowerCase();
+            const match = !query || searchData.includes(query) || fullText.includes(query);
+
+            if (match) {
+                row.style.display = 'grid';
+                visibleCount += 1;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (emptyState) {
+            emptyState.style.display = visibleCount ? 'none' : 'block';
+        }
+    }
+
+    function bindEvents() {
+        if (openBtn) {
+            openBtn.addEventListener('click', function () {
+                openModal('add');
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeModal);
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeModal);
+        }
+
+        if (removeImageBtn) {
+            removeImageBtn.addEventListener('click', resetImageState);
+        }
+
+        if (imageInput) {
+            imageInput.addEventListener('change', handleImageSelect);
+        }
+
         if (form) {
-            form.insertBefore(messageDiv, form.firstChild);
+            form.addEventListener('submit', handleSubmit);
         }
-    }
-    
-    // Set message content and type
-    messageDiv.textContent = message;
-    messageDiv.className = `message ${type} show`;
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        messageDiv.classList.remove('show');
-    }, 5000);
-}
 
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    // Escape key to close modal
-    if (e.key === 'Escape' && modal && modal.classList.contains('show')) {
-        closeModal();
-    }
-});
+        if (searchInput) {
+            searchInput.addEventListener('input', filterRows);
+        }
 
-console.log('News Management script loaded successfully');
+        if (listBody) {
+            listBody.addEventListener('click', function (event) {
+                const editBtn = event.target.closest('.edit-btn');
+                if (editBtn) {
+                    openEditModal(editBtn.getAttribute('data-id'));
+                    return;
+                }
+
+                const deleteBtn = event.target.closest('.delete-btn');
+                if (deleteBtn) {
+                    deleteNews(deleteBtn.getAttribute('data-id'));
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && modal && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        bindEvents();
+        if (byId('newsDate')) {
+            byId('newsDate').value = new Date().toISOString().slice(0, 10);
+        }
+        filterRows();
+    });
+})();
