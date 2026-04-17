@@ -43,7 +43,8 @@
 
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 320px));
+    justify-content: center;
     gap: 20px;
     min-height: 300px;
 }
@@ -136,7 +137,8 @@
     }
     
     .gallery-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(210px, 270px));
+        justify-content: center;
         gap: 15px;
     }
 }
