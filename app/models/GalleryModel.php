@@ -53,10 +53,7 @@ class GalleryModel
      */
     public function getAll()
     {
-        return $this->query("SELECT g.*, u.username as uploader_name 
-                            FROM {$this->table} g 
-                            LEFT JOIN users u ON g.uploaded_by = u.id 
-                            ORDER BY g.created_at DESC");
+        return $this->query("SELECT g.* FROM {$this->table} g ORDER BY g.created_at DESC");
     }
     
     /**

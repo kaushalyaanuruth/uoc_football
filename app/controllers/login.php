@@ -40,8 +40,8 @@ class login extends Controller {
             exit;
         }
         
-        // Otherwise redirect to landing page
-        header('Location: ' . ROOT . '/LandingPage');
+        // Otherwise redirect to login page
+        header('Location: ' . ROOT . '/login');
         exit;
     }
 

@@ -32,63 +32,31 @@ $title = $data['title'] ?? 'Gallery Management';
 
         <a href="<?php echo ROOT; ?>/adminDashboard" class="back-btn">&lt; Back</a>
 
-        <section class="upload-section">
-            <h2 class="section-title">Gallery Management</h2>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">
-                        <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
-                    </div>
-                    <p class="upload-text">Drag and drop images here</p>
-                    <p class="upload-info">or click browse to upload JPG, PNG, GIF images (max 10MB each)</p>
-                    <button type="button" class="browse-btn" id="browseBtn">Browse Images</button>
-                    <input type="file" id="imageInput" name="images[]" accept="image/jpeg,image/png,image/gif" multiple hidden>
+        <section class="toolbar-card">
+            <div class="toolbar-left">
+                <button class="add-gallery-btn" type="button" id="openGalleryModalBtn">+ Upload Photos</button>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-wrap">
+                    <span class="search-icon material-symbols-outlined" aria-hidden="true">search</span>
+                    <input type="text" id="gallerySearch" class="search-input" placeholder="Search description...">
                 </div>
-
-                <div id="preview" style="display:none;">
-                    <p id="fileCount"></p>
-                    <div id="previewGrid" class="gallery-grid"></div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label" for="description">Description</label>
-                        <textarea class="form-textarea" id="description" name="description" placeholder="Describe this set of photos"></textarea>
-                    </div>
-                    <div class="form-group-right">
-                        <div class="form-group">
-                            <label class="form-label" for="category">Category</label>
-                            <select class="form-select" id="category" name="category" required>
-                                <option value="">Select Category</option>
-                                <option value="practice">Practice</option>
-                                <option value="matches">Matches</option>
-                                <option value="events">Events</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="tags">Tags</label>
-                            <input class="form-input" type="text" id="tags" name="tags" placeholder="captain, finals, training">
-                        </div>
-                    </div>
-                </div>
-
-                <button class="upload-submit-btn" type="submit" id="uploadBtn">Upload Images</button>
-            </form>
-        </section>
-
-        <section class="filter-section">
-            <div class="filter-left">
-                <span class="filter-label">Filter by category:</span>
-                <select class="filter-select" id="filterCategory">
-                    <option value="all">All</option>
+                <select class="type-filter" id="filterCategory">
+                    <option value="all">All Categories</option>
                     <option value="practice">Practice</option>
                     <option value="matches">Matches</option>
                     <option value="events">Events</option>
+                    <option value="team">Team</option>
+                    <option value="training">Training</option>
+                    <option value="other">Other</option>
                 </select>
             </div>
         </section>
 
-        <section>
+        <section class="gallery-panel">
+            <div class="gallery-panel-head">
+                <h2>Gallery Photos</h2>
+            </div>
             <div class="gallery-grid" id="galleryGrid">
                 <?php if (!empty($images)): ?>
                     <?php foreach ($images as $image): ?>
@@ -102,10 +70,10 @@ $title = $data['title'] ?? 'Gallery Management';
                         $tags = array_filter(array_map('trim', explode(',', $rawTags)));
                         $imageTagsEscaped = htmlspecialchars($rawTags, ENT_QUOTES, 'UTF-8');
                         ?>
-                        <article class="gallery-card" data-image-id="<?php echo $imageId; ?>" data-category="<?php echo $imageCategory; ?>" data-description="<?php echo $imageDescription; ?>" data-tags="<?php echo $imageTagsEscaped; ?>">
-                            <div class="card-image-container" style="position:relative;">
+                        <div class="gallery-item" data-image-id="<?php echo $imageId; ?>" data-category="<?php echo $imageCategory; ?>" data-search="<?php echo htmlspecialchars(strtolower($imageDescription), ENT_QUOTES, 'UTF-8'); ?>">
+                            <div class="gallery-image-container">
                                 <img src="<?php echo ROOT . '/' . $imagePath; ?>" alt="<?php echo $imageDescription; ?>" class="gallery-image">
-                                <div class="card-overlay">
+                                <div class="gallery-actions">
                                     <button class="action-btn edit-btn" type="button" data-id="<?php echo $imageId; ?>" aria-label="Edit image">
                                         <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                                     </button>
@@ -114,30 +82,77 @@ $title = $data['title'] ?? 'Gallery Management';
                                     </button>
                                 </div>
                             </div>
-                            <div class="card-content">
-                                <p class="card-description"><?php echo $imageDescription !== '' ? $imageDescription : 'No description'; ?></p>
-                                <div class="card-footer">
-                                    <span class="tag tag-purple"><?php echo ucfirst($imageCategory); ?></span>
-                                    <span class="card-meta"><?php echo htmlspecialchars($imageDate, ENT_QUOTES, 'UTF-8'); ?></span>
+                            <div class="gallery-info">
+                                <p class="gallery-description"><?php echo $imageDescription !== '' ? $imageDescription : 'No description'; ?></p>
+                                <div class="gallery-meta">
+                                    <span class="tag"><?php echo ucfirst($imageCategory); ?></span>
+                                    <span class="date"><?php echo $imageDate; ?></span>
                                 </div>
-                                <?php if (!empty($tags)): ?>
-                                    <div class="tags" style="margin-top:8px;">
-                                        <?php foreach ($tags as $tag): ?>
-                                            <span class="tag tag-purple"><?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?></span>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
                             </div>
-                        </article>
+                        </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="empty-state">
-                        <h3>No images yet</h3>
-                        <p>Upload your first gallery images above.</p>
-                    </div>
+                    <div class="empty-state" id="emptyState">No photos yet. Upload the first gallery images.</div>
                 <?php endif; ?>
             </div>
         </section>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <form class="modal" id="uploadForm" enctype="multipart/form-data">
+            <button type="button" class="close-modal-btn" id="closeUploadModalBtn">&times;</button>
+            <div class="modal-header">
+                <img class="logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
+            </div>
+            <h2 class="modal-title">Upload Photos</h2>
+            <div class="modal-body">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+                    </div>
+                    <p class="upload-text">Drag and drop images here</p>
+                    <p class="upload-info">or click browse to upload JPG, PNG, GIF images (max 10MB each)</p>
+                    <button type="button" class="browse-btn" id="browseBtn">Browse Images</button>
+                    <input type="file" id="imageInput" name="images[]" accept="image/jpeg,image/png,image/gif" multiple hidden>
+                </div>
+
+                <div id="preview" style="display:none; margin-top: 20px;">
+                    <p id="fileCount" style="margin-bottom: 10px; font-weight: 600;"></p>
+                    <div id="previewGrid" class="preview-grid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="input-label" for="description">Description</label>
+                    <textarea class="form-input" id="description" name="description" rows="3" placeholder="Describe this set of photos"></textarea>
+                </div>
+
+                <div class="form-group two-col">
+                    <div>
+                        <label class="input-label" for="category">Category</label>
+                        <select class="form-input" id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="practice">Practice</option>
+                            <option value="matches">Matches</option>
+                            <option value="events">Events</option>
+                            <option value="training">Training</option>
+                            <option value="team">Team</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="input-label" for="tags">Tags</label>
+                        <input class="form-input" type="text" id="tags" name="tags" placeholder="captain, finals, training">
+                    </div>
+                </div>
+
+                <p class="form-message" id="uploadFormMessage" aria-live="polite"></p>
+                <div class="form-actions">
+                    <button type="button" class="secondary-btn" id="cancelUploadBtn">Cancel</button>
+                    <button type="submit" class="submit-btn" id="uploadBtn">Upload Photos</button>
+                </div>
+            </div>
+        </form>
     </div>
 
     <div class="modal-overlay" id="editModal">
@@ -162,6 +177,9 @@ $title = $data['title'] ?? 'Gallery Management';
                             <option value="practice">Practice</option>
                             <option value="matches">Matches</option>
                             <option value="events">Events</option>
+                            <option value="training">Training</option>
+                            <option value="team">Team</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                     <div>

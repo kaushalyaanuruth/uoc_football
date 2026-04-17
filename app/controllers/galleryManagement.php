@@ -72,9 +72,9 @@ class GalleryManagement extends Controller
             $description = trim((string) ($_POST['description'] ?? ''));
             $tags = trim((string) ($_POST['tags'] ?? ''));
 
-            $allowedCategories = ['practice', 'matches', 'events'];
+            $allowedCategories = ['practice', 'matches', 'events', 'training', 'team', 'other'];
             if (!in_array($category, $allowedCategories, true)) {
-                throw new Exception('Category must be practice, matches, or events');
+                throw new Exception('Category must be practice, matches, events, training, team, or other');
             }
 
             $uploadDir = dirname(__DIR__, 2) . '/public/uploads/gallery/';
@@ -179,9 +179,9 @@ class GalleryManagement extends Controller
 
             if (isset($input['category'])) {
                 $category = strtolower(trim((string) $input['category']));
-                $allowedCategories = ['practice', 'matches', 'events'];
+                $allowedCategories = ['practice', 'matches', 'events', 'training', 'team', 'other'];
                 if (!in_array($category, $allowedCategories, true)) {
-                    throw new Exception('Category must be practice, matches, or events');
+                    throw new Exception('Category must be practice, matches, events, training, team, or other');
                 }
                 $data['category'] = $category;
             }

@@ -3,6 +3,8 @@
 $latestNews = $data['latestNews'] ?? [];
 // Get upcoming events from controller data
 $upcomingEvents = $data['upcomingEvents'] ?? [];
+// Get latest gallery images from controller data
+$latestGalleryImages = $data['latestGalleryImages'] ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -18,6 +20,7 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/values/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/events/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/team/style.css">
+    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/gallery/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/footer/style.css">
     <style>
         *{
@@ -194,6 +197,51 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
                 </div>
             </div>
             <a href="http://localhost/UOC_Football/public/team" class="view-all-btn" style="margin-top: 2rem;">Explore full team</a>
+        </div>
+    </div>
+    <div class="gallery" id="gallery">
+        <div class="gallery-container">
+            <div class="gallery-header">
+                <h2 class="section-title">Gallery</h2>
+                <a href="<?php echo ROOT; ?>/gallery" class="view-all-btn">View All</a>
+            </div>
+            <div class="gallery-grid">
+                <?php
+                if (!empty($latestGalleryImages)) {
+                    foreach ($latestGalleryImages as $image):
+                        // Get category emoji
+                        $categoryEmojis = [
+                            'matches' => '⚽',
+                            'training' => '🏃',
+                            'team' => '👥',
+                            'events' => '🎉',
+                            'other' => '📸',
+                            'practice' => '🏋️'
+                        ];
+                        $emoji = $categoryEmojis[strtolower($image->category ?? 'other')] ?? '📸';
+                ?>
+                <div class="gallery-item">
+                    <div class="gallery-image-wrapper">
+                        <?php if (!empty($image->filepath)): ?>
+                            <img src="<?php echo ROOT; ?>/<?php echo htmlspecialchars($image->filepath); ?>" alt="<?php echo htmlspecialchars($image->description ?? 'Gallery Image'); ?>" class="gallery-image">
+                        <?php else: ?>
+                            <div class="gallery-placeholder">
+                                <?php echo $emoji; ?>
+                            </div>
+                        <?php endif; ?>
+                        <div class="gallery-overlay">
+                            <span class="gallery-category"><?php echo ucfirst($image->category ?? 'Other'); ?></span>
+                        </div>
+                    </div>
+                </div>
+                <?php 
+                    endforeach;
+                } else { ?>
+                <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                    <p>No photos available yet. Check back soon!</p>
+                </div>
+                <?php } ?>
+            </div>
         </div>
     </div>
     <footer class="footer">

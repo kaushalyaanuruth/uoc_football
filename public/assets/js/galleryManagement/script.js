@@ -14,6 +14,7 @@
         return (config.root || '') + path;
     }
 
+    const uploadModal = byId('uploadModal');
     const uploadForm = byId('uploadForm');
     const uploadArea = byId('uploadArea');
     const imageInput = byId('imageInput');
@@ -22,7 +23,11 @@
     const preview = byId('preview');
     const previewGrid = byId('previewGrid');
     const fileCount = byId('fileCount');
+    const openGalleryModalBtn = byId('openGalleryModalBtn');
+    const closeUploadModalBtn = byId('closeUploadModalBtn');
+    const cancelUploadBtn = byId('cancelUploadBtn');
     const galleryGrid = byId('galleryGrid');
+    const gallerySearch = byId('gallerySearch');
     const filterCategory = byId('filterCategory');
     const editModal = byId('editModal');
     const editForm = byId('editForm');
@@ -36,6 +41,49 @@
     const confirmDeleteBtn = byId('confirmDeleteBtn');
 
     let selectedFiles = [];
+
+    /**
+     * Opens the upload modal and resets form fields.
+     */
+    function openUploadModal() {
+        if (!uploadModal) {
+            return;
+        }
+
+        uploadForm.reset();
+        selectedFiles = [];
+        renderPreview();
+        setFormMessage(byId('uploadFormMessage'), '', '');
+        if (uploadBtn) {
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Photos';
+        }
+        uploadModal.classList.add('active');
+    }
+
+    /**
+     * Closes the upload modal.
+     */
+    function closeUploadModal() {
+        if (!uploadModal) {
+            return;
+        }
+
+        uploadModal.classList.remove('active');
+        if (uploadForm) {
+            uploadForm.reset();
+        }
+        if (imageInput) {
+            imageInput.value = '';
+        }
+        selectedFiles = [];
+        renderPreview();
+        setFormMessage(byId('uploadFormMessage'), '', '');
+        if (uploadBtn) {
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Photos';
+        }
+    }
 
     /**
      * Displays a temporary success/error message at the top of the page.
@@ -136,22 +184,18 @@
 
         selectedFiles.forEach(function (file, index) {
             const card = document.createElement('div');
-            card.className = 'gallery-card';
-            card.style.position = 'relative';
+            card.className = 'preview-item';
 
             const img = document.createElement('img');
-            img.className = 'gallery-image';
             img.alt = file.name;
             img.src = URL.createObjectURL(file);
 
             const removeButton = document.createElement('button');
             removeButton.type = 'button';
-            removeButton.className = 'action-btn delete-btn';
-            removeButton.style.position = 'absolute';
-            removeButton.style.top = '8px';
-            removeButton.style.right = '8px';
-            removeButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">close</span>';
-            removeButton.addEventListener('click', function () {
+            removeButton.className = 'preview-remove';
+            removeButton.innerHTML = '&times;';
+            removeButton.addEventListener('click', function (e) {
+                e.preventDefault();
                 selectedFiles.splice(index, 1);
                 renderPreview();
             });
@@ -183,11 +227,18 @@
             return;
         }
 
+        // Prevent double submission
+        if (uploadBtn.disabled) {
+            return;
+        }
+
         uploadBtn.disabled = true;
         uploadBtn.textContent = 'Uploading...';
 
         const formData = new FormData();
-        selectedFiles.forEach(function (file) {
+        console.log('Uploading ' + selectedFiles.length + ' file(s)');
+        selectedFiles.forEach(function (file, idx) {
+            console.log('  File ' + (idx + 1) + ': ' + file.name);
             formData.append('images[]', file);
         });
         formData.append('category', categoryInput.value);
@@ -209,14 +260,16 @@
                 throw new Error(result.message || 'Upload failed');
             }
 
+            console.log('Upload response: ' + result.message);
             showMessage(result.message || 'Images uploaded successfully', 'success');
+            closeUploadModal();
             setTimeout(function () {
-                window.location.reload();
-            }, 700);
+                location.reload();
+            }, 1000);
         } catch (error) {
             showMessage(error.message, 'error');
             uploadBtn.disabled = false;
-            uploadBtn.textContent = 'Upload Images';
+            uploadBtn.textContent = 'Upload Photos';
         }
     }
 
@@ -259,12 +312,19 @@
             return;
         }
 
+        // Fetch current image data to pre-fill the form
         byId('editImageId').value = id;
-        byId('editDescription').value = card.getAttribute('data-description') || '';
         byId('editCategory').value = (card.getAttribute('data-category') || 'events').toLowerCase();
-        byId('editTags').value = card.getAttribute('data-tags') || '';
+        
+        // Get description from the gallery-description element
+        const descriptionEl = card.querySelector('.gallery-description');
+        byId('editDescription').value = descriptionEl ? descriptionEl.textContent.trim() : '';
+        
+        // Get tags from any tag elements or data attribute
+        const tagsEl = card.querySelector('.tag');
+        byId('editTags').value = tagsEl ? card.getAttribute('data-tags') || '' : '';
+        
         setFormMessage(byId('editFormMessage'), '', '');
-
         editModal.classList.add('active');
     }
 
@@ -388,24 +448,52 @@
      * Filters visible cards on the page by selected category without another server request.
      */
     function filterCardsByCategory() {
-        if (!galleryGrid || !filterCategory) {
+        if (!galleryGrid) {
             return;
         }
 
-        const selected = filterCategory.value;
-        const cards = galleryGrid.querySelectorAll('.gallery-card');
+        const selected = (filterCategory ? filterCategory.value : 'all');
+        const cards = galleryGrid.querySelectorAll('.gallery-item');
 
         cards.forEach(function (card) {
             const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
-            const matches = selected === 'all' || selected === cardCategory;
-            card.style.display = matches ? '' : 'none';
+            const categoryMatches = selected === 'all' || selected === cardCategory;
+            
+            // Also check search term
+            const searchValue = (gallerySearch ? gallerySearch.value.toLowerCase() : '');
+            const cardSearch = (card.getAttribute('data-search') || '').toLowerCase();
+            const searchMatches = !searchValue || cardSearch.includes(searchValue);
+            
+            const shouldShow = categoryMatches && searchMatches;
+            card.style.display = shouldShow ? '' : 'none';
         });
+    }
+
+    /**
+     * Filters gallery items by search term in description.
+     */
+    function filterBySearch() {
+        filterCardsByCategory();
     }
 
     /**
      * Registers all page event listeners for uploading, filtering, and card actions.
      */
     function bindEvents() {
+        // Upload modal open/close
+        if (openGalleryModalBtn) {
+            openGalleryModalBtn.addEventListener('click', openUploadModal);
+        }
+
+        if (closeUploadModalBtn) {
+            closeUploadModalBtn.addEventListener('click', closeUploadModal);
+        }
+
+        if (cancelUploadBtn) {
+            cancelUploadBtn.addEventListener('click', closeUploadModal);
+        }
+
+        // Browse and file input
         if (browseBtn && imageInput) {
             browseBtn.addEventListener('click', function () {
                 imageInput.click();
@@ -416,6 +504,7 @@
             });
         }
 
+        // Drag and drop
         if (uploadArea) {
             uploadArea.addEventListener('dragover', function (event) {
                 event.preventDefault();
@@ -436,6 +525,7 @@
             });
         }
 
+        // Upload form submission
         if (uploadForm) {
             uploadForm.addEventListener('submit', function (event) {
                 event.preventDefault();
@@ -443,16 +533,23 @@
             });
         }
 
+        // Category filter
         if (filterCategory) {
             filterCategory.addEventListener('change', filterCardsByCategory);
         }
 
+        // Search filter
+        if (gallerySearch) {
+            gallerySearch.addEventListener('input', filterBySearch);
+        }
+
+        // Gallery grid action buttons
         if (galleryGrid) {
             galleryGrid.addEventListener('click', function (event) {
                 const editBtn = event.target.closest('.edit-btn');
                 if (editBtn) {
                     const id = editBtn.getAttribute('data-id');
-                    const card = editBtn.closest('.gallery-card');
+                    const card = editBtn.closest('.gallery-item');
                     openEditModal(card, id);
                     return;
                 }
@@ -464,6 +561,7 @@
             });
         }
 
+        // Edit form
         if (editForm) {
             editForm.addEventListener('submit', function (event) {
                 event.preventDefault();
@@ -471,6 +569,7 @@
             });
         }
 
+        // Delete form
         if (deleteForm) {
             deleteForm.addEventListener('submit', function (event) {
                 event.preventDefault();
@@ -478,6 +577,7 @@
             });
         }
 
+        // Edit modal close buttons
         if (closeEditModalBtn) {
             closeEditModalBtn.addEventListener('click', closeEditModal);
         }
@@ -486,6 +586,7 @@
             cancelEditBtn.addEventListener('click', closeEditModal);
         }
 
+        // Delete modal close buttons
         if (closeDeleteModalBtn) {
             closeDeleteModalBtn.addEventListener('click', closeDeleteModal);
         }
@@ -494,12 +595,39 @@
             cancelDeleteBtn.addEventListener('click', closeDeleteModal);
         }
 
+        // Escape key to close modals
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
+                closeUploadModal();
                 closeEditModal();
                 closeDeleteModal();
             }
         });
+
+        // Close modal when clicking outside
+        if (uploadModal) {
+            uploadModal.addEventListener('click', function (event) {
+                if (event.target === uploadModal) {
+                    closeUploadModal();
+                }
+            });
+        }
+
+        if (editModal) {
+            editModal.addEventListener('click', function (event) {
+                if (event.target === editModal) {
+                    closeEditModal();
+                }
+            });
+        }
+
+        if (deleteModal) {
+            deleteModal.addEventListener('click', function (event) {
+                if (event.target === deleteModal) {
+                    closeDeleteModal();
+                }
+            });
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
