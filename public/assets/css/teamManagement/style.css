@@ -608,6 +608,13 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
+#addPlayersModal{
+    z-index: 3000 !important;
+}
+
+#addCoachModal{
+    z-index: 3000 !important;
+}
 .modal-addPlayer {
     position: fixed;
     top: 0;
@@ -618,7 +625,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 3000;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;

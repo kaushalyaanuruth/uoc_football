@@ -37,6 +37,7 @@ function budgetMoney($amount)
             </div>
             <div class="right-section">
                 <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Admin Avatar">
+                <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
             </div>
         </div>
 

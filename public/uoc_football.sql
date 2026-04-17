@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS coaches (
 
 CREATE TABLE IF NOT EXISTS teams (
     team_id INT(32) PRIMARY KEY AUTO_INCREMENT,
-    season VARCHAR(20) NOT NULL
+    season VARCHAR(20) NOT NULL,
+    status ENUM('present', 'past') NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS inventory_items (
@@ -200,4 +201,18 @@ CREATE TABLE IF NOT EXISTS news (
     date DATE NOT NULL,
     description TEXT NOT NULL,
     image VARCHAR(255) DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tournaments (
+    tournament_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(20) NOT NULL,
+    team_id INT(32),
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Achievements (
+    achievement_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    achievement VARCHAR(20) NOT NULL,
+    team_id INT(32),
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
