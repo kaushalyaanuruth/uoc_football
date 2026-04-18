@@ -18,6 +18,86 @@ class teamManagement extends Controller {
         $this->userModel = $this->model('User');
     }
 
+    private function tableExists($tableName)
+    {
+        try {
+            $rows = $this->teamModel->query("SHOW TABLES LIKE :table_name", ['table_name' => $tableName]);
+            return !empty($rows);
+        } catch (Exception $e) {
+            error_log("Table check failed for {$tableName}: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function normalizeLeadershipRole($role)
+    {
+        $normalized = strtolower(trim((string)$role));
+        $normalized = str_replace(['_', ' '], '-', $normalized);
+
+        if ($normalized === 'captain') {
+            return 'captain';
+        }
+
+        if (in_array($normalized, ['vice-captain', 'vicecaptain'], true)) {
+            return 'vice-captain';
+        }
+
+        return 'player';
+    }
+
+    private function leadershipLabel($normalizedRole)
+    {
+        if ($normalizedRole === 'captain') {
+            return 'Captain';
+        }
+
+        if ($normalizedRole === 'vice-captain') {
+            return 'Vice Captain';
+        }
+
+        return 'Player';
+    }
+
+    private function getLeadershipRoleConflictMessage($teamId, $role, $excludePlayerId = null)
+    {
+        $normalizedRole = $this->normalizeLeadershipRole($role);
+
+        if (!in_array($normalizedRole, ['captain', 'vice-captain'], true)) {
+            return null;
+        }
+
+        $query = "SELECT p.player_id, p.role, u.first_name, u.last_name
+                  FROM team_players tp
+                  INNER JOIN players p ON tp.player_id = p.player_id
+                  LEFT JOIN users u ON p.nic = u.nic
+                  WHERE tp.team_id = :team_id
+                    AND LOWER(REPLACE(REPLACE(p.role, ' ', '-'), '_', '-')) = :role_norm";
+
+        $params = [
+            'team_id' => $teamId,
+            'role_norm' => $normalizedRole
+        ];
+
+        if (!empty($excludePlayerId)) {
+            $query .= " AND p.player_id != :exclude_player_id";
+            $params['exclude_player_id'] = $excludePlayerId;
+        }
+
+        $existing = $this->playerModel->query($query, $params);
+
+        if (empty($existing)) {
+            return null;
+        }
+
+        $holder = $existing[0];
+        $holderName = trim(($holder->first_name ?? '') . ' ' . ($holder->last_name ?? ''));
+        if ($holderName === '') {
+            $holderName = 'another player';
+        }
+
+        return $this->leadershipLabel($normalizedRole) . " already exists in this team ({$holderName}).";
+    }
+
     public function index() {
         if (!isset($_SESSION['temp_players'])) {
             $_SESSION['temp_players'] = [];
@@ -31,28 +111,49 @@ class teamManagement extends Controller {
         
             $teams = is_array($teams) ? $teams : [];
             foreach ($teams as $team) {
+                try {
+                    $tournaments = $this->tournamentModel->getByTeamId($team->team_id);
+                    $team->tournaments = $tournaments ?: [];
+                } catch (Exception $e) {
+                    error_log("Tournament fetch failed for team {$team->team_id}: " . $e->getMessage());
+                    $team->tournaments = [];
+                }
 
-                $tournaments = $this->tournamentModel->getByTeamId($team->team_id);
-                $team->tournaments = $tournaments ?: [];
-
-                $achievements = $this->achievementModel->getByTeamId($team->team_id);
-                $team->achievements = $achievements ?: [];
+                try {
+                    $achievements = $this->achievementModel->getByTeamId($team->team_id);
+                    $team->achievements = $achievements ?: [];
+                } catch (Exception $e) {
+                    error_log("Achievement fetch failed for team {$team->team_id}: " . $e->getMessage());
+                    $team->achievements = [];
+                }
                 
-                $coaches = $this->coachModel->getByTeamId($team->team_id);
-  
-                $team->coaches = $coaches ?: [];
-      
+                try {
+                    $coaches = $this->coachModel->getByTeamId($team->team_id);
+                    $team->coaches = $coaches ?: [];
+                } catch (Exception $e) {
+                    error_log("Coach fetch failed for team {$team->team_id}: " . $e->getMessage());
+                    $team->coaches = [];
+                }
 
                 $team->coach_names = implode(', ', array_map(function($c) { 
                     return (isset($c->first_name) && isset($c->last_name)) ? $c->first_name . ' ' . $c->last_name : ''; 
-                }, $coaches));
+                }, $team->coaches));
 
-
-                
-                if (!isset($team->players_count)) {
+                try {
                     $players = $this->playerModel->getByTeamId($team->team_id);
-                    $team->players_count = is_array($players) ? count($players) : 0;
+                } catch (Exception $e) {
+                    error_log("Player fetch failed for team {$team->team_id}: " . $e->getMessage());
+                    $players = [];
                 }
+
+                $team->players = is_array($players) ? $players : [];
+                $team->players_count = count($team->players);
+                $team->player_names = implode(', ', array_map(function ($p) {
+                    if (!empty($p->first_name) || !empty($p->last_name)) {
+                        return trim(($p->first_name ?? '') . ' ' . ($p->last_name ?? ''));
+                    }
+                    return $p->nic ?? '';
+                }, $team->players));
             }
             $data = ['teams' => $teams];
             
@@ -95,6 +196,32 @@ class teamManagement extends Controller {
             
             if (!$teamId) {
                 echo json_encode(['success' => false, 'message' => 'Failed to create team']);
+                exit;
+            }
+
+            // For a new team request, ensure only one captain and one vice captain are included.
+            $leadershipCounts = ['captain' => 0, 'vice-captain' => 0];
+            if (isset($_POST['players']) && is_array($_POST['players'])) {
+                foreach ($_POST['players'] as $playerJson) {
+                    $playerData = json_decode($playerJson, true);
+                    if (!$playerData) {
+                        continue;
+                    }
+
+                    $normalizedRole = $this->normalizeLeadershipRole($playerData['role'] ?? '');
+                    if (isset($leadershipCounts[$normalizedRole])) {
+                        $leadershipCounts[$normalizedRole]++;
+                    }
+                }
+            }
+
+            if ($leadershipCounts['captain'] > 1) {
+                echo json_encode(['success' => false, 'message' => 'Only one Captain can be added to a team.']);
+                exit;
+            }
+
+            if ($leadershipCounts['vice-captain'] > 1) {
+                echo json_encode(['success' => false, 'message' => 'Only one Vice Captain can be added to a team.']);
                 exit;
             }
 
@@ -246,7 +373,7 @@ class teamManagement extends Controller {
             }
             
             // Get player by NIC
-            $player = $this->playerModel->query("SELECT player_id FROM players WHERE nic = :nic", ['nic' => $nic]);
+            $player = $this->playerModel->query("SELECT player_id, role FROM players WHERE nic = :nic", ['nic' => $nic]);
             
             if (empty($player)) {
                 echo json_encode(['success' => false, 'message' => 'Player not found']);
@@ -254,6 +381,12 @@ class teamManagement extends Controller {
             }
             
             $playerId = $player[0]->player_id;
+
+            $roleConflict = $this->getLeadershipRoleConflictMessage($teamId, $player[0]->role ?? '', $playerId);
+            if (!empty($roleConflict)) {
+                echo json_encode(['success' => false, 'message' => $roleConflict]);
+                exit;
+            }
             
             // Check if already linked
             $existingLink = $this->playerModel->query("SELECT * FROM team_players WHERE team_id = :team_id AND player_id = :player_id", [
@@ -316,6 +449,12 @@ class teamManagement extends Controller {
                 'position' => $_POST['position'] ?? '',
                 'role' => $_POST['role'] ?? ''
             ];
+
+            $roleConflict = $this->getLeadershipRoleConflictMessage($teamId, $playerData['role']);
+            if (!empty($roleConflict)) {
+                echo json_encode(['success' => false, 'message' => $roleConflict]);
+                exit;
+            }
             
             // Validate required fields
             if (empty($userData['nic']) || empty($userData['first_name']) || empty($userData['last_name'])) {
@@ -583,8 +722,46 @@ class teamManagement extends Controller {
                 'position' => $_POST['position'] ?? '',
                 'role' => $_POST['role'] ?? ''
             ];
+
+            $teamId = $_POST['team_id'] ?? null;
+            if (empty($teamId)) {
+                $teamLink = $this->playerModel->query(
+                    "SELECT team_id FROM team_players WHERE player_id = :player_id LIMIT 1",
+                    ['player_id' => $playerId]
+                );
+                $teamId = !empty($teamLink) ? ($teamLink[0]->team_id ?? null) : null;
+            }
+
+            if (!empty($teamId)) {
+                $roleConflict = $this->getLeadershipRoleConflictMessage($teamId, $playerData['role'], $playerId);
+                if (!empty($roleConflict)) {
+                    echo json_encode(['success' => false, 'message' => $roleConflict]);
+                    exit;
+                }
+            }
             
             $this->playerModel->update($playerId, $playerData);
+
+            $newImagePath = null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = ROOT_PATH . '/public/uploads/players/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                $fileName = basename($_FILES['image']['name']);
+                $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+                if (in_array($fileExt, $allowedExts, true)) {
+                    $newFileName = uniqid('player_') . '.' . $fileExt;
+                    $uploadPath = $uploadDir . $newFileName;
+
+                    if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
+                        $newImagePath = 'uploads/players/' . $newFileName;
+                    }
+                }
+            }
             
             // Update user data if present
             $userNic = $_POST['nic'] ?? null;
@@ -595,6 +772,10 @@ class teamManagement extends Controller {
                     'email' => $_POST['email'] ?? '',
                     'phone_number' => $_POST['phone_number'] ?? ''
                 ];
+
+                if (!empty($newImagePath)) {
+                    $userData['image'] = $newImagePath;
+                }
                 
                 $this->userModel->updateByNic($userNic, $userData);
             }
@@ -751,10 +932,10 @@ class teamManagement extends Controller {
             
             $this->teamModel->update($teamId, $updateData);
             
-            // Update tournaments
-            if (isset($_POST['name'])) {
+            // Update tournaments (optional table in some local schemas)
+            if (isset($_POST['name']) && $this->tableExists('tournaments')) {
                 $this->tournamentModel->deleteByTeamId($teamId);
-                
+
                 $tournaments = is_array($_POST['name']) ? $_POST['name'] : [$_POST['name']];
                 foreach ($tournaments as $tournament) {
                     $tournament = trim($tournament);
@@ -766,11 +947,11 @@ class teamManagement extends Controller {
                     }
                 }
             }
-            
-            // Update achievements
-            if (isset($_POST['achievement'])) {
+
+            // Update achievements (optional table in some local schemas)
+            if (isset($_POST['achievement']) && $this->tableExists('achievements')) {
                 $this->achievementModel->deleteByTeamId($teamId);
-                
+
                 $achievements = is_array($_POST['achievement']) ? $_POST['achievement'] : [$_POST['achievement']];
                 foreach ($achievements as $achievement) {
                     $achievement = trim($achievement);
@@ -864,6 +1045,12 @@ class teamManagement extends Controller {
                 'position' => $_POST['position'],
                 'role' => $_POST['role']
             ];
+
+            $roleConflict = $this->getLeadershipRoleConflictMessage($teamId, $playerData['role']);
+            if (!empty($roleConflict)) {
+                echo json_encode(['success' => false, 'message' => $roleConflict]);
+                exit;
+            }
             
             // Create and link player to team
             $playerId = $this->playerModel->addToTeam($teamId, $userData, $playerData);
@@ -1048,6 +1235,53 @@ class teamManagement extends Controller {
             if (!$teamId) {
                 echo json_encode(['success' => false, 'message' => 'Team ID is required']);
                 exit;
+            }
+
+            // Remove team links/dependent records first to satisfy foreign keys.
+            try {
+                $this->teamModel->query("DELETE FROM team_players WHERE team_id = :team_id", ['team_id' => $teamId]);
+            } catch (Exception $e) {
+                error_log("team_players cleanup failed for team {$teamId}: " . $e->getMessage());
+            }
+
+            try {
+                $this->teamModel->query("DELETE FROM team_coaches WHERE team_id = :team_id", ['team_id' => $teamId]);
+            } catch (Exception $e) {
+                error_log("team_coaches cleanup failed for team {$teamId}: " . $e->getMessage());
+            }
+
+            if ($this->tableExists('tournaments')) {
+                $this->teamModel->query("DELETE FROM tournaments WHERE team_id = :team_id", ['team_id' => $teamId]);
+            }
+
+            if ($this->tableExists('achievements')) {
+                $this->teamModel->query("DELETE FROM achievements WHERE team_id = :team_id", ['team_id' => $teamId]);
+            }
+
+            if ($this->tableExists('meal_plans')) {
+                $mealRows = $this->teamModel->query("SELECT meal_id FROM meal_plans WHERE team_id = :team_id", ['team_id' => $teamId]);
+                foreach ($mealRows as $mealRow) {
+                    $mealId = $mealRow->meal_id ?? null;
+                    if (!$mealId) {
+                        continue;
+                    }
+
+                    if ($this->tableExists('breakfast')) {
+                        $this->teamModel->query("DELETE FROM breakfast WHERE meal_id = :meal_id", ['meal_id' => $mealId]);
+                    }
+                    if ($this->tableExists('lunch')) {
+                        $this->teamModel->query("DELETE FROM lunch WHERE meal_id = :meal_id", ['meal_id' => $mealId]);
+                    }
+                    if ($this->tableExists('dinner')) {
+                        $this->teamModel->query("DELETE FROM dinner WHERE meal_id = :meal_id", ['meal_id' => $mealId]);
+                    }
+                }
+
+                $this->teamModel->query("DELETE FROM meal_plans WHERE team_id = :team_id", ['team_id' => $teamId]);
+            }
+
+            if ($this->tableExists('budgets')) {
+                $this->teamModel->query("DELETE FROM budgets WHERE team_id = :team_id", ['team_id' => $teamId]);
             }
             
             $this->teamModel->delete($teamId);

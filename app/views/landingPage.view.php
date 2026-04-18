@@ -5,6 +5,7 @@ $latestNews = $data['latestNews'] ?? [];
 $upcomingEvents = $data['upcomingEvents'] ?? [];
 // Get latest gallery images from controller data
 $latestGalleryImages = $data['latestGalleryImages'] ?? [];
+$landingTeamCards = $data['landingTeamCards'] ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -80,7 +81,7 @@ $latestGalleryImages = $data['latestGalleryImages'] ?? [];
         <div class="news-container">
             <div class="news-header">
                 <h2 class="section-title">Latest News</h2>
-                <a href="<?php echo ROOT; ?>/moreNews" class="view-all-news-btn">See All News</a>
+                <a href="<?php echo ROOT; ?>/moreNews" class="view-all-news-btn">View All</a>
             </div>
             <div class="news-grid">
                 <?php
@@ -150,13 +151,29 @@ $latestGalleryImages = $data['latestGalleryImages'] ?? [];
                 foreach ($upcomingEvents as $event):
                     // Get emoji based on event type, default to 📅
                     $emoji = $eventEmojis[strtolower($event->event_type ?? 'match')] ?? '📅';
+
+                    $eventImageUrl = '';
+                    if (!empty($event->image)) {
+                        $rawImagePath = str_replace('\\', '/', ltrim((string)$event->image, '/'));
+                        if (strpos($rawImagePath, 'uploads/') === 0) {
+                            $eventImageUrl = ROOT . '/' . $rawImagePath;
+                        } else {
+                            $eventImageUrl = ROOT . '/uploads/event_images/' . $rawImagePath;
+                        }
+                    }
                     
                     // Format date and time
                     $eventDateTime = strtotime($event->date . ' ' . ($event->event_time ?? '15:00:00'));
                     $formattedDate = date('l, F j g:i A', $eventDateTime);
             ?>
                 <div class="event-card">
-                    <div class="event-image"><?php echo $emoji; ?></div>
+                    <div class="event-image">
+                        <?php if (!empty($eventImageUrl)): ?>
+                            <img src="<?php echo htmlspecialchars($eventImageUrl); ?>" alt="<?php echo htmlspecialchars($event->title ?? 'Event'); ?>">
+                        <?php else: ?>
+                            <?php echo $emoji; ?>
+                        <?php endif; ?>
+                    </div>
                     <div class="event-details">
                         <h4><?php echo htmlspecialchars($event->title ?? 'UOC Football Event'); ?></h4>
                         <div class="event-date"><?php echo $formattedDate; ?></div>
@@ -180,21 +197,16 @@ $latestGalleryImages = $data['latestGalleryImages'] ?? [];
         <div class="team-container">
             <h2 class="section-title">Team</h2>
             <div class="team-grid">
-                <div class="team-member">
-                    <div class="team-avatar">JR</div>
-                    <div class="team-name">Jony Rukshan</div>
-                    <div class="team-role">Coach</div>
-                </div>
-                <div class="team-member">
-                    <div class="team-avatar">PS</div>
-                    <div class="team-name">Priyajan Srikantha</div>
-                    <div class="team-role">Captain</div>
-                </div>
-                <div class="team-member">
-                    <div class="team-avatar">CM</div>
-                    <div class="team-name">Chalitha Marambage</div>
-                    <div class="team-role">Vice Captain</div>
-                </div>
+                <?php foreach ($landingTeamCards as $card): ?>
+                    <div class="team-member">
+                        <div class="team-avatar">
+                            <img src="<?php echo htmlspecialchars($card['image']); ?>" alt="<?php echo htmlspecialchars($card['name']); ?>">
+                            <span class="team-avatar-fallback"><?php echo htmlspecialchars($card['initials']); ?></span>
+                        </div>
+                        <div class="team-name"><?php echo htmlspecialchars($card['name']); ?></div>
+                        <div class="team-role"><?php echo htmlspecialchars($card['role']); ?></div>
+                    </div>
+                <?php endforeach; ?>
             </div>
             <a href="http://localhost/UOC_Football/public/team" class="view-all-btn" style="margin-top: 2rem;">Explore full team</a>
         </div>

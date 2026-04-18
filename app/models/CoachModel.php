@@ -215,7 +215,7 @@ class CoachModel
      */
     public function getByTeamId($team_id)
     {
-        $query = "SELECT c.coach_id, c.license, c.nic, u.first_name, u.last_name, u.email, u.phone_number 
+        $query = "SELECT c.coach_id, c.license, c.nic, u.first_name, u.last_name, u.email, u.phone_number, u.image 
                   FROM {$this->table} c 
                   INNER JOIN team_coaches tc ON c.coach_id = tc.coach_id 
                   LEFT JOIN users u ON c.nic = u.nic

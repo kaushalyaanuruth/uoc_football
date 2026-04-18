@@ -2,8 +2,44 @@
 
 class MealPlan extends Controller
 {
+    private function normalizeImageUrl($imagePath)
+    {
+        if (empty($imagePath)) {
+            return ROOT . '/assets/images/adminDashboard/header/avatar.jpg';
+        }
+
+        $normalized = str_replace('\\', '/', ltrim((string)$imagePath, '/'));
+        return ROOT . '/' . $normalized;
+    }
+
+    private function getPlayerImageBySession()
+    {
+        $nic = $_SESSION['nic'] ?? '';
+        if ($nic === '') {
+            return $this->normalizeImageUrl('');
+        }
+
+        $playerModel = $this->model('PlayerModel');
+        $rows = $playerModel->query(
+            "SELECT u.image FROM users u WHERE u.nic = :nic LIMIT 1",
+            ['nic' => $nic]
+        );
+
+        return $this->normalizeImageUrl($rows[0]->image ?? '');
+    }
+
     public function index()
     {
+        if (!isset($_SESSION['user_id'], $_SESSION['nic'])) {
+            header('Location: ' . ROOT . '/login');
+            exit();
+        }
+
+        if (($_SESSION['user_type'] ?? '') !== 'player') {
+            header('Location: ' . ROOT . '/login');
+            exit();
+        }
+
         $data = [
             'meals' => [
                 'Monday' => [
@@ -49,7 +85,8 @@ class MealPlan extends Controller
                     'title' => 'Great Progress!',
                     'message' => 'Your meal plan compliance is excellent. Keep maintaining this consistency for better results.'
                 ]
-            ]
+            ],
+            'player_image' => $this->getPlayerImageBySession()
         ];
 
         $this->view('mealPlan', $data);

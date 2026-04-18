@@ -82,6 +82,18 @@ function addPlayerToForm(e) {
         alert('A player with this NIC already exists in the form');
         return;
     }
+
+    const normalizedRole = role.toLowerCase();
+    if (normalizedRole === 'captain' && playersArray.some(p => (p.role || '').toLowerCase() === 'captain')) {
+        alert('Only one Captain can be added to a team.');
+        return;
+    }
+
+    if (['vice-captain', 'vice captain', 'vicecaptain'].includes(normalizedRole) &&
+        playersArray.some(p => ['vice-captain', 'vice captain', 'vicecaptain'].includes((p.role || '').toLowerCase()))) {
+        alert('Only one Vice Captain can be added to a team.');
+        return;
+    }
     
     const playerData = {
         first_name: firstName,
@@ -675,6 +687,15 @@ function submitEditPlayerForm(e) {
     formData.append('phone_number', document.getElementById('editPlayer_phone_number').value);
     formData.append('position', document.getElementById('editPlayer_position').value);
     formData.append('role', document.getElementById('editPlayer_role').value);
+    const editTeamId = document.getElementById('viewTeamId').value;
+    if (editTeamId) {
+        formData.append('team_id', editTeamId);
+    }
+
+    const imageInput = document.getElementById('editPlayer_image');
+    if (imageInput && imageInput.files && imageInput.files.length > 0) {
+        formData.append('image', imageInput.files[0]);
+    }
     
     fetch(ROOT + '/teamManagement/updatePlayer', {
         method: 'POST',

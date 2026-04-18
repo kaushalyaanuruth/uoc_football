@@ -8,6 +8,8 @@
     $base = rtrim(ROOT, '/');
     $commonFile = __DIR__ . '/../../public/assets/css/playerCommon.css';
     $commonVersion = file_exists($commonFile) ? filemtime($commonFile) : time();
+    $noticeCount = isset($data['notices']) ? count($data['notices']) : 0;
+    $noticeBadge = $noticeCount > 99 ? '99+' : (string)$noticeCount;
     ?>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/playerDashboard.css">
@@ -27,18 +29,26 @@
                 <a href="<?php echo $base; ?>/MealPlan">Meal Plan</a>
             </nav>
             <div class="user-section">
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
                 <div class="notification-icon" id="notificationBell">
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
+                    <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
                 </div>
-                <div class="user-profile">
-                    <img src="<?php echo $base; ?>/assets/images/user-placeholder.jpg" alt="User Profile">
+                <div class="user-profile" id="profileTrigger" title="Edit Profile" role="button" tabindex="0">
+                    <img id="navbarProfileImage" src="<?php echo htmlspecialchars($data['player_image']); ?>" alt="Player Profile">
                 </div>
             </div>
         </header>
 
         <div class="welcome-banner">
             <div class="welcome-text">
-                <h1>Welcome,<br><?php echo $data['player_name']; ?></h1>
+                <h1>Welcome,<br><?php echo htmlspecialchars($data['player_name']); ?></h1>
+                <p style="margin-top: 8px; color: rgba(255,255,255,0.9); font-size: 0.95rem;">
+                    <?php echo htmlspecialchars($data['player_position']); ?> • <?php echo htmlspecialchars($data['player_role']); ?>
+                    <?php if (!empty($data['team'])): ?>
+                        • Team <?php echo (int)$data['team']->team_id; ?>
+                    <?php endif; ?>
+                </p>
             </div>
             <div class="banner-datetime">
                 <h2><?php echo $data['date']; ?></h2>
@@ -51,8 +61,8 @@
             <div class="main-content">
                 <div class="info-cards">
                     <div class="card next-card">
-                        <h3>Next Practice...</h3>
-                        <p><strong><?php echo $data['next_practice']['date']; ?>, <?php echo $data['next_practice']['time_of_day']; ?></strong></p>
+                        <h3>Next Session...</h3>
+                        <p><strong><?php echo htmlspecialchars($data['next_practice']['date'] . (!empty($data['next_practice']['time_of_day']) ? ', ' . $data['next_practice']['time_of_day'] : '')); ?></strong></p>
                         <p><?php echo $data['next_practice']['time']; ?></p>
                     </div>
 
@@ -74,13 +84,18 @@
                 <div class="bottom-row">
                     <div class="card">
                         <h3 style="margin-bottom: 20px; font-size: 1.1rem;">Test Summery</h3>
-                        <div class="chart-container" style="height: 150px; background: #fafafa; border-radius: 8px; position: relative;">
-                            <svg width="100%" height="100%" viewBox="0 0 400 150">
-                                <path d="M0,120 Q50,110 100,105 T200,95 T300,85 T400,70" fill="none" stroke="#a29bfe" stroke-width="2" />
-                                <path d="M0,140 Q50,135 100,130 T200,125 T300,115 T400,110" fill="none" stroke="#dcdde1" stroke-width="2" />
-                            </svg>
-                            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.7rem; color: #999;">
-                                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                        <div class="chart-container" style="height: 150px; background: #fafafa; border-radius: 8px; padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div style="background: #ffffff; border: 1px solid #eee; border-radius: 8px; padding: 12px;">
+                                <p style="font-size: 0.8rem; color: #777; margin-bottom: 4px;">Total Tests</p>
+                                <p style="font-size: 1.4rem; font-weight: 700; color: #4a1150;"><?php echo (int)$data['test_summary']['total_tests']; ?></p>
+                            </div>
+                            <div style="background: #ffffff; border: 1px solid #eee; border-radius: 8px; padding: 12px;">
+                                <p style="font-size: 0.8rem; color: #777; margin-bottom: 4px;">Attendance</p>
+                                <p style="font-size: 1.4rem; font-weight: 700; color: #4a1150;"><?php echo (int)$data['attendance']['present_rate']; ?>%</p>
+                            </div>
+                            <div style="grid-column: span 2; background: #ffffff; border: 1px solid #eee; border-radius: 8px; padding: 12px;">
+                                <p style="font-size: 0.8rem; color: #777; margin-bottom: 4px;">Latest Test</p>
+                                <p style="font-size: 0.9rem; color: #374151;"><?php echo htmlspecialchars($data['test_summary']['latest_test']); ?></p>
                             </div>
                         </div>
                     </div>
@@ -90,7 +105,11 @@
                         <div style="display: flex; flex-direction: column; gap: 15px;">
                             <?php foreach ($data['notices'] as $notice): ?>
                                 <div style="padding-bottom: 10px; border-bottom: 1px solid #f0f0f0;">
-                                    <p style="font-size: 0.9rem; color: #555;"><?php echo $notice['text']; ?></p>
+                                    <p style="font-size: 0.88rem; color: #4a1150; font-weight: 600; margin-bottom: 4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                                    <p style="font-size: 0.9rem; color: #555;"><?php echo htmlspecialchars($notice['text'] ?? ''); ?></p>
+                                    <?php if (!empty($notice['date'])): ?>
+                                        <p style="font-size: 0.78rem; color: #8a8a8a; margin-top: 4px;"><?php echo htmlspecialchars($notice['author'] ?? 'Admin'); ?> • <?php echo htmlspecialchars($notice['date']); ?></p>
+                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -116,6 +135,13 @@
                 </div>
 
                 <div class="card">
+                    <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Attendance Summary</h3>
+                    <p style="font-size: 0.9rem; color: #4b5563; margin-bottom: 8px;">Total Records: <?php echo (int)$data['attendance']['total']; ?></p>
+                    <p style="font-size: 0.9rem; color: #16a34a; margin-bottom: 8px;">Present: <?php echo (int)$data['attendance']['present']; ?></p>
+                    <p style="font-size: 0.9rem; color: #dc2626;">Absent: <?php echo (int)$data['attendance']['absent']; ?></p>
+                </div>
+
+                <div class="card">
                     <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Meal Plan</h3>
                     <div class="meal-plan-tabs">
                         <button class="meal-btn" onclick="showMeal('Breakfast', this)">Breakfast</button>
@@ -132,20 +158,228 @@
         </div>
 
         <div class="notification-overlay" id="notificationOverlay" style="display: none;">
-            <p style="font-size: 0.85rem; color: #444; line-height: 1.4;">Tomorrow (25th august 2025) practice has been canceled.</p>
+            <p style="font-size: 0.82rem; color: #4a1150; font-weight: 700; margin-bottom: 10px;">Latest Notices</p>
+            <?php foreach (array_slice($data['notices'], 0, 4) as $notice): ?>
+                <div style="padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee;">
+                    <p style="font-size: 0.8rem; color: #4a1150; font-weight: 600; margin-bottom: 4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                    <p style="font-size: 0.82rem; color: #444; line-height: 1.4;"><?php echo htmlspecialchars($notice['text'] ?? ''); ?></p>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="profile-modal" id="profileModal" style="display: none;">
+            <div class="profile-modal-content">
+                <div class="profile-modal-header">
+                    <h3>Edit Profile</h3>
+                    <button type="button" id="closeProfileModal" aria-label="Close profile editor">&times;</button>
+                </div>
+
+                <form id="playerProfileForm" class="profile-readonly" enctype="multipart/form-data">
+                    <div class="profile-image-wrap">
+                        <img id="profilePreviewImage" src="<?php echo htmlspecialchars($data['player_image']); ?>" alt="Profile Preview">
+                        <label for="profileImageInput" class="profile-image-btn profile-image-btn-disabled" id="profileImageLabel">Change Image</label>
+                        <input type="file" id="profileImageInput" name="image" accept="image/*" hidden disabled>
+                    </div>
+
+                    <div class="profile-form-grid">
+                        <div>
+                            <label for="profileFirstName">First Name</label>
+                            <input type="text" id="profileFirstName" data-editable="true" name="first_name" value="<?php echo htmlspecialchars($data['player_profile']['first_name'] ?? ''); ?>" readonly required>
+                        </div>
+                        <div>
+                            <label for="profileLastName">Last Name</label>
+                            <input type="text" id="profileLastName" data-editable="true" name="last_name" value="<?php echo htmlspecialchars($data['player_profile']['last_name'] ?? ''); ?>" readonly>
+                        </div>
+                        <div>
+                            <label for="profileIdNumber">ID Number</label>
+                            <input type="text" id="profileIdNumber" data-editable="true" name="id_number" value="<?php echo htmlspecialchars($data['player_profile']['id_number'] ?? ''); ?>" readonly required>
+                        </div>
+                        <div>
+                            <label for="profileNic">NIC</label>
+                            <input type="text" id="profileNic" value="<?php echo htmlspecialchars($data['player_profile']['nic'] ?? ''); ?>" readonly>
+                        </div>
+                        <div>
+                            <label for="profileEmail">Email Address</label>
+                            <input type="email" id="profileEmail" data-editable="true" name="email" value="<?php echo htmlspecialchars($data['player_profile']['email'] ?? ''); ?>" readonly>
+                        </div>
+                        <div>
+                            <label for="profilePhone">Phone Number</label>
+                            <input type="text" id="profilePhone" data-editable="true" name="phone_number" value="<?php echo htmlspecialchars($data['player_profile']['phone_number'] ?? ''); ?>" readonly>
+                        </div>
+                    </div>
+
+                    <div class="profile-modal-actions">
+                        <button type="button" class="btn-secondary" id="cancelProfileEdit">Close</button>
+                        <button type="button" class="btn-primary" id="startProfileEdit">Edit</button>
+                        <button type="submit" class="btn-primary" id="saveProfileChanges" style="display:none;">Save Changes</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <script>
             const bell = document.getElementById('notificationBell');
             const overlay = document.getElementById('notificationOverlay');
+            const profileTrigger = document.getElementById('profileTrigger');
+            const profileModal = document.getElementById('profileModal');
+            const closeProfileModal = document.getElementById('closeProfileModal');
+            const cancelProfileEdit = document.getElementById('cancelProfileEdit');
+            const startProfileEdit = document.getElementById('startProfileEdit');
+            const saveProfileChanges = document.getElementById('saveProfileChanges');
+            const playerProfileForm = document.getElementById('playerProfileForm');
+            const editableInputs = playerProfileForm.querySelectorAll('[data-editable="true"]');
+            const profileImageInput = document.getElementById('profileImageInput');
+            const profileImageLabel = document.getElementById('profileImageLabel');
+            const profilePreviewImage = document.getElementById('profilePreviewImage');
+            const navbarProfileImage = document.getElementById('navbarProfileImage');
+            const welcomeName = document.querySelector('.welcome-text h1');
+            const baseUrl = '<?php echo $base; ?>';
+            const initialProfileState = {
+                first_name: document.getElementById('profileFirstName').value,
+                last_name: document.getElementById('profileLastName').value,
+                id_number: document.getElementById('profileIdNumber').value,
+                email: document.getElementById('profileEmail').value,
+                phone_number: document.getElementById('profilePhone').value,
+                image: profilePreviewImage.src
+            };
+
+            let isProfileEditMode = false;
+
+            function syncInitialProfileState() {
+                initialProfileState.first_name = document.getElementById('profileFirstName').value;
+                initialProfileState.last_name = document.getElementById('profileLastName').value;
+                initialProfileState.id_number = document.getElementById('profileIdNumber').value;
+                initialProfileState.email = document.getElementById('profileEmail').value;
+                initialProfileState.phone_number = document.getElementById('profilePhone').value;
+                initialProfileState.image = profilePreviewImage.src;
+            }
+
+            function restoreProfileInputs() {
+                document.getElementById('profileFirstName').value = initialProfileState.first_name;
+                document.getElementById('profileLastName').value = initialProfileState.last_name;
+                document.getElementById('profileIdNumber').value = initialProfileState.id_number;
+                document.getElementById('profileEmail').value = initialProfileState.email;
+                document.getElementById('profilePhone').value = initialProfileState.phone_number;
+                profilePreviewImage.src = initialProfileState.image;
+                profileImageInput.value = '';
+            }
+
+            function setProfileEditMode(enabled) {
+                isProfileEditMode = enabled;
+
+                editableInputs.forEach((input) => {
+                    input.readOnly = !enabled;
+                });
+
+                profileImageInput.disabled = !enabled;
+                profileImageLabel.classList.toggle('profile-image-btn-disabled', !enabled);
+                startProfileEdit.style.display = enabled ? 'none' : 'inline-flex';
+                saveProfileChanges.style.display = enabled ? 'inline-flex' : 'none';
+                cancelProfileEdit.textContent = enabled ? 'Cancel Edit' : 'Close';
+                playerProfileForm.classList.toggle('profile-readonly', !enabled);
+            }
 
             bell.addEventListener('click', (e) => {
                 e.stopPropagation();
                 overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none';
             });
 
+            function openProfileModal() {
+                syncInitialProfileState();
+                setProfileEditMode(false);
+                profileModal.style.display = 'flex';
+            }
+
+            function closeProfileEditor() {
+                setProfileEditMode(false);
+                profileModal.style.display = 'none';
+            }
+
+            profileTrigger.addEventListener('click', openProfileModal);
+            profileTrigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openProfileModal();
+                }
+            });
+
+            closeProfileModal.addEventListener('click', closeProfileEditor);
+            startProfileEdit.addEventListener('click', () => setProfileEditMode(true));
+            cancelProfileEdit.addEventListener('click', () => {
+                if (isProfileEditMode) {
+                    restoreProfileInputs();
+                    setProfileEditMode(false);
+                    return;
+                }
+
+                closeProfileEditor();
+            });
+
+            profileModal.addEventListener('click', (e) => {
+                if (e.target === profileModal) {
+                    closeProfileEditor();
+                }
+            });
+
+            profileImageInput.addEventListener('change', () => {
+                if (!isProfileEditMode) {
+                    return;
+                }
+
+                const file = profileImageInput.files && profileImageInput.files[0];
+                if (!file) {
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    profilePreviewImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            playerProfileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!isProfileEditMode) {
+                    return;
+                }
+
+                const formData = new FormData(playerProfileForm);
+
+                try {
+                    const response = await fetch(`${baseUrl}/PlayerDashboard/updateProfile`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        alert(result.message || 'Failed to update profile');
+                        return;
+                    }
+
+                    if (result.profile && result.profile.image_url) {
+                        navbarProfileImage.src = result.profile.image_url;
+                        profilePreviewImage.src = result.profile.image_url;
+                    }
+
+                    if (result.profile && result.profile.name && welcomeName) {
+                        const safeName = result.profile.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        welcomeName.innerHTML = `Welcome,<br>${safeName}`;
+                    }
+
+                    syncInitialProfileState();
+                    setProfileEditMode(false);
+                    closeProfileEditor();
+                    alert(result.message || 'Profile updated successfully');
+                } catch (error) {
+                    alert('Failed to update profile');
+                }
+            });
+
             document.addEventListener('click', (e) => {
-                if (!overlay.contains(e.target) && e.target !== bell) {
+                if (!overlay.contains(e.target) && e.target !== bell && !bell.contains(e.target)) {
                     overlay.style.display = 'none';
                 }
             });

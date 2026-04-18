@@ -5,6 +5,32 @@ class TeamModel
     use Model;
     
     protected $table = 'teams';
+
+    private $columnCache = null;
+
+    private function getColumns()
+    {
+        if ($this->columnCache !== null) {
+            return $this->columnCache;
+        }
+
+        $this->columnCache = [];
+        $rows = $this->query("SHOW COLUMNS FROM {$this->table}");
+
+        foreach ($rows as $row) {
+            if (isset($row->Field)) {
+                $this->columnCache[$row->Field] = true;
+            }
+        }
+
+        return $this->columnCache;
+    }
+
+    private function hasColumn($name)
+    {
+        $columns = $this->getColumns();
+        return isset($columns[$name]);
+    }
     
     /** Create a new team*/
     public function create($data)
@@ -13,11 +39,17 @@ class TeamModel
         if (empty($data['created_by'])) {
             unset($data['created_by']);
         }
-        
-        $query = "INSERT INTO {$this->table} (season, status) 
-                  VALUES (:season, :status)";
-        
-        return $this->query($query, $data);
+
+        if ($this->hasColumn('status')) {
+            $query = "INSERT INTO {$this->table} (season, status) VALUES (:season, :status)";
+            return $this->query($query, [
+                'season' => $data['season'],
+                'status' => $data['status'] ?? 'present'
+            ]);
+        }
+
+        $query = "INSERT INTO {$this->table} (season) VALUES (:season)";
+        return $this->query($query, ['season' => $data['season']]);
     }
     
     /**
@@ -57,10 +89,12 @@ class TeamModel
      */
     public function getAllWithPlayersCounts()
     {
-        $query = "SELECT 
+        $statusSelect = $this->hasColumn('status') ? 't.status' : "'present' AS status";
+
+        $query = "SELECT
                     t.team_id,
                     t.season,
-                    t.status
+                    {$statusSelect}
                 FROM {$this->table} t
                 ORDER BY t.team_id DESC";
         
@@ -74,12 +108,20 @@ class TeamModel
     {
         $fields = [];
         $params = ['team_id' => $id];
+        $hasStatus = $this->hasColumn('status');
         
         foreach ($data as $key => $value) {
             if ($key !== 'team_id') {
+                if ($key === 'status' && !$hasStatus) {
+                    continue;
+                }
                 $fields[] = "{$key} = :{$key}";
                 $params[$key] = $value;
             }
+        }
+
+        if (empty($fields)) {
+            return true;
         }
         
         $fieldsString = implode(', ', $fields);
@@ -101,6 +143,13 @@ class TeamModel
      */
     public function getByStatus($status)
     {
+        if (!$this->hasColumn('status')) {
+            if ($status === 'present') {
+                return $this->getAll();
+            }
+            return [];
+        }
+
         return $this->query("SELECT * FROM {$this->table} WHERE status = :status ORDER BY team_id DESC", [
             'status' => $status
         ]);

@@ -2,59 +2,62 @@
 
 class Notices extends Controller
 {
+    private function normalizeImageUrl($imagePath)
+    {
+        if (empty($imagePath)) {
+            return ROOT . '/assets/images/adminDashboard/header/avatar.jpg';
+        }
+
+        $normalized = str_replace('\\', '/', ltrim((string)$imagePath, '/'));
+        return ROOT . '/' . $normalized;
+    }
+
+    private function getPlayerImageBySession()
+    {
+        $nic = $_SESSION['nic'] ?? '';
+        if ($nic === '') {
+            return $this->normalizeImageUrl('');
+        }
+
+        $playerModel = $this->model('PlayerModel');
+        $rows = $playerModel->query(
+            "SELECT u.image FROM users u WHERE u.nic = :nic LIMIT 1",
+            ['nic' => $nic]
+        );
+
+        return $this->normalizeImageUrl($rows[0]->image ?? '');
+    }
+
     public function index()
     {
+        if (!isset($_SESSION['user_id'], $_SESSION['nic'])) {
+            header('Location: ' . ROOT . '/login');
+            exit();
+        }
+
+        if (($_SESSION['user_type'] ?? '') !== 'player') {
+            header('Location: ' . ROOT . '/login');
+            exit();
+        }
+
+        $noticeModel = $this->model('NoticeModel');
+        $rows = $noticeModel->getRecent(50, 'present_team');
+
+        $notices = [];
+        foreach ($rows as $index => $row) {
+            $notices[] = [
+                'id' => (int)($row->notice_id ?? 0),
+                'author' => $row->created_by ?? 'Admin',
+                'date' => !empty($row->created_at) ? date('Y-m-d h:i A', strtotime($row->created_at)) : '',
+                'title' => $row->title ?? 'Notice',
+                'content' => $row->content ?? '',
+                'is_new' => $index < 3
+            ];
+        }
+
         $data = [
-            'notices' => [
-                [
-                    'id' => 1,
-                    'author' => 'Coach Ahmed',
-                    'date' => '2025-09-01 10:30 AM',
-                    'title' => 'Team Meeting Tomorrow',
-                    'content' => 'All players must attend the team meeting tomorrow at 10 AM. We will discuss the upcoming tournament and new strategies.',
-                    'is_new' => true
-                ],
-                [
-                    'id' => 2,
-                    'author' => 'Admin',
-                    'date' => '2025-09-01 09:15 AM',
-                    'title' => 'Facility Maintenance',
-                    'content' => 'The gym will be closed for maintenance on September 3rd and 4th. Please plan your training accordingly.',
-                    'is_new' => true
-                ],
-                [
-                    'id' => 3,
-                    'author' => 'Coach Ahmed',
-                    'date' => '2025-08-31 04:45 PM',
-                    'title' => 'Upcoming Tournament Registration',
-                    'content' => 'Registration for the Inter-University Football Tournament is now open. Deadline is September 5th. Contact the admin office for details.',
-                    'is_new' => true
-                ],
-                [
-                    'id' => 4,
-                    'author' => 'Medical Team',
-                    'date' => '2025-08-30 02:20 PM',
-                    'title' => 'Injury Prevention Workshop',
-                    'content' => 'Join us for an injury prevention workshop on September 6th at 3 PM. Learn proper warm-up and recovery techniques.',
-                    'is_new' => false
-                ],
-                [
-                    'id' => 5,
-                    'author' => 'Captain John',
-                    'date' => '2025-08-29 11:50 AM',
-                    'title' => 'Squad Selection Announcement',
-                    'content' => 'The squad for the upcoming match against MORA has been announced. Check the team management page for the full lineup.',
-                    'is_new' => false
-                ],
-                [
-                    'id' => 6,
-                    'author' => 'Admin',
-                    'date' => '2025-08-28 03:30 PM',
-                    'title' => 'Equipment Update',
-                    'content' => 'New training equipment has been added to the gym. Please familiarize yourself with the new machines and ask staff for assistance if needed.',
-                    'is_new' => false
-                ]
-            ]
+            'notices' => $notices,
+            'player_image' => $this->getPlayerImageBySession()
         ];
 
         $this->view('notices', $data);

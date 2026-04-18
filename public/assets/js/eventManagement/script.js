@@ -68,6 +68,10 @@
             byId('eventId').value = '';
             modalTitle.textContent = 'Add Event';
             eventSubmitBtn.textContent = 'Save Event';
+            selectedImageBase64 = null;
+            if (eventImagePreview) {
+                eventImagePreview.style.display = 'none';
+            }
         }
 
         modal.classList.add('active');
@@ -153,9 +157,15 @@
 
             isEditMode = true;
             currentEventId = eventId;
+            selectedImageBase64 = null;
             fillForm(result.data);
             modalTitle.textContent = 'Edit Event';
             eventSubmitBtn.textContent = 'Update Event';
+
+            if (eventImagePreview) {
+                eventImagePreview.style.display = 'none';
+            }
+
             modal.classList.add('active');
         } catch (error) {
             alert(error.message);
@@ -196,7 +206,7 @@
     async function saveEvent(formData) {
         const isUpdate = isEditMode && currentEventId;
         const endpoint = isUpdate ? '/eventManagement/update' : '/eventManagement/add';
-        const payload = isUpdate
+        let payload = isUpdate
             ? {
                 id: currentEventId,
                 title: formData.title,
@@ -207,6 +217,10 @@
                 description: formData.description
             }
             : formData;
+
+        if (isUpdate && selectedImageBase64) {
+            payload.image_data = selectedImageBase64;
+        }
 
         const response = await fetch(buildEndpoint(endpoint), {
             method: 'POST',

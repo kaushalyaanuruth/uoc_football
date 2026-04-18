@@ -40,6 +40,27 @@
     </header>
 
     <main class="content">
+        <?php
+            $stats = $data['stats'] ?? ['income' => 0, 'expense' => 0, 'balance' => 0];
+            $metrics = $data['metrics'] ?? [
+                'income_change_pct' => 0,
+                'expense_change_pct' => 0,
+                'monthly_growth_pct' => 0,
+                'avg_monthly_surplus' => 0,
+                'expense_ratio' => 0,
+                'balance_message' => 'No finance data available yet.'
+            ];
+
+            $incomeChange = (float) ($metrics['income_change_pct'] ?? 0);
+            $expenseChange = (float) ($metrics['expense_change_pct'] ?? 0);
+            $monthlyGrowth = (float) ($metrics['monthly_growth_pct'] ?? 0);
+            $avgSurplus = (float) ($metrics['avg_monthly_surplus'] ?? 0);
+            $expenseRatio = (float) ($metrics['expense_ratio'] ?? 0);
+
+            $incomeChangeLabel = ($incomeChange >= 0 ? '+' : '') . number_format($incomeChange, 1) . '% from last month';
+            $expenseChangeLabel = ($expenseChange >= 0 ? '+' : '') . number_format($expenseChange, 1) . '% from last month';
+            $growthLabel = ($monthlyGrowth >= 0 ? '+' : '') . number_format($monthlyGrowth, 1) . '%';
+        ?>
 
         <!-- ================= Header ================= -->
         <div class="page-header">
@@ -61,12 +82,12 @@
                     <div>
                         <div class="stat-title">Total Income</div>
                         <div class="stat-value">
-                            $ <?= number_format($data['stats']['income']) ?>
+                            LKR <?= number_format($stats['income'], 2) ?>
                         </div>
-                        <small>+12.5% from last month</small>
+                        <small><?= htmlspecialchars($incomeChangeLabel) ?></small>
                     </div>
                     <div class="stat-icon income">
-                        $
+                        LKR
                     </div>
                 </div>
             </div>
@@ -76,9 +97,9 @@
                     <div>
                         <div class="stat-title">Total Expenses</div>
                         <div class="stat-value">
-                            $ <?= number_format($data['stats']['expense']) ?>
+                            LKR <?= number_format($stats['expense'], 2) ?>
                         </div>
-                        <small>+8.2% from last month</small>
+                        <small><?= htmlspecialchars($expenseChangeLabel) ?></small>
                     </div>
                     <div class="stat-icon expense">
                     </div>
@@ -91,10 +112,10 @@
                     <div>
                         <div class="stat-title">Current Balance</div>
                         <div class="stat-value">
-                            $
-                            <?= number_format($data['stats']['balance']) ?>
+                            LKR
+                            <?= number_format($stats['balance'], 2) ?>
                         </div>
-                        <small>Healthy balance</small>
+                        <small><?= htmlspecialchars($metrics['balance_message'] ?? 'No finance data available yet.') ?></small>
                     </div>
                     <div class="stat-icon balance">
 
@@ -205,7 +226,7 @@
                         <td><?= htmlspecialchars($t->category) ?></td>
 
                         <td class="<?= $t->type === 'Income' ? 'amount_income' : 'amount_expense' ?>">
-                            <?= $t->type === 'Income' ? '+' : '-' ?>$ <?= number_format($t->amount) ?>
+                            <?= $t->type === 'Income' ? '+' : '-' ?>LKR <?= number_format($t->amount, 2) ?>
                         </td>
 
                         <td><?= date("M d, Y", strtotime($t->date)) ?></td>
@@ -265,15 +286,15 @@
             <h2>Cash Flow Trend</h2>
             <div class=" cashflow">
                 <div>
-                    <h3 class="grow">+15%</h3>
+                    <h3 class="grow"><?= htmlspecialchars($growthLabel) ?></h3>
                     <p>Monthly Growth</p>
                 </div>
                 <div>
-                    <h3 class="surplus">$2,890</h3>
+                    <h3 class="surplus">LKR <?= number_format($avgSurplus, 2) ?></h3>
                     <p>Avg Monthly Surplus</p>
                 </div>
                 <div>
-                    <h3 class="expense">71%</h3>
+                    <h3 class="expense"><?= number_format($expenseRatio, 1) ?>%</h3>
                     <p>Expense Ratio</p>
                 </div>
             </div>
@@ -281,7 +302,7 @@
         <!-- ================= Summary ================= -->
 
         <div class="balance-summary">
-            ✅ This month’s balance is up by 15%. Great financial management!
+            <?= htmlspecialchars($metrics['balance_message'] ?? 'No finance data available yet.') ?>
         </div>
 
     </main>

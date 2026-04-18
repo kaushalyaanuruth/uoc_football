@@ -28,7 +28,7 @@
             <a href="<?= ROOT ?>/CaptainFinance">Finance</a>
         </nav>
         <div class="nav-right">
-            <button class="icon-btn">🔔</button>
+            <button class="icon-btn" id="captainNotificationBell">🔔</button>
             <div class="profile">
                 <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
                     alt="Admin Avatar">
@@ -86,16 +86,12 @@
 
                 <div class="announcements">
                     <h3>📢 Latest Announcements</h3>
-
-                    <div class="announcement-item">
-                        <h4>Team Meeting This Friday</h4>
-                        <p>Don't forget about our strategy meeting at 5 PM.</p>
-                    </div>
-
-                    <div class="announcement-item">
-                        <h4>New Training Equipment</h4>
-                        <p>New training equipment available at the facility.</p>
-                    </div>
+                    <?php foreach (array_slice($data['notices'] ?? [], 0, 3) as $notice): ?>
+                        <div class="announcement-item">
+                            <h4><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></h4>
+                            <p><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
 
                 <div class="quick-links">
@@ -117,6 +113,31 @@
 
         </div>
     </main>
+
+    <div id="captainNotificationOverlay" style="display:none; position:fixed; top:88px; right:32px; width:340px; max-height:420px; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.18); padding:14px; z-index:1200; border:1px solid #ece7f3;">
+        <?php foreach (array_slice($data['notices'] ?? [], 0, 5) as $notice): ?>
+            <div style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #eee;">
+                <p style="font-size:0.86rem; color:#4a1150; font-weight:600; margin-bottom:4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <script>
+        const captainBell = document.getElementById('captainNotificationBell');
+        const captainOverlay = document.getElementById('captainNotificationOverlay');
+
+        captainBell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            captainOverlay.style.display = captainOverlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!captainOverlay.contains(e.target) && e.target !== captainBell) {
+                captainOverlay.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 
 </html>

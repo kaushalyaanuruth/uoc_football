@@ -1,46 +1,29 @@
 <?php
-// Dummy summary data used for the static mockup.
-$upcomingCount = 8;
+$events = $data['events'] ?? [];
+$eventScriptFile = __DIR__ . '/../../public/assets/js/eventManagement/script.js';
+$eventScriptVersion = file_exists($eventScriptFile) ? filemtime($eventScriptFile) : time();
+
+$upcomingCount = 0;
 $typeCounts = [
-    'training' => 12,
-    'meeting' => 3,
-    'other' => 5
+    'training' => 0,
+    'meeting' => 0,
+    'other' => 0,
+    'match' => 0
 ];
 
-// Dummy event rows used to render the page without database data.
-$events = [
-    (object) [
-        'id' => 1,
-        'title' => 'League Match vs Barcelona FC',
-        'description' => 'Important championship match',
-        'event_date' => '2024-12-25',
-        'event_time' => '15:00:00',
-        'location' => 'Camp Nou Stadium',
-        'event_type' => 'match',
-        'status' => 'upcoming'
-    ],
-    (object) [
-        'id' => 2,
-        'title' => 'Weekly Training Session',
-        'description' => 'Regular team practice',
-        'event_date' => '2024-12-22',
-        'event_time' => '09:00:00',
-        'location' => 'Training Ground A',
-        'event_type' => 'training',
-        'status' => 'upcoming'
-    ],
-    (object) [
-        'id' => 3,
-        'title' => 'Team Strategy Meeting',
-        'description' => 'Discuss upcoming matches',
-        'event_date' => '2024-12-20',
-        'event_time' => '14:30:00',
-        'location' => 'Conference Room',
-        'event_type' => 'meeting',
-        'status' => 'upcoming'
-    ]
-];
- ?> 
+foreach ($events as $event) {
+    $eventDateValue = $event->date ?? null;
+    if (!empty($eventDateValue) && strtotime($eventDateValue) >= strtotime(date('Y-m-d'))) {
+        $upcomingCount++;
+    }
+
+    $eventType = strtolower((string)($event->event_type ?? 'other'));
+    if (!isset($typeCounts[$eventType])) {
+        $eventType = 'other';
+    }
+    $typeCounts[$eventType]++;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -148,7 +131,7 @@ $events = [
                         <?php if (!empty($events)): ?>
                             <?php foreach ($events as $event): ?>
                                 <?php
-                                // Normalize dummy row values for the table UI.
+                                // Normalize row values for the table UI.
                                 $type = strtolower($event->event_type ?? 'other');
                                 if (!in_array($type, ['match', 'training', 'meeting', 'other'])) {
                                     $type = 'other';
@@ -224,19 +207,19 @@ $events = [
 
                 <div class="form-group">
                     <label class="input-label" for="eventTitle">Event Title</label>
-                    <input type="text" class="form-input" id="eventTitle" name="title" value="League Match vs Barcelona FC" required>
+                    <input type="text" class="form-input" id="eventTitle" name="title" required>
                 </div>
 
                 <div class="form-group">
                     <label class="input-label" for="eventDate">Date &amp; Time</label>
-                    <input type="datetime-local" class="form-input" id="eventDate" name="event_date" value="2024-12-25T15:00" required>
+                    <input type="datetime-local" class="form-input" id="eventDate" name="event_date" required>
                 </div>
 
                 <div class="form-group two-col">
                     <div>
                         <label class="input-label" for="eventCategory">Type</label>
                         <select class="form-input" id="eventCategory" name="category" required>
-                            <option value="match" selected>Match</option>
+                            <option value="match">Match</option>
                             <option value="training">Training</option>
                             <option value="meeting">Meeting</option>
                             <option value="other">Other</option>
@@ -245,7 +228,7 @@ $events = [
                     <div>
                         <label class="input-label" for="eventStatus">Status</label>
                         <select class="form-input" id="eventStatus" name="status" required>
-                            <option value="upcoming" selected>Upcoming</option>
+                            <option value="upcoming">Upcoming</option>
                             <option value="ongoing">Ongoing</option>
                             <option value="completed">Completed</option>
                             <option value="cancelled">Cancelled</option>
@@ -255,7 +238,7 @@ $events = [
 
                 <div class="form-group">
                     <label class="input-label" for="eventLocation">Location</label>
-                    <input type="text" class="form-input" id="eventLocation" name="location" value="Camp Nou Stadium" required>
+                    <input type="text" class="form-input" id="eventLocation" name="location" required>
                 </div>
 
                 <div class="form-group">
@@ -268,7 +251,7 @@ $events = [
 
                 <div class="form-group notes-group">
                     <label class="input-label" for="eventDescription">Description</label>
-                    <textarea class="form-input" id="eventDescription" name="description" rows="4" placeholder="Add event notes">Important championship match</textarea>
+                    <textarea class="form-input" id="eventDescription" name="description" rows="4" placeholder="Add event notes"></textarea>
                 </div>
 
                 <p class="form-message" id="formMessage" aria-live="polite"></p>
@@ -286,6 +269,6 @@ $events = [
             root: "<?php echo ROOT; ?>"
         };
     </script>
-    <script src="<?php echo ROOT; ?>/assets/js/eventManagement/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/eventManagement/script.js?v=<?php echo $eventScriptVersion; ?>"></script>
 </body>
 </html>

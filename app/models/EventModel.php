@@ -5,6 +5,30 @@ class EventModel
     use Model;
     
     protected $table = 'events';
+    private $columnCache = null;
+
+    private function getColumns()
+    {
+        if (is_array($this->columnCache)) {
+            return $this->columnCache;
+        }
+
+        $this->columnCache = [];
+        $rows = $this->query("SHOW COLUMNS FROM {$this->table}");
+        foreach ($rows as $row) {
+            if (isset($row->Field)) {
+                $this->columnCache[$row->Field] = true;
+            }
+        }
+
+        return $this->columnCache;
+    }
+
+    private function hasColumn($column)
+    {
+        $columns = $this->getColumns();
+        return isset($columns[$column]);
+    }
     
     /**
      * Create a new event
@@ -15,9 +39,8 @@ class EventModel
         if (empty($data['location']) || empty($data['date'])) {
             return false;
         }
-        
-        // Set data for the events table
-        $eventData = [
+
+        $insertData = [
             'location' => $data['location'],
             'date' => $data['date'],
             'title' => $data['title'] ?? 'UOC Football Event',
@@ -25,12 +48,37 @@ class EventModel
             'event_time' => $data['event_time'] ?? '15:00:00',
             'description' => $data['description'] ?? ''
         ];
-        
-        $query = "INSERT INTO {$this->table} (location, `date`, title, event_type, event_time, description) 
-                  VALUES (:location, :date, :title, :event_type, :event_time, :description)";
+
+        if ($this->hasColumn('status')) {
+            $insertData['status'] = $data['status'] ?? 'upcoming';
+        }
+
+        if ($this->hasColumn('image')) {
+            $insertData['image'] = $data['image'] ?? null;
+        }
+
+        $columns = [];
+        $placeholders = [];
+        $params = [];
+
+        foreach ($insertData as $key => $value) {
+            if (!$this->hasColumn($key)) {
+                continue;
+            }
+
+            $columns[] = ($key === 'date') ? "`date`" : "`{$key}`";
+            $placeholders[] = ":{$key}";
+            $params[$key] = $value;
+        }
+
+        if (empty($columns)) {
+            throw new Exception('No compatible columns found for events insert');
+        }
+
+        $query = "INSERT INTO {$this->table} (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
         
         try {
-            $this->query($query, $eventData);
+            $this->query($query, $params);
             return true;
         } catch (Exception $e) {
             error_log("EventModel::create() error: " . $e->getMessage());
@@ -51,8 +99,16 @@ class EventModel
         $params = ['event_id' => $id];
         
         foreach ($data as $key => $value) {
+            if (!$this->hasColumn($key)) {
+                continue;
+            }
+
             $fields[] = "`$key` = :$key";
             $params[$key] = $value;
+        }
+
+        if (empty($fields)) {
+            return true;
         }
         
         $fieldString = implode(', ', $fields);

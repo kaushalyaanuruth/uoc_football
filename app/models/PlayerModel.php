@@ -111,7 +111,7 @@ class PlayerModel
     public function getById($id)
     {
         $result = $this->query("
-            SELECT p.player_id, p.position, p.role, p.nic, u.first_name, u.last_name, u.email, u.phone_number
+            SELECT p.player_id, p.position, p.role, p.nic, u.first_name, u.last_name, u.email, u.phone_number, u.image
             FROM {$this->table} p
             LEFT JOIN users u ON p.nic = u.nic
             WHERE p.player_id = :player_id
@@ -125,7 +125,7 @@ class PlayerModel
     public function getByTeamId($team_id)
     {
         return $this->query("
-            SELECT p.player_id, p.position, p.role, p.nic, u.first_name, u.last_name, u.email, u.phone_number
+            SELECT p.player_id, p.position, p.role, p.nic, u.first_name, u.last_name, u.email, u.phone_number, u.image
             FROM {$this->table} p
             JOIN team_players tp ON p.player_id = tp.player_id
             LEFT JOIN users u ON p.nic = u.nic

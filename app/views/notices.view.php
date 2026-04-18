@@ -31,7 +31,7 @@
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                 </div>
                 <div class="user-profile">
-                    <img src="<?php echo $base; ?>/assets/images/user-placeholder.jpg" alt="User Profile">
+                    <img src="<?php echo htmlspecialchars($data['player_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="User Profile">
                 </div>
             </div>
         </header>
@@ -50,21 +50,30 @@
         </div>
 
         <div class="notices-grid" id="noticesGrid">
-            <?php foreach ($data['notices'] as $notice): ?>
+            <?php if (!empty($data['notices'])): ?>
+                <?php foreach ($data['notices'] as $notice): ?>
+                    <div class="notice-card">
+                        <div class="notice-header">
+                            <h3><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></h3>
+                            <?php if (!empty($notice['is_new'])): ?>
+                                <span class="badge-new">NEW</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="notice-meta">
+                            <span class="author">👤 <?php echo htmlspecialchars($notice['author'] ?? 'Admin'); ?></span>
+                            <span class="date">📅 <?php echo htmlspecialchars($notice['date'] ?? ''); ?></span>
+                        </div>
+                        <p class="notice-content"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
                 <div class="notice-card">
                     <div class="notice-header">
-                        <h3>Notice</h3>
-                        <?php if ($notice['is_new']): ?>
-                            <span class="badge-new">NEW</span>
-                        <?php endif; ?>
+                        <h3>No notices yet</h3>
                     </div>
-                    <div class="notice-meta">
-                        <span class="author">👤 <?php echo $notice['author']; ?></span>
-                        <span class="date">📅 <?php echo $notice['date']; ?></span>
-                    </div>
-                    <p class="notice-content"><?php echo $notice['content']; ?></p>
+                    <p class="notice-content">Admin notices for present team members will appear here.</p>
                 </div>
-            <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 

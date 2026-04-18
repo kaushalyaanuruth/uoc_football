@@ -31,7 +31,7 @@
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                 </div>
                 <div class="user-profile">
-                    <img src="<?php echo $base; ?>/assets/images/user-placeholder.jpg" alt="User Profile">
+                    <img src="<?php echo htmlspecialchars($data['player_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="User Profile">
                 </div>
             </div>
         </header>

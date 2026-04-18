@@ -8,6 +8,41 @@ class User
 
     protected $table = "users";
 
+    private function verifyPasswordCompat($plainPassword, $storedPassword)
+    {
+        if (!is_string($storedPassword) || $storedPassword === '') {
+            return false;
+        }
+
+        // Normal path for properly hashed passwords.
+        if (password_verify($plainPassword, $storedPassword)) {
+            return true;
+        }
+
+        // Backward compatibility for legacy plaintext passwords in DB.
+        return hash_equals($storedPassword, $plainPassword);
+    }
+
+    private function needsRehashOrPlaintext($storedPassword)
+    {
+        $info = password_get_info((string) $storedPassword);
+
+        // algo = 0 means this is not a password_hash()-generated hash.
+        if (($info['algo'] ?? 0) === 0) {
+            return true;
+        }
+
+        return password_needs_rehash($storedPassword, PASSWORD_BCRYPT);
+    }
+
+    private function isCaptainLikeRole($role)
+    {
+        $normalized = strtolower(trim((string) $role));
+        $normalized = str_replace(['_', ' '], '-', $normalized);
+
+        return in_array($normalized, ['captain', 'vice-captain', 'vicecaptain'], true);
+    }
+
     // Update user
     public function update($id, $data)
     {
@@ -52,8 +87,11 @@ class User
     // Fetch a user by username (Example for login)
     public function getUserByUsername($username)
     {
-        $query = "SELECT * FROM $this->table WHERE user_id = :user_id LIMIT 1";
-        return $this->query($query, ['user_id' => $username]);
+        $query = "SELECT * FROM $this->table WHERE user_id = :user_id OR nic = :nic LIMIT 1";
+        return $this->query($query, [
+            'user_id' => $username,
+            'nic' => $username
+        ]);
     }
 
     // Check if username already exists
@@ -166,6 +204,9 @@ class User
     
     public function loginUser($username, $password)
     {
+        $username = trim((string) $username);
+        $password = (string) $password;
+
         error_log("=== LOGIN ATTEMPT ===");
         error_log("Username: " . $username);
         error_log("Password provided: " . ($password ? 'YES' : 'NO'));
@@ -178,9 +219,16 @@ class User
         if ($user && !empty($user) && isset($user[0]->password)) {
             error_log("Password hash from DB: " . substr($user[0]->password, 0, 30));
             
-            // Verify password
-            if (password_verify($password, $user[0]->password)) {
+            // Verify password (supports hashed and legacy plaintext records).
+            if ($this->verifyPasswordCompat($password, $user[0]->password)) {
                 error_log("Password verification: SUCCESS");
+
+                // Auto-upgrade legacy/plaintext password rows to bcrypt hash.
+                if ($this->needsRehashOrPlaintext($user[0]->password)) {
+                    $this->updateByNic($user[0]->nic, [
+                        'password' => password_hash($password, PASSWORD_BCRYPT)
+                    ]);
+                }
                 
                 // Password is correct, start session
                 if (session_status() === PHP_SESSION_NONE) {
@@ -194,6 +242,19 @@ class User
                 error_log("Session user_id: " . $_SESSION['user_id']);
                 error_log("Session nic: " . $_SESSION['nic']);
 
+                // Allow canonical admin account even if admins row is missing.
+                $isAdminAlias = strtolower((string) $user[0]->user_id) === 'admin'
+                    || strtolower((string) $user[0]->nic) === 'admin'
+                    || strtolower($username) === 'admin';
+
+                if ($isAdminAlias) {
+                    $_SESSION['user_type'] = 'admin';
+                    $_SESSION['must_change_password'] = false;
+                    error_log("User type: ADMIN (alias fallback)");
+                    header('Location: ' . ROOT . '/adminDashboard');
+                    exit();
+                }
+
                 // Determine user type by checking various tables
                 // Check if admin
                 $adminQuery = "SELECT * FROM admins WHERE nic = :nic LIMIT 1";
@@ -201,6 +262,7 @@ class User
                 
                 if ($adminResult && !empty($adminResult)) {
                     $_SESSION['user_type'] = 'admin';
+                    $_SESSION['must_change_password'] = false;
                     error_log("User type: ADMIN");
                     header('Location: ' . ROOT . '/adminDashboard');
                     exit();
@@ -212,22 +274,32 @@ class User
                 
                 if ($coachResult && !empty($coachResult)) {
                     $_SESSION['user_type'] = 'coach';
+                    $_SESSION['must_change_password'] = false;
                     error_log("User type: COACH");
                     header('Location: ' . ROOT . '/coachDashboard');
                     exit();
                 }
                 
                 // Check if player
-                $playerQuery = "SELECT role FROM players WHERE nic = :nic LIMIT 1";
+                $playerQuery = "SELECT player_id, role FROM players WHERE nic = :nic LIMIT 1";
                 $playerResult = $this->query($playerQuery, ['nic' => $nic]);
                 
                 if ($playerResult && !empty($playerResult)) {
                     $_SESSION['user_type'] = 'player';
+                    $_SESSION['player_id'] = (int)$playerResult[0]->player_id;
                     $playerRole = $playerResult[0]->role;
+                    $_SESSION['player_role'] = $playerRole;
                     error_log("Player role: " . $playerRole);
+
+                    $mustChangePassword = $this->verifyPasswordCompat('123456', $user[0]->password);
+                    $_SESSION['must_change_password'] = $mustChangePassword;
+
+                    if ($mustChangePassword) {
+                        header('Location: ' . ROOT . '/PasswordChange');
+                        exit();
+                    }
                     
-                    if ($playerRole === 'Captain' || $playerRole === 'Vice-Captain') {
-                        $_SESSION['player_role'] = $playerRole;
+                    if ($this->isCaptainLikeRole($playerRole)) {
                         header('Location: ' . ROOT . '/captainDashboard');
                         exit();
                     }
@@ -239,6 +311,7 @@ class User
                 
                 // Default to player dashboard
                 $_SESSION['user_type'] = 'player';
+                $_SESSION['must_change_password'] = false;
                 header('Location: ' . ROOT . '/playerDashboard');
                 exit();
             } else {
@@ -249,7 +322,7 @@ class User
         }
         
         error_log("Redirecting to login with error");
-        header('Location: http://localhost/UOC_Football/public/login?error=invalid_credentials');
+        header('Location: ' . ROOT . '/login?error=invalid_credentials');
         exit();
     }
 

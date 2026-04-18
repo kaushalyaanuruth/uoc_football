@@ -14,3 +14,4 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 
 define('ROOT', 'http://localhost/UOC_Football/public');
+define('ROOT_PATH', dirname(__DIR__, 2));

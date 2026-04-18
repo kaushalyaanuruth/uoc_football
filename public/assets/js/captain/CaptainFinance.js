@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ================= TABLE & FORMS ================= */
-    const BASE_URL = "http://localhost/uoc_football/public";
+    const BASE_URL = window.APP_ROOT || "http://localhost/UOC_Football/public";
     const table = document.querySelector(".finance-table");
 
     const incomeForm = document.querySelector(".btn-income")?.closest("form");
@@ -281,7 +281,7 @@ function renderFinanceChart(data, type) {
                         `<span class="badge ${badgeClass}">${type}</span>`;
                     currentRow.cells[1].innerText = editCategory.value;
                     currentRow.cells[2].className = amountClass;
-                    currentRow.cells[2].innerText = `${sign}Rs. ${editAmount.value}`;
+                    currentRow.cells[2].innerText = `${sign}LKR ${Number(editAmount.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                     const formattedDate = new Date(editDate.value).toLocaleDateString("en-US", {
                         month: "short",
                         day: "2-digit",
@@ -389,10 +389,10 @@ function renderFinanceChart(data, type) {
             }
         });
 
-        document.querySelector(".stat-income .stat-value").innerText = `Rs. ${income.toLocaleString()}`;
-        document.querySelector(".stat-expense .stat-value").innerText = `Rs. ${expense.toLocaleString()}`;
+        document.querySelector(".stat-income .stat-value").innerText = `LKR ${income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.querySelector(".stat-expense .stat-value").innerText = `LKR ${expense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         document.querySelector(".stat-balance .stat-value").innerText =
-            `Rs. ${(income - expense).toLocaleString()}`;
+            `LKR ${(income - expense).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
     loadFinanceChart();
@@ -436,8 +436,9 @@ document.getElementById("exportReport").addEventListener("click", () => {
 
 });
 
-document.getElementById("exportPDF").addEventListener("click", () => {
-    window.print();
-
-
-});
+const exportPdfBtn = document.getElementById("exportPDF");
+if (exportPdfBtn) {
+    exportPdfBtn.addEventListener("click", () => {
+        window.print();
+    });
+}

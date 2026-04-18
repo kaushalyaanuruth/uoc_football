@@ -71,6 +71,10 @@
                         <div class="detail-item">
                             <span class="detail-text">Status: <?php echo htmlspecialchars($team->status ?? 'present'); ?></span>
                         </div>
+                        <div class="detail-item">
+                            <span class="detail-icon"><img src="<?php echo ROOT; ?>/assets/images/teamManagement/players.svg" alt="players"></span>
+                            <span>Players: <?php echo !empty($team->player_names) ? htmlspecialchars($team->player_names) : 'Not assigned'; ?></span>
+                        </div>
                     </div>
                 </div>
                 <div class="team-footer">
@@ -386,6 +390,10 @@
                 </div>
                 <div class="form-group">
                     <input type="tel" id="editPlayer_phone_number" class="form-input" placeholder="Phone Number" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPlayer_image" style="display:block; font-size:12px; color:#666; margin-bottom:6px;">Profile Image (optional)</label>
+                    <input type="file" id="editPlayer_image" class="form-input" accept="image/*">
                 </div>
 
                 <!-- Player Details Section -->

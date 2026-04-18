@@ -22,11 +22,37 @@ class captainDashboard extends Controller {
         // }
         
         // Load captain/vice-captain data if needed
-         $data = [
-           'username' => $_SESSION['username'] ?? 'Captain',
-        //     'user_id' => $_SESSION['user_id'],
-        //     'player_role' => $_SESSION['player_role']
-         ];
+        $noticeModel = $this->model('NoticeModel');
+        $noticeRows = [];
+        try {
+            $noticeRows = $noticeModel->getRecent(6, 'present_team');
+        } catch (Exception $e) {
+            $noticeRows = [];
+        }
+
+        $notices = [];
+        foreach ($noticeRows as $row) {
+            $notices[] = [
+                'title' => $row->title ?? 'Notice',
+                'content' => $row->content ?? '',
+                'author' => $row->created_by ?? 'Admin',
+                'date' => !empty($row->created_at) ? date('M d, Y h:i A', strtotime($row->created_at)) : ''
+            ];
+        }
+
+        if (empty($notices)) {
+            $notices[] = [
+                'title' => 'No notices yet',
+                'content' => 'Admin notices for present team members will appear here.',
+                'author' => 'System',
+                'date' => ''
+            ];
+        }
+
+        $data = [
+            'username' => $_SESSION['username'] ?? 'Captain',
+            'notices' => $notices
+        ];
         
         $this->view('captain/captainDashboard', $data);
     }

@@ -33,7 +33,7 @@
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                 </div>
                 <div class="user-profile">
-                    <img src="<?php echo $base; ?>/assets/images/user-placeholder.jpg" alt="User Profile">
+                    <img src="<?php echo htmlspecialchars($data['player_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="User Profile">
                 </div>
             </div>
         </header>
@@ -49,29 +49,31 @@
         </div>
 
         <div class="events-grid" id="eventsGrid">
-            <?php foreach ($data['events'] as $event): ?>
-                <div class="event-card" data-type="<?php echo strtolower($event['type']); ?>">
-                    <div class="event-icon <?php echo strtolower($event['type']); ?>">
-                        <?php echo $event['type'] === 'Match' ? 'M' : 'T'; ?>
-                    </div>
-                    <div class="event-content">
-                        <h3><?php echo $event['title']; ?></h3>
-                        <p class="event-type"><?php echo $event['type']; ?></p>
-                        <div class="event-details">
-                            <span><strong>Date:</strong> <?php echo $event['date']; ?></span>
-                            <span><strong>Time:</strong> <?php echo $event['time']; ?></span>
+            <?php if (!empty($data['events'])): ?>
+                <?php foreach ($data['events'] as $event): ?>
+                    <?php
+                        $typeKey = strtolower((string)($event['type_key'] ?? $event['type'] ?? 'other'));
+                        $cardType = $typeKey === 'match' ? 'match' : ($typeKey === 'training' ? 'training' : 'other');
+                        $iconText = $cardType === 'match' ? 'M' : ($cardType === 'training' ? 'T' : 'E');
+                    ?>
+                    <div class="event-card" data-type="<?php echo htmlspecialchars($cardType); ?>">
+                        <div class="event-icon <?php echo htmlspecialchars($cardType); ?>">
+                            <?php echo $iconText; ?>
+                        </div>
+                        <div class="event-content">
+                            <h3><?php echo htmlspecialchars($event['title']); ?></h3>
+                            <p class="event-type"><?php echo htmlspecialchars($event['type']); ?></p>
+                            <div class="event-details">
+                                <span><strong>Date:</strong> <?php echo htmlspecialchars($event['date']); ?></span>
+                                <span><strong>Time:</strong> <?php echo htmlspecialchars($event['time']); ?></span>
+                                <span><strong>Location:</strong> <?php echo htmlspecialchars($event['location']); ?></span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <div class="pagination">
-            <button class="pagination-btn">Previous</button>
-            <button class="pagination-num active">1</button>
-            <button class="pagination-num">2</button>
-            <button class="pagination-num">3</button>
-            <button class="pagination-btn">Next</button>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No upcoming events available right now.</p>
+            <?php endif; ?>
         </div>
     </div>
 
