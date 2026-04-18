@@ -216,14 +216,6 @@ $matchResults = $matchResults ?? [];
                 </div>
             </section>
 
-            <!-- Player Match Statistics Section -->
-            <section class="player-stats-section">
-                <div class="stats-section-title">Player Match Statistics</div>
-                <button type="button" class="add-player-stats-btn" onclick="openAddPlayerStatsModal(null)">+ Add Player Stats</button>
-                <div id="matchPlayerStatsContainer" class="empty-stats-state">
-                    <p>Select a match to view and manage player statistics</p>
-                </div>
-            </section>
         </div>
 
         <div class="modal-overlay" id="addTestResultModal">
@@ -278,7 +270,9 @@ $matchResults = $matchResults ?? [];
                 <div class="modal-body">
                     <!-- Team Match Statistics -->
                     <h3 style="font-size: 14px; margin: 15px 0 10px 0; color: #333; font-weight: 600;">Team Match Statistics</h3>
-                        <input type="text" class="form-input" id="opponentName" name="opponentName" required>
+                    <div class="form-group">
+                        <label class="input-label" for="opponentName">Opponent Team *</label>
+                        <input type="text" class="form-input" id="opponentName" name="opponentName" placeholder="Enter opponent team name..." required>
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="matchResult">Result</label>
@@ -447,9 +441,21 @@ $matchResults = $matchResults ?? [];
                         <label class="input-label" for="editMatchNotes">Notes</label>
                         <textarea class="form-input" id="editMatchNotes" name="matchNotes" rows="4" placeholder="Notes"></textarea>
                     </div>
+                    
+                    <!-- Existing Player Stats Section -->
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #ddd;">
+                        <h3 style="font-size: 16px; margin-bottom: 15px; color: #333; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                            <span style="display: inline-block; width: 4px; height: 20px; background: #7c3aed; border-radius: 2px;"></span>
+                            Player Match Statistics
+                        </h3>
+                        <div id="editMatchPlayerStatsContainer" style="margin-bottom: 15px;">
+                            <p style="color: #999; text-align: center; padding: 15px;">Loading players...</p>
+                        </div>
+                    </div>
+                    
                     <div style="display: flex; gap: 10px;">
                         <button type="submit" class="submit-btn" style="flex: 1;">Update Result</button>
-                        <button type="button" class="submit-btn" style="flex: 1; background: #28a745;" onclick="closeEditMatchResultModal(); openAddPlayerStatsModal(currentMatchId);">Add Player Stats</button>
+                        <button type="button" class="submit-btn" style="flex: 1; background: #28a745;" onclick="event.stopPropagation(); openAddPlayerStatsModal(currentMatchId);">Add Player Stats</button>
                     </div>
                 </div>
             </form>
@@ -506,6 +512,17 @@ $matchResults = $matchResults ?? [];
                     <div class="notes-section" id="notesSection" style="display: none;">
                         <h4>Notes</h4>
                         <p id="viewNotes"></p>
+                    </div>
+
+                    <!-- Player Statistics Section -->
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;">
+                        <h3 style="font-size: 16px; margin-bottom: 15px; color: #333; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                            <span style="display: inline-block; width: 4px; height: 20px; background: #7c3aed; border-radius: 2px;"></span>
+                            Player Match Statistics
+                        </h3>
+                        <div id="viewMatchPlayerStatsContainer" style="min-height: 100px; display: flex; align-items: center; justify-content: center; color: #999;">
+                            Loading player statistics...
+                        </div>
                     </div>
                 </div>
             </div>

@@ -378,10 +378,31 @@ class TeamResult extends Controller
             }
 
             $this->matchResultModel->update($result_id, $data);
+            
+            // Handle new player stats if provided
+            $playerStatsJson = $_POST['player_stats'] ?? '[]';
+            $playerStats = json_decode($playerStatsJson, true);
+            
+            if (!empty($playerStats) && is_array($playerStats)) {
+                $playerStatsModel = $this->model('PlayerMatchStatsModel');
+                
+                foreach ($playerStats as $stats) {
+                    // Add match_id to stats
+                    $stats['match_id'] = $result_id;
+                    
+                    // Create player stat record
+                    try {
+                        $playerStatsModel->create($stats);
+                    } catch (Exception $e) {
+                        // Log error but continue with other players
+                        error_log("Error creating player stat for player {$stats['player_id']}: " . $e->getMessage());
+                    }
+                }
+            }
 
             $this->respondJson([
                 'success' => true,
-                'message' => 'Match result updated successfully'
+                'message' => 'Match result updated successfully' . (!empty($playerStats) ? ' with ' . count($playerStats) . ' new player(s)' : '')
             ]);
         } catch (Exception $e) {
             $this->respondJson([
@@ -408,11 +429,22 @@ class TeamResult extends Controller
                 throw new Exception('Result ID is required');
             }
 
+            // First, delete all player stats associated with this match
+            $playerStatsModel = $this->model('PlayerMatchStatsModel');
+            $playerStats = $playerStatsModel->getByMatchId($result_id);
+            
+            if (!empty($playerStats)) {
+                foreach ($playerStats as $stat) {
+                    $playerStatsModel->delete($stat['stat_id']);
+                }
+            }
+
+            // Then delete the match result
             $this->matchResultModel->delete($result_id);
 
             $this->respondJson([
                 'success' => true,
-                'message' => 'Match result deleted successfully'
+                'message' => 'Match result and associated player statistics deleted successfully'
             ]);
         } catch (Exception $e) {
             $this->respondJson([
@@ -860,5 +892,56 @@ class TeamResult extends Controller
             ]);
             exit;
         }
+    }
+
+    /**
+     * Get single player match stat - AJAX endpoint
+     */
+    public function getPlayerStat()
+    {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        
+        header('Content-Type: application/json');
+        
+        try {
+            $this->requireAuth();
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+                echo json_encode(['success' => false, 'stat' => null]);
+                exit;
+            }
+
+            $stat_id = $_GET['stat_id'] ?? null;
+            if (!$stat_id) {
+                echo json_encode(['success' => false, 'stat' => null]);
+                exit;
+            }
+
+            $playerStatsModel = $this->model('PlayerMatchStatsModel');
+            $stat = $playerStatsModel->getById($stat_id);
+
+            echo json_encode([
+                'success' => true,
+                'stat' => $stat ?? null
+            ]);
+            exit;
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'stat' => null,
+                'error' => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
+
+    /**
+     * Update player match stats - alias for editPlayerMatchStats
+     */
+    public function updatePlayerMatchStats()
+    {
+        $this->editPlayerMatchStats();
     }
 }

@@ -161,7 +161,7 @@ function displayPlayerStats() {
         playerDiv.style.backgroundColor = '#f5f5f5';
         playerDiv.style.borderRadius = '4px';
         playerDiv.style.marginBottom = '8px';
-        playerDiv.style.borderLeft = '4px solid #007bff';
+        playerDiv.style.borderLeft = '4px solid #7c3aed';
         
         const statsText = `
             Goals: <strong>${stats.goals_scored}</strong> | 

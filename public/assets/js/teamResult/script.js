@@ -326,6 +326,40 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Handle match results filtering
+    const matchSearchBtn = document.getElementById("matchSearchBtn");
+    const matchSearch = document.getElementById("matchSearch");
+    const matchDateFrom = document.getElementById("matchDateFrom");
+    const matchDateTo = document.getElementById("matchDateTo");
+
+    if (matchSearchBtn) {
+        matchSearchBtn.addEventListener("click", function() {
+            filterMatchResults();
+        });
+    }
+
+    // Filter on Enter key in match search input
+    if (matchSearch) {
+        matchSearch.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                filterMatchResults();
+            }
+        });
+    }
+
+    // Also filter when match date inputs change
+    if (matchDateFrom) {
+        matchDateFrom.addEventListener("change", function() {
+            filterMatchResults();
+        });
+    }
+
+    if (matchDateTo) {
+        matchDateTo.addEventListener("change", function() {
+            filterMatchResults();
+        });
+    }
+
     // Handle edit form submissions
     const editTestResultForm = document.getElementById("editTestResultForm");
     if (editTestResultForm) {
@@ -362,6 +396,18 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             
             const formData = new FormData(this);
+            
+            // Include new player stats if any were added in edit mode
+            const playerStats = getPlayerStatsArray();
+            if (playerStats.length > 0) {
+                const cleanedStats = playerStats.map(stat => {
+                    const cleaned = { ...stat };
+                    delete cleaned._playerName;
+                    return cleaned;
+                });
+                formData.append('player_stats', JSON.stringify(cleanedStats));
+            }
+            
             const baseUrl = window.ROOT || window.location.origin;
             
             fetch(`${baseUrl}/teamResult/editMatchResult`, {
@@ -445,7 +491,12 @@ function editMatchResult(resultId) {
         .then(data => {
             if (data.success && data.result) {
                 currentMatchId = resultId; // Set for player stats
+                resetPlayerStatsArray(); // Clear any previous additions
                 populateEditMatchResultModal(data.result);
+                
+                // Load existing player stats for this match
+                loadExistingPlayerStatsForEdit(resultId);
+                
                 document.getElementById("editMatchResultModal").classList.add("active");
             } else {
                 alert('Error: ' + (data.message || 'Failed to load match result'));
@@ -477,6 +528,213 @@ function populateEditMatchResultModal(result) {
 }
 
 /**
+ * Load existing player stats for edit modal
+ */
+function loadExistingPlayerStatsForEdit(matchId) {
+    const container = document.getElementById("editMatchPlayerStatsContainer");
+    if (!container) {
+        console.log('editMatchPlayerStatsContainer not found');
+        return;
+    }
+    
+    const baseUrl = window.ROOT || window.location.origin;
+    console.log('Fetching player stats for match:', matchId);
+    
+    fetch(`${baseUrl}/teamResult/getMatchPlayerStats?match_id=${matchId}`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Player stats response:', data);
+            
+            // Extract stats from response object
+            const stats = data.stats || [];
+            
+            if (!stats || stats.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 15px;">No players added yet. Click "Add Player Stats" to add.</p>';
+                return;
+            }
+            
+            // Display existing player stats with edit and delete options
+            let html = '';
+            stats.forEach((stat) => {
+                html += `
+                    <div style="background: white; border-left: 4px solid #7c3aed; padding: 12px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${stat.player_name || 'Unknown'}</strong><br>
+                            <small style="color: #666;">Position: ${stat.position_played || '-'} | Minutes: ${stat.minutes_played || 0}' | Goals: ${stat.goals_scored || 0}</small>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" style="background: none; border: none; color: #7c3aed; cursor: pointer; padding: 4px;" onclick="editPlayerStatFromMatch(${stat.stat_id || stat.id})" title="Edit player">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+                            </button>
+                            <button type="button" style="background: none; border: none; color: red; cursor: pointer; padding: 4px;" onclick="deletePlayerStatFromMatch(${stat.stat_id || stat.id})" title="Delete player">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading player stats:', error);
+            container.innerHTML = '<p style="color: #d9534f; text-align: center; padding: 15px;">Failed to load players. Click "Add Player Stats" to add.</p>';
+        });
+}
+
+/**
+ * Edit player stat from match
+ */
+function editPlayerStatFromMatch(statId) {
+    const baseUrl = window.ROOT || window.location.origin;
+    
+    fetch(`${baseUrl}/teamResult/getPlayerStat?stat_id=${statId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.stat) {
+                // Populate the edit modal with existing data
+                populateEditPlayerStatModal(data.stat);
+                
+                // Store stat ID for update
+                document.getElementById("editStatId").value = statId;
+                
+                // Open edit modal
+                document.getElementById("editPlayerStatsModal").classList.add("active");
+                
+                // Close edit match modal
+                document.getElementById("editMatchResultModal").classList.remove("active");
+            } else {
+                alert('Error: Failed to load player stats');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while loading player stats');
+        });
+}
+
+/**
+ * Populate edit player stat modal with existing data
+ */
+function populateEditPlayerStatModal(stat) {
+    document.getElementById("editPositionPlayed").value = stat.position_played || '';
+    document.getElementById("editMinutesPlayed").value = stat.minutes_played || 90;
+    document.getElementById("editSubstitutionStatus").value = stat.substitution_status || 'Started';
+    document.getElementById("editGoalsScored").value = stat.goals_scored || 0;
+    document.getElementById("editAssists").value = stat.assists || 0;
+    document.getElementById("editShotsOnTarget").value = stat.shots_on_target || 0;
+    document.getElementById("editShotsOffTarget").value = stat.shots_off_target || 0;
+    document.getElementById("editKeyPasses").value = stat.key_passes || 0;
+    document.getElementById("editSuccessfulDribbles").value = stat.successful_dribbles || 0;
+    document.getElementById("editCompletedPasses").value = stat.completed_passes || 0;
+    document.getElementById("editLineBreakingPasses").value = stat.line_breaking_passes || 0;
+    document.getElementById("editTacklesWon").value = stat.tackles_won || 0;
+    document.getElementById("editInterceptions").value = stat.interceptions || 0;
+    document.getElementById("editDefensiveDuelsWon").value = stat.defensive_duels_won || 0;
+    document.getElementById("editAerialDuelsWon").value = stat.aerial_duels_won || 0;
+    document.getElementById("editYellowCards").value = stat.yellow_cards || 0;
+    document.getElementById("editRedCards").value = stat.red_cards || 0;
+    document.getElementById("editFoulsCommitted").value = stat.fouls_committed || 0;
+    document.getElementById("editFoulsWon").value = stat.fouls_won || 0;
+    document.getElementById("editNotes").value = stat.notes || '';
+}
+
+/**
+ * Submit edit player stats form
+ */
+function submitEditPlayerStatsForm(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById("editPlayerStatsForm");
+    const statId = document.getElementById("editStatId").value;
+    
+    if (!statId) {
+        alert('Error: Stat ID not found');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    const baseUrl = window.ROOT || window.location.origin;
+    
+    fetch(`${baseUrl}/teamResult/updatePlayerMatchStats`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Player statistics updated successfully');
+            closeEditPlayerStatsModal();
+            
+            // Reload player stats in edit match modal
+            if (currentMatchId) {
+                loadExistingPlayerStatsForEdit(currentMatchId);
+                
+                // Reopen edit match modal
+                document.getElementById("editMatchResultModal").classList.add("active");
+            }
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating player statistics');
+    });
+}
+
+/**
+ * Close edit player stats modal
+ */
+function closeEditPlayerStatsModal() {
+    const modal = document.getElementById("editPlayerStatsModal");
+    const form = document.getElementById("editPlayerStatsForm");
+    
+    if (modal) {
+        modal.classList.remove("active");
+    }
+    
+    if (form) {
+        form.reset();
+        document.getElementById("editStatId").value = '';
+    }
+}
+
+/**
+ * Delete player stat from match
+ */
+function deletePlayerStatFromMatch(statId) {
+    if (!confirm('Are you sure you want to remove this player from the match?')) return;
+    
+    const baseUrl = window.ROOT || window.location.origin;
+    fetch(`${baseUrl}/teamResult/deletePlayerMatchStats`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `stat_id=${statId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload existing stats display
+            loadExistingPlayerStatsForEdit(currentMatchId);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting player stats');
+    });
+}
+
+/**
  * Close edit match result modal
  */
 function closeEditMatchResultModal() {
@@ -490,6 +748,8 @@ function closeEditMatchResultModal() {
     if (form) {
         form.reset();
     }
+    
+    resetPlayerStatsArray();
 }
 
 /**
@@ -552,6 +812,109 @@ function closeViewMatchResultModal() {
     if (modal) {
         modal.classList.remove("active");
     }
+}
+
+/**
+ * Load player stats for viewing in match detail modal
+ */
+function loadMatchPlayerStats(matchId) {
+    const baseUrl = window.ROOT || window.location.origin;
+    const container = document.getElementById("viewMatchPlayerStatsContainer");
+    
+    if (!container) return;
+    
+    fetch(`${baseUrl}/teamResult/getMatchPlayerStats?match_id=${matchId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayViewMatchPlayerStats(data.stats || []);
+            } else {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No player statistics available</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading player stats:', error);
+            container.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 20px;">Error loading player statistics</p>';
+        });
+}
+
+/**
+ * Display player stats in the view modal with card layout
+ */
+function displayViewMatchPlayerStats(stats) {
+    const container = document.getElementById("viewMatchPlayerStatsContainer");
+    
+    if (!container) return;
+    
+    if (stats.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px; width: 100%;">No player statistics recorded for this match</p>';
+        return;
+    }
+    
+    let html = `<div style="width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">`;
+    
+    stats.forEach(stat => {
+        const statusBg = stat.substitution_status === 'Started' ? '#d4edda' : (stat.substitution_status === 'Substitute' ? '#fff3cd' : '#f8d7da');
+        const statusColor = stat.substitution_status === 'Started' ? '#155724' : (stat.substitution_status === 'Substitute' ? '#856404' : '#721c24');
+        const cards = (stat.yellow_cards || 0) + (stat.red_cards || 0);
+        
+        html += `
+            <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; border-left: 4px solid #7c3aed;">
+                <div style="margin-bottom: 12px;">
+                    <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #333;">${stat.player_name || 'Unknown'}</h4>
+                    <p style="margin: 0; font-size: 12px; color: #666;">Position: <strong>${stat.position_played || '-'}</strong></p>
+                </div>
+                
+                <div style="background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                        <div>
+                            <span style="color: #666;">Minutes:</span><br>
+                            <strong style="font-size: 14px; color: #333;">${stat.minutes_played || 0}'</strong>
+                        </div>
+                        <div>
+                            <span style="color: #666;">Status:</span><br>
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: 10px; background: ${statusBg}; color: ${statusColor}; font-size: 11px; font-weight: 500;">${stat.substitution_status || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid #eee; padding-top: 10px;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 12px;">
+                        <div style="text-align: center; padding: 8px; background: #f3e8ff; border-radius: 4px;">
+                            <span style="color: #666; font-size: 11px;">Goals</span><br>
+                            <strong style="font-size: 16px; color: #7c3aed;">${stat.goals_scored || 0}</strong>
+                        </div>
+                        <div style="text-align: center; padding: 8px; background: #f5f5f5; border-radius: 4px;">
+                            <span style="color: #666; font-size: 11px;">Assists</span><br>
+                            <strong style="font-size: 16px; color: #333;">${stat.assists || 0}</strong>
+                        </div>
+                        <div style="text-align: center; padding: 8px; background: #f5f5f5; border-radius: 4px;">
+                            <span style="color: #666; font-size: 11px;">Shots</span><br>
+                            <strong style="font-size: 14px; color: #333;">${stat.shots_on_target || 0}/${stat.shots_off_target || 0}</strong>
+                        </div>
+                        <div style="text-align: center; padding: 8px; background: #f5f5f5; border-radius: 4px;">
+                            <span style="color: #666; font-size: 11px;">Tackles</span><br>
+                            <strong style="font-size: 16px; color: #333;">${stat.tackles_won || 0}</strong>
+                        </div>
+                        <div style="text-align: center; padding: 8px; background: #f5f5f5; border-radius: 4px;">
+                            <span style="color: #666; font-size: 11px;">Passes</span><br>
+                            <strong style="font-size: 16px; color: #333;">${stat.completed_passes || 0}</strong>
+                        </div>
+                        <div style="text-align: center; padding: 8px; background: ${cards > 0 ? '#f8d7da' : '#f5f5f5'}; border-radius: 4px;">
+                            <span style="color: #666; font-size: 11px;">Cards</span><br>
+                            <strong style="font-size: 12px; color: ${cards > 0 ? '#721c24' : '#333'};">${stat.yellow_cards || 0}Y ${stat.red_cards || 0}R</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                ${stat.notes ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 12px; color: #666;"><strong>Notes:</strong> ${stat.notes}</div>` : ''}
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    
+    container.innerHTML = html;
 }
 
 /**
@@ -694,6 +1057,84 @@ function filterTestResults() {
                 noResultsRow = document.createElement("tr");
                 noResultsRow.className = "no-results-row";
                 noResultsRow.innerHTML = '<td colspan="6" style="text-align: center; padding: 20px; color: #999;">No test results match your filters.</td>';
+                tableBody?.appendChild(noResultsRow);
+            }
+            noResultsRow.style.display = '';
+        }
+    } else if (tableBody?.querySelector(".no-results-row")) {
+        tableBody.querySelector(".no-results-row").style.display = 'none';
+    }
+}
+
+/**
+ * Filter match results based on opponent team name and date range
+ */
+function filterMatchResults() {
+    const searchInput = document.getElementById("matchSearch");
+    const dateFromInput = document.getElementById("matchDateFrom");
+    const dateToInput = document.getElementById("matchDateTo");
+    const tableBody = document.getElementById("matchResultsTableBody");
+    
+    // Get filter values
+    const searchQuery = (searchInput?.value || '').toLowerCase().trim();
+    const dateFrom = dateFromInput?.value || '';
+    const dateTo = dateToInput?.value || '';
+    
+    console.log('Match filter criteria:', { searchQuery, dateFrom, dateTo });
+    
+    // Get all rows
+    const rows = tableBody?.querySelectorAll(".result-row");
+    if (!rows || rows.length === 0) return;
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const opponentTeam = row.querySelector(".result-name")?.textContent?.trim() || '';
+        const dateCell = row.querySelectorAll("td")[6]?.textContent?.trim() || ''; // Date is in the 7th column (0-indexed: 6)
+        
+        // Check opponent team name match (case insensitive)
+        const teamMatch = searchQuery === '' || opponentTeam.toLowerCase().includes(searchQuery);
+        
+        // Check date range match
+        let dateMatch = true;
+        if (dateFrom || dateTo) {
+            try {
+                const resultDate = new Date(dateCell);
+                if (dateFrom) {
+                    const fromDate = new Date(dateFrom);
+                    if (resultDate < fromDate) dateMatch = false;
+                }
+                if (dateTo) {
+                    const toDate = new Date(dateTo);
+                    // Add 1 day to make the end date inclusive
+                    toDate.setDate(toDate.getDate() + 1);
+                    if (resultDate > toDate) dateMatch = false;
+                }
+            } catch (e) {
+                console.error('Date parsing error:', e);
+                dateMatch = true;
+            }
+        }
+        
+        // Show or hide row based on all criteria
+        if (teamMatch && dateMatch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show "no results" message if all rows are hidden
+    if (visibleCount === 0 && rows.length > 0) {
+        // Check if all rows are actually match result rows (not the empty state message)
+        const actualDataRows = Array.from(rows).filter(row => !row.textContent.includes("No match results found"));
+        if (actualDataRows.length > 0) {
+            let noResultsRow = tableBody?.querySelector(".no-results-row");
+            if (!noResultsRow) {
+                noResultsRow = document.createElement("tr");
+                noResultsRow.className = "no-results-row";
+                noResultsRow.innerHTML = '<td colspan="8" style="text-align: center; padding: 20px; color: #999;">No match results match your filters.</td>';
                 tableBody?.appendChild(noResultsRow);
             }
             noResultsRow.style.display = '';

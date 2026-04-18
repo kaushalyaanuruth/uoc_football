@@ -22,7 +22,7 @@
     display: inline-block;
     width: 4px;
     height: 20px;
-    background: #007bff;
+    background: #7c3aed;
     border-radius: 2px;
 }
 
@@ -72,7 +72,6 @@
     font-size: 12px;
     font-weight: 500;
     background: #e3f2fd;
-    color: #1976d2;
 }
 
 .minutes-badge {
@@ -80,7 +79,6 @@
     padding: 6px 12px;
     border-radius: 4px;
     background: #fff3cd;
-    color: #856404;
     font-weight: 500;
     font-size: 13px;
 }
@@ -95,22 +93,18 @@
 
 .substitution-badge.started {
     background: #d4edda;
-    color: #155724;
 }
 
 .substitution-badge.substitute {
     background: #fff3cd;
-    color: #856404;
 }
 
 .substitution-badge.unused {
     background: #f8d7da;
-    color: #721c24;
 }
 
 .stats-highlight {
     font-weight: 600;
-    color: #28a745;
 }
 
 .no-stats-message {
@@ -121,7 +115,7 @@
 }
 
 .add-player-stats-btn {
-    background: #007bff;
+    background: #7c3aed;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -134,7 +128,7 @@
 }
 
 .add-player-stats-btn:hover {
-    background: #0056b3;
+    background: #4C0E54;
 }
 
 .add-player-stats-btn:active {
@@ -178,8 +172,8 @@
 .stats-form-group select:focus,
 .stats-form-group textarea:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
 }
 
 .stats-grid {
@@ -191,8 +185,8 @@
 .stats-section-header {
     grid-column: span 2;
     padding: 15px;
-    background: #f0f7ff;
-    border-left: 4px solid #007bff;
+    background: #f3e8ff;
+    border-left: 4px solid #7c3aed;
     border-radius: 4px;
     margin: 10px 0;
 }
@@ -200,7 +194,7 @@
 .stats-section-header h3 {
     margin: 0;
     font-size: 16px;
-    color: #007bff;
+    color: #7c3aed;
     font-weight: 600;
 }
 
@@ -247,7 +241,7 @@
 .stats-submit-btn {
     flex: 1;
     padding: 12px;
-    background: #007bff;
+    background: #7c3aed;
     color: white;
     border: none;
     border-radius: 6px;
@@ -257,7 +251,7 @@
 }
 
 .stats-submit-btn:hover {
-    background: #0056b3;
+    background: #4C0E54;
 }
 
 .stats-reset-btn {
