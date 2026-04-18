@@ -15,7 +15,7 @@
         <div class="header">
             <div class="left-section">
                 <a href="<?php echo ROOT; ?>/coach">
-                    <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/coachDashboard/header/uoclogo.png" alt="UOC Football Logo">
+                    <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
                 </a>
             </div>
             <nav class="nav-menu">
@@ -27,10 +27,7 @@
                 <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link">Notices</a>
             </nav>
             <div class="right-section">
-                <div class="bell-icon">
-                    <i>🔔</i>
-                </div>
-                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/coachDashboard/header/avatar.jpg" alt="Coach Avatar">
+                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Coach Avatar">
             </div>
         </div>
 
@@ -56,12 +53,21 @@
                         <h3 class="event-title">Training Session</h3>
                         <p class="event-subtitle">Training Session</p>
                     </div>
-                    <button class="edit-icon-btn" onclick="editEvent(1)">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
+                    <div class="event-card-actions">
+                        <button type="button" class="edit-icon-btn" onclick="editEvent(1)" aria-label="Edit event" title="Edit event">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="delete-icon-btn" aria-label="Delete event" title="Delete event">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                                <path d="M10 11v6M14 11v6"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="event-details">
                     <div class="detail-item">
@@ -107,12 +113,21 @@
                         <h3 class="event-title">Training Session</h3>
                         <p class="event-subtitle">Training Session</p>
                     </div>
-                    <button class="edit-icon-btn" onclick="editEvent(2)">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
+                    <div class="event-card-actions">
+                        <button type="button" class="edit-icon-btn" onclick="editEvent(2)" aria-label="Edit event" title="Edit event">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="delete-icon-btn" aria-label="Delete event" title="Delete event">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                                <path d="M10 11v6M14 11v6"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="event-details">
                     <div class="detail-item">
@@ -158,12 +173,21 @@
                         <h3 class="event-title">Training Session</h3>
                         <p class="event-subtitle">Training Session</p>
                     </div>
-                    <button class="edit-icon-btn" onclick="editEvent(3)">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
+                    <div class="event-card-actions">
+                        <button type="button" class="edit-icon-btn" onclick="editEvent(3)" aria-label="Edit event" title="Edit event">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="delete-icon-btn" aria-label="Delete event" title="Delete event">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                                <path d="M10 11v6M14 11v6"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="event-details">
                     <div class="detail-item">

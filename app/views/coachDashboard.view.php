@@ -14,7 +14,7 @@
         <div class="header">
             <div class="left-section">
                 <a href="<?php echo ROOT; ?>/coach">
-                    <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/coachDashboard/header/uoclogo.png" alt="UOC Football Logo">
+                    <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
                 </a>
             </div>
             <nav class="nav-menu">
@@ -26,7 +26,7 @@
                 <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link">Notices</a>
             </nav>
             <div class="right-section">
-                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/coachDashboard/header/avatar.jpg" alt="Coach Avatar">
+                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Coach Avatar">
                 <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -88,7 +88,7 @@
                     <div class="card-title">
                         <h2>Meal Plan</h2>
                     </div>
-                    <button class="add-btn">+ Add</button>
+                   
                 </div>
                 <div class="card-body">
                     <div class="meal-tabs">
@@ -126,8 +126,7 @@
                 <div class="card-header">
                     <div class="card-title">
                         <h2>Notices</h2>
-                    </div>
-                    <button class="add-btn">+ Add</button>
+                    </div>                
                 </div>
                 <div class="card-body">
                     <ul class="notices-list">

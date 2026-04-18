@@ -31,46 +31,25 @@
                 <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
             </div>
         </div>
-
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <div class="filter-group">
-                <label>Select Player</label>
-                <select class="filter-select" id="playerFilter">
-                    <option value="all">All Players</option>
-                    <option value="john">John Smith</option>
-                    <option value="mike">Mike Johnson</option>
-                    <option value="alex">Alex Brown</option>
-                    <option value="david">David Wilson</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Type</label>
-                <select class="filter-select" id="typeFilter">
-                    <option value="first">First Team</option>
-                    <option value="second">Second Team</option>
-                    <option value="youth">Youth Team</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Date Range</label>
-                <input type="date" class="filter-input" id="dateFilter" value="<?php echo date('Y-m-d'); ?>">
-            </div>
-
-            <div class="filter-group">
-                <label>Session</label>
-                <select class="filter-select" id="sessionFilter">
-                    <option value="all">All Sessions</option>
-                    <option value="morning">Morning</option>
-                    <option value="evening">Evening</option>
-                </select>
-            </div>
-        </div>
+        
 
         <!-- Stats Grid -->
         <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon team">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="23" y1="21" x2="23" y2="15"></line>
+                        <line x1="20" y1="18" x2="26" y2="18"></line>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <p class="stat-label">Season</p>
+                    <h3 class="stat-value team-name" id="seasonStatValue">2025 Season</h3>
+                </div>
+            </div>
+
             <div class="stat-card">
                 <div class="stat-icon overall">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -100,36 +79,38 @@
                     <h3 class="stat-value">148</h3>
                 </div>
             </div>
+        </div>
 
-            <div class="stat-card">
-                <div class="stat-icon team">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="8.5" cy="7" r="4"></circle>
-                        <line x1="23" y1="21" x2="23" y2="15"></line>
-                        <line x1="20" y1="18" x2="26" y2="18"></line>
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <p class="stat-label">Team</p>
-                    <h3 class="stat-value team-name">John<span class="team-sub">95 min</span></h3>
-                </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>Select Player</label>
+                <select class="filter-select" id="playerFilter">
+                    <option value="all">All Players</option>
+                    <option value="john">John Smith</option>
+                    <option value="mike">Mike Johnson</option>
+                    <option value="alex">Alex Brown</option>
+                    <option value="david">David Wilson</option>
+                </select>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon lowest">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <p class="stat-label">Lowest Attendance</p>
-                    <h3 class="stat-value team-name">Alex Brown<span class="team-sub">78.3%</span></h3>
-                </div>
+            <div class="filter-group">
+                <label>Season</label>
+                <select class="filter-select" id="seasonFilter">
+                    <option value="2025-season" selected>2025 Season</option>
+                    <option value="2024-season">2024 Season</option>
+                    <option value="2023-season">2023 Season</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Date Range</label>
+                <input type="date" class="filter-input" id="dateFilter" value="<?php echo date('Y-m-d'); ?>">
             </div>
         </div>
+
+        
 
         <!-- Main Content Grid -->
         <div class="main-content-grid">
@@ -201,39 +182,7 @@
                 </div>
             </div>
 
-            <!-- Coach Notes -->
-            <div class="coach-notes card">
-                <div class="card-header">
-                    <h2 class="card-title">Coach Notes</h2>
-                    <button class="add-note-btn">+ Add Note</button>
-                </div>
-                <div class="card-body">
-                    <ul class="notes-list">
-                        <li class="note-item">
-                            <div class="note-header">
-                                <span class="note-player">Mike Johnson</span>
-                                <span class="note-date">Jan 15, 2024</span>
-                            </div>
-                            <p class="note-text">Missed 2 consecutive training sessions. Need to check if everything is okay.</p>
-                        </li>
-                        <li class="note-item">
-                            <div class="note-header">
-                                <span class="note-player">Alex Brown</span>
-                                <span class="note-date">Jan 14, 2024</span>
-                            </div>
-                            <p class="note-text">Came late due to car trouble. Showed commitment by staying extra.</p>
-                        </li>
-                        <li class="note-item">
-                            <div class="note-header">
-                                <span class="note-player">David Wilson</span>
-                                <span class="note-date">Jan 12, 2024</span>
-                            </div>
-                            <p class="note-text">Family emergency - excused absence. Will catch up next week.</p>
-                        </li>
-                    </ul>
-                    <button class="load-more-btn">Load more...</button>
-                </div>
-            </div>
+             
         </div>
 
         <!-- Charts Grid -->
