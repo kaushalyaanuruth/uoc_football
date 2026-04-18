@@ -1,0 +1,295 @@
+/* Player Match Stats Styling */
+
+.player-stats-section {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 30px;
+}
+
+.stats-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stats-section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 20px;
+    background: #7c3aed;
+    border-radius: 2px;
+}
+
+.player-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.player-stats-table thead {
+    background: #f5f5f5;
+    border-bottom: 2px solid #ddd;
+}
+
+.player-stats-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.player-stats-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    color: #666;
+}
+
+.player-stats-table tr:hover {
+    background: #fafafa;
+}
+
+.player-name-cell {
+    font-weight: 600;
+    color: #333;
+}
+
+.position-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: #e3f2fd;
+}
+
+.minutes-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background: #fff3cd;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.substitution-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.substitution-badge.started {
+    background: #d4edda;
+}
+
+.substitution-badge.substitute {
+    background: #fff3cd;
+}
+
+.substitution-badge.unused {
+    background: #f8d7da;
+}
+
+.stats-highlight {
+    font-weight: 600;
+}
+
+.no-stats-message {
+    padding: 30px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+.add-player-stats-btn {
+    background: #7c3aed;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.3s;
+    margin-bottom: 20px;
+}
+
+.add-player-stats-btn:hover {
+    background: #4C0E54;
+}
+
+.add-player-stats-btn:active {
+    transform: scale(0.98);
+}
+
+/* Player Stats Modal */
+.player-stats-modal {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.stats-form-group {
+    margin-bottom: 20px;
+}
+
+.stats-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-form-group input,
+.stats-form-group select,
+.stats-form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.stats-form-group input:focus,
+.stats-form-group select:focus,
+.stats-form-group textarea:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.stats-section-header {
+    grid-column: span 2;
+    padding: 15px;
+    background: #f3e8ff;
+    border-left: 4px solid #7c3aed;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.stats-section-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #7c3aed;
+    font-weight: 600;
+}
+
+.stat-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-section-header {
+        grid-column: span 1;
+    }
+
+    .player-stats-table {
+        font-size: 12px;
+    }
+
+    .player-stats-table th,
+    .player-stats-table td {
+        padding: 8px 10px;
+    }
+
+    .position-badge {
+        display: block;
+        margin: 5px 0;
+    }
+}
+
+/* Action Buttons */
+.stats-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.stats-submit-btn {
+    flex: 1;
+    padding: 12px;
+    background: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.stats-submit-btn:hover {
+    background: #4C0E54;
+}
+
+.stats-reset-btn {
+    flex: 1;
+    padding: 12px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.stats-reset-btn:hover {
+    background: #5a6268;
+}
+
+.empty-stats-state {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.empty-stats-state svg {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-stats-state p {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.empty-stats-state .hint {
+    font-size: 13px;
+    color: #bbb;
+    margin-top: 10px;
+}

@@ -216,3 +216,65 @@ CREATE TABLE IF NOT EXISTS Achievements (
     team_id INT(32),
     FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
+CREATE TABLE IF NOT EXISTS match_results (
+    result_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+    opponent_team VARCHAR(100) NOT NULL,
+    result ENUM('Won', 'Draw', 'Lost') NOT NULL,
+    goals_scored INT(32) DEFAULT 0,
+    goals_conceded INT(32) DEFAULT 0,
+    shots INT(32) DEFAULT 0,
+    shots_on_target INT(32) DEFAULT 0,
+    possession DECIMAL(5,2) DEFAULT 0,
+    passes INT(32) DEFAULT 0,
+    passes_accuracy DECIMAL(5,2) DEFAULT 0,
+    corners INT(32) DEFAULT 0,
+    date DATE NOT NULL,
+    notes VARCHAR(255),
+    team_id INT(32) NOT NULL,
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
+CREATE TABLE player_match_stats (
+    stat_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    match_id INT NOT NULL,
+    player_id INT NOT NULL,
+
+    position_played VARCHAR(100),
+    minutes_played INT DEFAULT 0,
+    substitution_status ENUM('Started', 'Substitute', 'Unused') DEFAULT 'Started',
+
+
+    goals_scored INT DEFAULT 0,
+    assists INT DEFAULT 0,
+    shots_on_target INT DEFAULT 0,
+    shots_off_target INT DEFAULT 0,
+    key_passes INT DEFAULT 0,
+    successful_dribbles INT DEFAULT 0,
+
+    completed_passes INT DEFAULT 0,
+    line_breaking_passes INT DEFAULT 0,
+
+    tackles_won INT DEFAULT 0,
+    interceptions INT DEFAULT 0,
+    defensive_duels_won INT DEFAULT 0,
+    aerial_duels_won INT DEFAULT 0,
+
+    yellow_cards INT DEFAULT 0,
+    red_cards INT DEFAULT 0,
+    fouls_committed INT DEFAULT 0,
+    fouls_won INT DEFAULT 0,
+
+    notes TEXT,
+
+    CONSTRAINT fk_stats_match
+        FOREIGN KEY (match_id) REFERENCES match_results(result_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_stats_player
+        FOREIGN KEY (player_id) REFERENCES players(player_id)
+        ON DELETE CASCADE,
+
+    UNIQUE (match_id, player_id)
+);
