@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <?php
+    $noticeCount = isset($data['notices']) ? count($data['notices']) : 0;
+    $noticeBadge = $noticeCount > 99 ? '99+' : (string) $noticeCount;
+    ?>
     <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/attendance.css">
 
 </head>
@@ -22,8 +26,8 @@
         </div>
 
         <nav class="nav-center">
-            <a href="<?= ROOT ?>/CaptainDashboard">Home</a>
-            <a href="<?= ROOT ?>/captain/dashboard">Schedule</a>
+            <a href="<?= ROOT ?>/captainDashboard">Home</a>
+            <a href="<?= ROOT ?>/CaptainSchedule">Schedule</a>
             <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
             <a href="#" class="active">Attendance</a>
             <a href="<?= ROOT ?>/CaptainInventory">Inventory</a>
@@ -32,12 +36,14 @@
         </nav>
 
         <div class="nav-right">
-            <button class="icon-btn">🔔</button>
-            <div class="profile">
-                <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
-                    alt="Admin Avatar">
-
+            <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
+            <div class="notification-icon" id="captainNotificationBell">
+                <img src="<?php echo ROOT; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
+                <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
             </div>
+            <a class="user-profile" href="<?= ROOT ?>/captainDashboard" title="Profile">
+                <img src="<?php echo htmlspecialchars($data['captain_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Captain Avatar">
+            </a>
         </div>
     </header>
 
@@ -46,7 +52,7 @@
         <header class="page-header">
             <div>
                 <h1>Attendance Dashboard</h1>
-                <p>View and update player attendance for today’s session</p>
+                <p>View and update player attendance for the selected session date</p>
             </div>
 
             <div class="filters">
@@ -56,12 +62,13 @@
                     <option <?= $data['selected_type'] == 'Training' ? 'selected' : '' ?>>Training</option>
                     <option <?= $data['selected_type'] == 'Fitness' ? 'selected' : '' ?>>Fitness</option>
                 </select>
-                <input type="date" id="attendanceDate" value="<?= $data['selected_date'] ?>">
+                <input type="date" id="attendanceDate" value="<?= htmlspecialchars($data['selected_date']) ?>" aria-label="Select attendance date">
                 <select>
                     <option>All Teams</option>
                     <!-- <option value="">Team A</option>
                 <option value="">Team B</option> -->
                 </select>
+                <button type="button" class="btn" id="applyFilters">Apply</button>
             </div>
         </header>
 
@@ -205,6 +212,31 @@
         </div>
 
     </main>
+
+    <div id="captainNotificationOverlay" style="display:none; position:fixed; top:88px; right:32px; width:340px; max-height:420px; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.18); padding:14px; z-index:1200; border:1px solid #ece7f3;">
+        <?php foreach (array_slice($data['notices'] ?? [], 0, 5) as $notice): ?>
+            <div style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #eee;">
+                <p style="font-size:0.86rem; color:#4a1150; font-weight:600; margin-bottom:4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <script>
+        const captainBell = document.getElementById('captainNotificationBell');
+        const captainOverlay = document.getElementById('captainNotificationOverlay');
+
+        captainBell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            captainOverlay.style.display = captainOverlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!captainOverlay.contains(e.target) && e.target !== captainBell && !captainBell.contains(e.target)) {
+                captainOverlay.style.display = 'none';
+            }
+        });
+    </script>
 
     <script src="<?= ROOT ?>/assets/js/captain/attendance.js"></script>
 </body>

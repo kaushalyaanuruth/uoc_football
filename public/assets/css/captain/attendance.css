@@ -40,6 +40,9 @@ body::before {
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .nav-left {
@@ -98,19 +101,94 @@ body::before {
   gap: 16px;
 }
 
-.icon-btn {
-  background: #f3f4f6;
-  border: none;
+.player-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  background: #f6f4f8;
+  color: #4b5563;
+  border: 1px solid #ebe6f3;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.player-logout-btn:hover {
+  background: #340134;
+  color: #fff;
+  border-color: transparent;
+}
+
+.notification-icon,
+.user-profile {
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  background: #f6f4f8;
+  border: 1px solid #ebe6f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-icon {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notification-icon::before {
+  content: "\1F514\FE0E";
+  font-size: 20px;
+  line-height: 1;
+  color: #111111;
+}
+
+.notification-icon img {
+  display: none;
+}
+
+.notification-icon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.22);
+}
+
+.notification-count {
+  position: absolute;
+  top: 3px;
+  right: 2px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  line-height: 1;
+}
+
+.notification-count.hidden {
+  display: none;
+}
+
+.user-profile {
   cursor: pointer;
 }
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+
+.user-profile img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 /* ================= Main Content ================= */
@@ -139,6 +217,8 @@ body::before {
 .filters {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .filters select,

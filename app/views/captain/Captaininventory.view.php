@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management</title>
+    <?php
+    $noticeCount = isset($data['notices']) ? count($data['notices']) : 0;
+    $noticeBadge = $noticeCount > 99 ? '99+' : (string) $noticeCount;
+    ?>
 
     <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/Captaininventory.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,8 +26,8 @@
         </div>
 
         <nav class="nav-center">
-            <a href="<?= ROOT ?>/Captaindashboard">Home</a>
-            <a href="<?= ROOT ?>/dashboard">Schedule</a>
+            <a href="<?= ROOT ?>/captainDashboard">Home</a>
+            <a href="<?= ROOT ?>/CaptainSchedule">Schedule</a>
             <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
             <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
             <a href="#" class="active">Inventory</a>
@@ -31,12 +35,14 @@
         </nav>
 
         <div class="nav-right">
-            <button class="icon-btn">🔔</button>
-            <div class="profile">
-                <img class="avatar" src="<?php echo ROOT; ?>../assets/images/adminDashboard/header/avatar.jpg"
-                    alt="Admin Avatar">
-
+            <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
+            <div class="notification-icon" id="captainNotificationBell">
+                <img src="<?php echo ROOT; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
+                <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
             </div>
+            <a class="user-profile" href="<?= ROOT ?>/captainDashboard" title="Profile">
+                <img src="<?php echo htmlspecialchars($data['captain_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Captain Avatar">
+            </a>
         </div>
     </header>
 
@@ -205,7 +211,32 @@
             </div>
         </div>
 
+        <div id="captainNotificationOverlay" style="display:none; position:fixed; top:88px; right:32px; width:340px; max-height:420px; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.18); padding:14px; z-index:1200; border:1px solid #ece7f3;">
+            <?php foreach (array_slice($data['notices'] ?? [], 0, 5) as $notice): ?>
+                <div style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #eee;">
+                    <p style="font-size:0.86rem; color:#4a1150; font-weight:600; margin-bottom:4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                    <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
     </main>
+
+    <script>
+        const captainBell = document.getElementById('captainNotificationBell');
+        const captainOverlay = document.getElementById('captainNotificationOverlay');
+
+        captainBell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            captainOverlay.style.display = captainOverlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!captainOverlay.contains(e.target) && e.target !== captainBell && !captainBell.contains(e.target)) {
+                captainOverlay.style.display = 'none';
+            }
+        });
+    </script>
 
     <script src="<?= ROOT ?>/assets/js/captain/Captaininventory.js" defer></script>
 </body>

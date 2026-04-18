@@ -30,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
         statusSpan.className = "status " + status.toLowerCase();
 
         const playerId = row.dataset.playerId;
-        const eventId = document.getElementById("eventId").value;
         const index = changedData.findIndex(p => p.player_id == playerId);
 
         if (index !== -1) {
@@ -38,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             changedData.push({
                 player_id: playerId,
-                event_id: eventId,
                 status: status
             });
         }
@@ -72,12 +70,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const payload = {
+            date: dateInput.value,
+            type: typeSelect.value,
+            rows: changedData
+        };
+
         fetch(window.location.origin + "/uoc_football/public/CaptainAttendance/update", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(changedData)
+            body: JSON.stringify(payload)
         })
             .then(res => res.json())
             .then(data => {
@@ -175,19 +179,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const typeSelect = document.getElementById("eventType");
 const dateInput = document.getElementById("attendanceDate");
+const applyFiltersBtn = document.getElementById("applyFilters");
 
 function reloadPage() {
     const date = dateInput.value;
     const type = typeSelect.value;
 
-    window.location.href =
-        window.location.origin +
-        "/uoc_football/public/CaptainAttendance?date=" +
-        date +
-        "&type=" +
-        type;
+    if (!date) {
+        alert("Please select a date first.");
+        return;
+    }
+
+    const params = new URLSearchParams({ date, type });
+    window.location.href = `${window.location.origin}/uoc_football/public/CaptainAttendance?${params.toString()}`;
 }
 
 typeSelect.addEventListener("change", reloadPage);
 dateInput.addEventListener("change", reloadPage);
+if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener("click", reloadPage);
+}
 });

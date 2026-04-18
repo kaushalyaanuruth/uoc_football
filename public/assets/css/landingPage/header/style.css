@@ -75,6 +75,14 @@
     width: 80%;
 }
 
+.nav-menu a.active::after {
+    width: 80%;
+}
+
+.nav-menu a.active {
+    color: #64126F;
+}
+
 .team-portal {
     background: #fafafa;
     color: #4C0E54;
@@ -84,10 +92,11 @@
     text-decoration: none;
     transition: all 0.3s ease;
     font-weight: 700;
-    margin-left: auto;
-    margin-right: 36px;
+    font-size: 14px;
     display: flex;
     align-items: center;
+    margin-left: auto;
+    margin-right: 36px;
 }
 
 .team-portal:hover {
@@ -96,9 +105,114 @@
     transform: translateY(-2px);
 }
 
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 8px;
+}
+
+.hamburger-menu span {
+    width: 24px;
+    height: 3px;
+    background: #4C0E54;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+}
+
+.mobile-drawer {
+    display: none;
+    position: fixed;
+    top: 80px;
+    left: 0;
+    width: 100%;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 999;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    animation: drawer-slide-down 0.3s ease;
+}
+
+.mobile-drawer.active {
+    display: block;
+}
+
+@keyframes drawer-slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mobile-drawer-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mobile-drawer-content a {
+    color: #4C0E54;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mobile-drawer-content a:hover {
+    color: #64126F;
+}
+
+.mobile-drawer-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .nav-menu {
         display: none;
+    }
+    
+    .nav-buttons {
+        margin-right: 8px;
+    }
+    
+    .hamburger-menu {
+        display: flex;
+        margin-left: auto;
+        margin-right: 12px;
+    }
+    
+    .team-portal {
+        display: none;
+    }
+    
+    .sign-up-btn {
+        padding: 0.5rem 1.2rem;
+        font-size: 13px;
     }
 }
