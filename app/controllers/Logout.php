@@ -1,25 +1,31 @@
 <?php
 
-class Logout extends Controller {
-
-    public function index() {
-        // Destroy session
+class Logout extends Controller
+{
+    public function index()
+    {
+        // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
         
-        session_unset();
+        // Log the logout
+        error_log("=== LOGOUT ===");
+        error_log("User: " . ($_SESSION['user_id'] ?? 'Unknown'));
+        
+        // Clear all session data
+        $_SESSION = [];
         session_destroy();
         
-        // Check if JSON request (AJAX)
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'message' => 'Logged out successfully']);
-            exit;
-        }
+        // Prevent browser caching
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+        header("Expires: 0");
         
-        // Otherwise redirect to login page
-        header('Location: ' . ROOT . '/login');
-        exit;
+        // Redirect to landing page
+        header('Location: ' . ROOT . '/landingPage');
+        exit();
     }
 }
+?>
