@@ -11,16 +11,8 @@ class TournamentModel
      */
     public function create($data)
     {
-        // Set defaults for optional fields
-        $defaults = [
-            'tournament_date' => null,
-            'location' => null
-        ];
-        
-        $data = array_merge($defaults, $data);
-        
-        $query = "INSERT INTO {$this->table} (team_id, tournament_name, tournament_date, location) 
-                  VALUES (:team_id, :tournament_name, :tournament_date, :location)";
+        $query = "INSERT INTO {$this->table} (team_id, name) 
+                  VALUES (:team_id, :name)";
         
         return $this->query($query, $data);
     }
@@ -30,7 +22,7 @@ class TournamentModel
      */
     public function getByTeamId($team_id)
     {
-        return $this->query("SELECT * FROM {$this->table} WHERE team_id = :team_id ORDER BY tournament_date DESC", [
+        return $this->query("SELECT * FROM {$this->table} WHERE team_id = :team_id", [
             'team_id' => $team_id
         ]);
     }

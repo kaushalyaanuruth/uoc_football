@@ -11,16 +11,8 @@ class AchievementModel
      */
     public function create($data)
     {
-        // Set defaults for optional fields
-        $defaults = [
-            'achievement_date' => null,
-            'description' => null
-        ];
-        
-        $data = array_merge($defaults, $data);
-        
-        $query = "INSERT INTO {$this->table} (team_id, achievement_title, achievement_date, description) 
-                  VALUES (:team_id, :achievement_title, :achievement_date, :description)";
+        $query = "INSERT INTO {$this->table} (team_id, achievement) 
+                  VALUES (:team_id, :achievement)";
         
         return $this->query($query, $data);
     }
@@ -30,7 +22,7 @@ class AchievementModel
      */
     public function getByTeamId($team_id)
     {
-        return $this->query("SELECT * FROM {$this->table} WHERE team_id = :team_id ORDER BY achievement_date DESC", [
+        return $this->query("SELECT * FROM {$this->table} WHERE team_id = :team_id", [
             'team_id' => $team_id
         ]);
     }

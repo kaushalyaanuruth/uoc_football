@@ -6,31 +6,16 @@ class TeamModel
     
     protected $table = 'teams';
     
-    /**
-     * Create a new team
-     */
+    /** Create a new team*/
     public function create($data)
     {
-        error_log("=== TeamModel::create() DEBUG ===");
-        error_log("Data received: " . json_encode($data));
-        error_log("created_by isset: " . (isset($data['created_by']) ? 'YES' : 'NO'));
-        error_log("created_by !empty: " . (!empty($data['created_by']) ? 'YES' : 'NO'));
-        
-        // Check if created_by is set and valid
-        if (isset($data['created_by']) && !empty($data['created_by'])) {
-            error_log("Including created_by in INSERT");
-            $query = "INSERT INTO {$this->table} (team_name, season, team_status, created_by) 
-                      VALUES (:team_name, :season, :team_status, :created_by)";
-        } else {
-            error_log("Excluding created_by from INSERT");
-            // Don't include created_by if it's null or empty
+        // Don't include created_by if it's null or empty
+        if (empty($data['created_by'])) {
             unset($data['created_by']);
-            $query = "INSERT INTO {$this->table} (team_name, season, team_status) 
-                      VALUES (:team_name, :season, :team_status)";
         }
         
-        error_log("SQL Query: " . $query);
-        error_log("Final data: " . json_encode($data));
+        $query = "INSERT INTO {$this->table} (season, status) 
+                  VALUES (:season, :status)";
         
         return $this->query($query, $data);
     }
@@ -40,7 +25,7 @@ class TeamModel
      */
     public function getAll()
     {
-        return $this->query("SELECT * FROM {$this->table} ORDER BY created_at DESC");
+        return $this->query("SELECT * FROM {$this->table} ORDER BY team_id DESC");
     }
     
     /**
@@ -48,7 +33,7 @@ class TeamModel
      */
     public function getById($id)
     {
-        $result = $this->query("SELECT * FROM {$this->table} WHERE id = :id", ['id' => $id]);
+        $result = $this->query("SELECT * FROM {$this->table} WHERE team_id = :team_id", ['team_id' => $id]);
         return !empty($result) ? $result[0] : null;
     }
     
@@ -57,26 +42,27 @@ class TeamModel
      */
     public function getWithPlayersCount($id)
     {
-        $query = "SELECT t.*, COUNT(p.id) as players_count 
+        $query = "SELECT t.*, COUNT(DISTINCT tp.player_id) as players_count 
                   FROM {$this->table} t 
-                  LEFT JOIN players p ON t.id = p.team_id 
-                  WHERE t.id = :id 
-                  GROUP BY t.id";
+                  LEFT JOIN team_players tp ON t.team_id = tp.team_id 
+                  WHERE t.team_id = :team_id 
+                  GROUP BY t.team_id";
         
-        $result = $this->query($query, ['id' => $id]);
+        $result = $this->query($query, ['team_id' => $id]);
         return !empty($result) ? $result[0] : null;
     }
     
     /**
-     * Get all teams with player counts
+     * Get all teams with player counts, coaches, and tournaments
      */
     public function getAllWithPlayersCounts()
     {
-        $query = "SELECT t.*, COUNT(p.id) as players_count 
-                  FROM {$this->table} t 
-                  LEFT JOIN players p ON t.id = p.team_id 
-                  GROUP BY t.id 
-                  ORDER BY t.created_at DESC";
+        $query = "SELECT 
+                    t.team_id,
+                    t.season,
+                    t.status
+                FROM {$this->table} t
+                ORDER BY t.team_id DESC";
         
         return $this->query($query);
     }
@@ -87,17 +73,17 @@ class TeamModel
     public function update($id, $data)
     {
         $fields = [];
-        $params = ['id' => $id];
+        $params = ['team_id' => $id];
         
         foreach ($data as $key => $value) {
-            if ($key !== 'id') {
+            if ($key !== 'team_id') {
                 $fields[] = "{$key} = :{$key}";
                 $params[$key] = $value;
             }
         }
         
         $fieldsString = implode(', ', $fields);
-        $query = "UPDATE {$this->table} SET {$fieldsString}, updated_at = CURRENT_TIMESTAMP WHERE id = :id";
+        $query = "UPDATE {$this->table} SET {$fieldsString} WHERE team_id = :team_id";
         
         return $this->query($query, $params);
     }
@@ -107,7 +93,7 @@ class TeamModel
      */
     public function delete($id)
     {
-        return $this->query("DELETE FROM {$this->table} WHERE id = :id", ['id' => $id]);
+        return $this->query("DELETE FROM {$this->table} WHERE team_id = :team_id", ['team_id' => $id]);
     }
     
     /**
@@ -115,7 +101,7 @@ class TeamModel
      */
     public function getByStatus($status)
     {
-        return $this->query("SELECT * FROM {$this->table} WHERE team_status = :status ORDER BY created_at DESC", [
+        return $this->query("SELECT * FROM {$this->table} WHERE status = :status ORDER BY team_id DESC", [
             'status' => $status
         ]);
     }
@@ -125,7 +111,7 @@ class TeamModel
      */
     public function getBySeason($season)
     {
-        return $this->query("SELECT * FROM {$this->table} WHERE season = :season ORDER BY created_at DESC", [
+        return $this->query("SELECT * FROM {$this->table} WHERE season = :season ORDER BY team_id DESC", [
             'season' => $season
         ]);
     }
