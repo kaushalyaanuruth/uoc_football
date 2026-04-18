@@ -191,7 +191,101 @@ class teamManagement extends Controller {
     }
 
     /**
+     * Check if player exists by NIC
+     */
+    public function checkPlayerExists() {
+        header('Content-Type: application/json');
+        
+        $nic = $_GET['nic'] ?? null;
+        
+        if (!$nic) {
+            echo json_encode(['success' => false, 'message' => 'NIC is required']);
+            exit;
+        }
+        
+        try {
+            $player = $this->playerModel->query("SELECT p.player_id, p.position, p.role, u.first_name, u.last_name FROM players p LEFT JOIN users u ON p.nic = u.nic WHERE p.nic = :nic", ['nic' => $nic]);
+            
+            if (!empty($player)) {
+                echo json_encode([
+                    'success' => true, 
+                    'exists' => true,
+                    'player' => $player[0]
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => true, 
+                    'exists' => false
+                ]);
+            }
+        } catch (Exception $e) {
+            error_log("Error checking player: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
+     * Link existing player to team without updating details
+     */
+    public function linkPlayerToTeam() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            exit;
+        }
+        
+        try {
+            $teamId = $_POST['team_id'] ?? null;
+            $nic = $_POST['nic'] ?? null;
+            
+            if (!$teamId || !$nic) {
+                echo json_encode(['success' => false, 'message' => 'Team ID and NIC are required']);
+                exit;
+            }
+            
+            // Get player by NIC
+            $player = $this->playerModel->query("SELECT player_id FROM players WHERE nic = :nic", ['nic' => $nic]);
+            
+            if (empty($player)) {
+                echo json_encode(['success' => false, 'message' => 'Player not found']);
+                exit;
+            }
+            
+            $playerId = $player[0]->player_id;
+            
+            // Check if already linked
+            $existingLink = $this->playerModel->query("SELECT * FROM team_players WHERE team_id = :team_id AND player_id = :player_id", [
+                'team_id' => $teamId,
+                'player_id' => $playerId
+            ]);
+            
+            if (!empty($existingLink)) {
+                echo json_encode(['success' => false, 'message' => 'Player is already in this team']);
+                exit;
+            }
+            
+            // Link player to team
+            $this->playerModel->query("INSERT INTO team_players (team_id, player_id) VALUES (:team_id, :player_id)", [
+                'team_id' => $teamId,
+                'player_id' => $playerId
+            ]);
+            
+            echo json_encode(['success' => true, 'message' => 'Player linked to team successfully']);
+            
+        } catch (Exception $e) {
+            error_log("Error linking player to team: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
      * Add player to existing team
+     */
+    /**
+     * Add player to existing team (creates new or updates existing)
      */
     public function addPlayerToTeam() {
         header('Content-Type: application/json');
@@ -229,10 +323,19 @@ class teamManagement extends Controller {
                 exit;
             }
             
+            // Check if player already exists
+            $existingPlayer = $this->playerModel->query("SELECT player_id FROM players WHERE nic = :nic", ['nic' => $userData['nic']]);
+            $playerExists = !empty($existingPlayer);
+            
             $playerId = $this->playerModel->addToTeam($teamId, $userData, $playerData);
             
             if ($playerId) {
-                echo json_encode(['success' => true, 'message' => 'Player added successfully', 'player_id' => $playerId]);
+                echo json_encode([
+                    'success' => true, 
+                    'message' => $playerExists ? 'Existing player updated and added to team' : 'New player created and added to team',
+                    'player_id' => $playerId,
+                    'is_existing' => $playerExists
+                ]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Failed to add player']);
             }
@@ -245,7 +348,98 @@ class teamManagement extends Controller {
     }
 
     /**
-     * Add coach to existing team
+     * Check if coach exists by NIC
+     */
+    public function checkCoachExists() {
+        header('Content-Type: application/json');
+        
+        $nic = $_GET['nic'] ?? null;
+        
+        if (!$nic) {
+            echo json_encode(['success' => false, 'message' => 'NIC is required']);
+            exit;
+        }
+        
+        try {
+            $coach = $this->coachModel->query("SELECT c.coach_id, c.license, u.first_name, u.last_name FROM coaches c LEFT JOIN users u ON c.nic = u.nic WHERE c.nic = :nic", ['nic' => $nic]);
+            
+            if (!empty($coach)) {
+                echo json_encode([
+                    'success' => true, 
+                    'exists' => true,
+                    'coach' => $coach[0]
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => true, 
+                    'exists' => false
+                ]);
+            }
+        } catch (Exception $e) {
+            error_log("Error checking coach: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
+     * Link existing coach to team without updating details
+     */
+    public function linkCoachToTeam() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            exit;
+        }
+        
+        try {
+            $teamId = $_POST['team_id'] ?? null;
+            $nic = $_POST['nic'] ?? null;
+            
+            if (!$teamId || !$nic) {
+                echo json_encode(['success' => false, 'message' => 'Team ID and NIC are required']);
+                exit;
+            }
+            
+            // Get coach by NIC
+            $coach = $this->coachModel->query("SELECT coach_id FROM coaches WHERE nic = :nic", ['nic' => $nic]);
+            
+            if (empty($coach)) {
+                echo json_encode(['success' => false, 'message' => 'Coach not found']);
+                exit;
+            }
+            
+            $coachId = $coach[0]->coach_id;
+            
+            // Check if already linked
+            $existingLink = $this->coachModel->query("SELECT * FROM team_coaches WHERE team_id = :team_id AND coach_id = :coach_id", [
+                'team_id' => $teamId,
+                'coach_id' => $coachId
+            ]);
+            
+            if (!empty($existingLink)) {
+                echo json_encode(['success' => false, 'message' => 'Coach is already in this team']);
+                exit;
+            }
+            
+            // Link coach to team
+            $this->coachModel->query("INSERT INTO team_coaches (team_id, coach_id) VALUES (:team_id, :coach_id)", [
+                'team_id' => $teamId,
+                'coach_id' => $coachId
+            ]);
+            
+            echo json_encode(['success' => true, 'message' => 'Coach linked to team successfully']);
+            
+        } catch (Exception $e) {
+            error_log("Error linking coach to team: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
+     * Add coach to existing team (creates new or updates existing)
      */
     public function addCoachToTeam() {
         header('Content-Type: application/json');
@@ -282,10 +476,19 @@ class teamManagement extends Controller {
                 exit;
             }
             
+            // Check if coach already exists
+            $existingCoach = $this->coachModel->query("SELECT coach_id FROM coaches WHERE nic = :nic", ['nic' => $userData['nic']]);
+            $coachExists = !empty($existingCoach);
+            
             $coachId = $this->coachModel->addToTeam($teamId, $userData, $coachData);
             
             if ($coachId) {
-                echo json_encode(['success' => true, 'message' => 'Coach added successfully', 'coach_id' => $coachId]);
+                echo json_encode([
+                    'success' => true, 
+                    'message' => $coachExists ? 'Existing coach updated and added to team' : 'New coach created and added to team',
+                    'coach_id' => $coachId,
+                    'is_existing' => $coachExists
+                ]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Failed to add coach']);
             }

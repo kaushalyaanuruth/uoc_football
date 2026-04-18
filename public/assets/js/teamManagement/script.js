@@ -79,7 +79,7 @@ function addPlayerToForm(e) {
     }
 
     if (playersArray.some(p => p.nic === nic)) {
-        alert('A player with this NIC already exists');
+        alert('A player with this NIC already exists in the form');
         return;
     }
     
@@ -97,43 +97,100 @@ function addPlayerToForm(e) {
     // Check if we're adding to an existing team (view modal) or new team (add modal)
     const teamId = document.getElementById('viewTeamId').value;
     if (teamId) {
-        // Adding to existing team
-        const formData = new FormData();
-        formData.append('team_id', teamId);
-        formData.append('first_name', playerData.first_name);
-        formData.append('last_name', playerData.last_name);
-        formData.append('nic', playerData.nic);
-        formData.append('email', playerData.email);
-        formData.append('phone_number', playerData.phone_number);
-        formData.append('position', playerData.position);
-        formData.append('role', playerData.role);
-        
-        fetch(ROOT + '/teamManagement/addPlayerToTeam', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Player added successfully!');
-                closeAddPlayerModal();
-                // Reload the team details
-                const teamId = document.getElementById('viewTeamId').value;
-                fetchAndShowTeamDetails(teamId);
-            } else {
-                alert('Error: ' + (data.message || 'Failed to add player'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while adding the player');
-        });
+        // Adding to existing team - check if player exists in database first
+        fetch(ROOT + '/teamManagement/checkPlayerExists?nic=' + encodeURIComponent(nic))
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.exists) {
+                    // Player exists - show dialog with options
+                    showPlayerExistsDialog(teamId, playerData, data.player);
+                } else {
+                    // Player doesn't exist - add normally
+                    addNewPlayerToTeam(teamId, playerData);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while checking player');
+            });
     } else {
         // Adding to new team (store in array)
         playersArray.push(playerData);
         displayPlayers();
         closeAddPlayerModal();
     }
+}
+
+function showPlayerExistsDialog(teamId, newData, existingPlayer) {
+    const existingName = existingPlayer.first_name ? `${existingPlayer.first_name} ${existingPlayer.last_name}` : 'Existing Player';
+    
+    const message = `Player "${existingName}" already exists in the system.\n\nWhat would you like to do?\n\n1. Click OK to LINK existing player (keeps current details)\n2. Click CANCEL to UPDATE their details with new information`;
+    
+    if (confirm(message)) {
+        // Link existing player as-is
+        linkExistingPlayer(teamId, newData.nic);
+    } else {
+        // Update existing player with new details
+        addNewPlayerToTeam(teamId, newData);
+    }
+}
+
+function linkExistingPlayer(teamId, nic) {
+    fetch(ROOT + '/teamManagement/linkPlayerToTeam', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'team_id=' + teamId + '&nic=' + encodeURIComponent(nic)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Player linked to team successfully!');
+            closeAddPlayerModal();
+            // Reload the team details
+            fetchAndShowTeamDetails(teamId);
+        } else {
+            alert('Error: ' + (data.message || 'Failed to link player'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while linking the player');
+    });
+}
+
+function addNewPlayerToTeam(teamId, playerData) {
+    // Adding to existing team
+    const formData = new FormData();
+    formData.append('team_id', teamId);
+    formData.append('first_name', playerData.first_name);
+    formData.append('last_name', playerData.last_name);
+    formData.append('nic', playerData.nic);
+    formData.append('email', playerData.email);
+    formData.append('phone_number', playerData.phone_number);
+    formData.append('position', playerData.position);
+    formData.append('role', playerData.role);
+    
+    fetch(ROOT + '/teamManagement/addPlayerToTeam', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Player added successfully!');
+            closeAddPlayerModal();
+            // Reload the team details
+            fetchAndShowTeamDetails(teamId);
+        } else {
+            alert('Error: ' + (data.message || 'Failed to add player'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while adding the player');
+    });
 }
 
 function addCoachToForm(e) {
@@ -152,7 +209,7 @@ function addCoachToForm(e) {
     }
     
     if (coachesArray.some(c => c.nic === nic)) {
-        alert('A coach with this NIC already exists');
+        alert('A coach with this NIC already exists in the form');
         return;
     }
     
@@ -169,42 +226,99 @@ function addCoachToForm(e) {
     // Check if we're adding to an existing team (view modal) or new team (add modal)
     const teamId = document.getElementById('viewTeamId').value;
     if (teamId) {
-        // Adding to existing team
-        const formData = new FormData();
-        formData.append('team_id', teamId);
-        formData.append('first_name', coachData.first_name);
-        formData.append('last_name', coachData.last_name);
-        formData.append('nic', coachData.nic);
-        formData.append('email', coachData.email);
-        formData.append('phone_number', coachData.phone_number);
-        formData.append('license', coachData.license);
-        
-        fetch(ROOT + '/teamManagement/addCoachToTeam', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Coach added successfully!');
-                closeAddCoachModal();
-                // Reload the team details
-                const teamId = document.getElementById('viewTeamId').value;
-                fetchAndShowTeamDetails(teamId);
-            } else {
-                alert('Error: ' + (data.message || 'Failed to add coach'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while adding the coach');
-        });
+        // Adding to existing team - check if coach exists in database first
+        fetch(ROOT + '/teamManagement/checkCoachExists?nic=' + encodeURIComponent(nic))
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.exists) {
+                    // Coach exists - show dialog with options
+                    showCoachExistsDialog(teamId, coachData, data.coach);
+                } else {
+                    // Coach doesn't exist - add normally
+                    addNewCoachToTeam(teamId, coachData);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while checking coach');
+            });
     } else {
         // Adding to new team (store in array)
         coachesArray.push(coachData);
         displayCoaches();
         closeAddCoachModal();
     }
+}
+
+function showCoachExistsDialog(teamId, newData, existingCoach) {
+    const existingName = existingCoach.first_name ? `${existingCoach.first_name} ${existingCoach.last_name}` : 'Existing Coach';
+    
+    const message = `Coach "${existingName}" already exists in the system.\n\nWhat would you like to do?\n\n1. Click OK to LINK existing coach (keeps current details)\n2. Click CANCEL to UPDATE their details with new information`;
+    
+    if (confirm(message)) {
+        // Link existing coach as-is
+        linkExistingCoach(teamId, newData.nic);
+    } else {
+        // Update existing coach with new details
+        addNewCoachToTeam(teamId, newData);
+    }
+}
+
+function linkExistingCoach(teamId, nic) {
+    fetch(ROOT + '/teamManagement/linkCoachToTeam', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'team_id=' + teamId + '&nic=' + encodeURIComponent(nic)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Coach linked to team successfully!');
+            closeAddCoachModal();
+            // Reload the team details
+            fetchAndShowTeamDetails(teamId);
+        } else {
+            alert('Error: ' + (data.message || 'Failed to link coach'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while linking the coach');
+    });
+}
+
+function addNewCoachToTeam(teamId, coachData) {
+    // Adding to existing team
+    const formData = new FormData();
+    formData.append('team_id', teamId);
+    formData.append('first_name', coachData.first_name);
+    formData.append('last_name', coachData.last_name);
+    formData.append('nic', coachData.nic);
+    formData.append('email', coachData.email);
+    formData.append('phone_number', coachData.phone_number);
+    formData.append('license', coachData.license);
+    
+    fetch(ROOT + '/teamManagement/addCoachToTeam', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Coach added successfully!');
+            closeAddCoachModal();
+            // Reload the team details
+            fetchAndShowTeamDetails(teamId);
+        } else {
+            alert('Error: ' + (data.message || 'Failed to add coach'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while adding the coach');
+    });
 }
 
 function closeAddCoachModal() {
