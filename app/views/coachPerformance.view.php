@@ -33,15 +33,25 @@
             </div>
         </div>
 
+       <!-- Match Result Summary -->
+        <div class="match-result-row">
+            <div class="match-result-card wins">
+                <div class="match-result-value">12</div>
+                <div class="match-result-label">Won Matches</div>
+            </div>
+            <div class="match-result-card losses">
+                <div class="match-result-value">4</div>
+                <div class="match-result-label">Lost Matches</div>
+            </div>
+            <div class="match-result-card draws">
+                <div class="match-result-value">3</div>
+                <div class="match-result-label">Draw Matches</div>
+            </div>
+        </div>
+
+        
         <!-- Filter Section -->
         <div class="filter-section">
-            <div class="filter-group">
-                <label>Analysis Type</label>
-                <select class="filter-select" id="analysisType">
-                    <option value="team">Team Analysis</option>
-                    <option value="player" selected>Player Analysis</option>
-                </select>
-            </div>
             <div class="filter-group">
                 <label>Match</label>
                 <select class="filter-select" id="matchSelect">
@@ -51,15 +61,17 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label>Start Date</label>
-                <input type="date" class="filter-input" id="startDate" value="<?php echo date('Y-m-d'); ?>">
-            </div>
-            <div class="filter-group">
-                <label>End Date</label>
-                <input type="date" class="filter-input" id="endDate" value="<?php echo date('Y-m-d'); ?>">
+                <label>Player</label>
+                <select class="filter-select" id="playerFilter">
+                    <option value="all" selected>All Players</option>
+                    <option value="marcus-johnson">Marcus Johnson</option>
+                    <option value="david-wilson">David Wilson</option>
+                    <option value="alex-rodriguez">Alex Rodriguez</option>
+                </select>
             </div>
         </div>
 
+ 
         <!-- Stats Cards Row -->
         <div class="stats-row">
             <div class="stat-card green">
@@ -141,55 +153,7 @@
             </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="charts-row">
-            <!-- Performance Trend Chart -->
-            <div class="chart-card">
-                <div class="card-header">
-                    <h2>Performance Trend</h2>
-                </div>
-                <div class="chart-container">
-                    <canvas id="performanceChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Match Stats Comparison Chart -->
-            <div class="chart-card">
-                <div class="card-header">
-                    <h2>Match Stats Comparison</h2>
-                </div>
-                <div class="chart-container">
-                    <canvas id="comparisonChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Match Outcomes Pie Chart -->
-        <div class="pie-chart-section">
-            <div class="chart-card wide">
-                <div class="card-header">
-                    <h2>Match Outcomes</h2>
-                </div>
-                <div class="chart-container pie-container">
-                    <canvas id="outcomeChart"></canvas>
-                    <div class="pie-legend">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #10b981;"></span>
-                            <span class="legend-label">Wins</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #f59e0b;"></span>
-                            <span class="legend-label">Draws</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #ef4444;"></span>
-                            <span class="legend-label">Losses</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        
         <!-- Player Comparison Section -->
         <div class="comparison-section">
             <div class="comparison-card">
@@ -258,6 +222,21 @@
             </div>
         </div>
 
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+            <!-- Performance Trend Chart -->
+            <div class="chart-card">
+                <div class="card-header">
+                    <h2>Performance Trend</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        
         <!-- Detailed Match Breakdown Table -->
         <div class="table-section">
             <div class="table-card">

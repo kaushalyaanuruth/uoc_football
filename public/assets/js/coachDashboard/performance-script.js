@@ -11,8 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize all charts
 function initializeCharts() {
     createPerformanceTrendChart();
-    createComparisonChart();
-    createOutcomeChart();
 }
 
 // Performance Trend Line Chart
@@ -111,153 +109,10 @@ function createPerformanceTrendChart() {
     });
 }
 
-// Match Stats Comparison Bar Chart
-function createComparisonChart() {
-    const ctx = document.getElementById('comparisonChart');
-    if (!ctx) return;
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Match 1', 'Match 2', 'Match 3', 'Match 4', 'Match 5'],
-            datasets: [
-                {
-                    label: 'Current Match',
-                    data: [12, 19, 15, 18, 22],
-                    backgroundColor: '#7c3aed',
-                    borderRadius: 8,
-                    borderSkipped: false
-                },
-                {
-                    label: 'Previous Match',
-                    data: [10, 15, 13, 16, 20],
-                    backgroundColor: '#a855f7',
-                    borderRadius: 8,
-                    borderSkipped: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'bottom',
-                    labels: {
-                        padding: 15,
-                        font: {
-                            size: 12,
-                            weight: '600'
-                        },
-                        usePointStyle: true,
-                        pointStyle: 'rect'
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    cornerRadius: 8
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        font: {
-                            size: 12
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    }
-                },
-                x: {
-                    ticks: {
-                        font: {
-                            size: 12
-                        }
-                    },
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Match Outcomes Pie Chart
-function createOutcomeChart() {
-    const ctx = document.getElementById('outcomeChart');
-    if (!ctx) return;
-
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Wins', 'Draws', 'Losses'],
-            datasets: [{
-                data: [60, 25, 15],
-                backgroundColor: [
-                    '#10b981',
-                    '#f59e0b',
-                    '#ef4444'
-                ],
-                borderWidth: 0,
-                spacing: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: function(context) {
-                            return context.label + ': ' + context.parsed + '%';
-                        }
-                    }
-                }
-            },
-            cutout: '60%'
-        }
-    });
-}
-
 // Filter functionality
 function initializeFilters() {
-    const analysisType = document.getElementById('analysisType');
     const matchSelect = document.getElementById('matchSelect');
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-
-    if (analysisType) {
-        analysisType.addEventListener('change', function() {
-            console.log('Analysis type changed to:', this.value);
-            // Add your filter logic here
-            updateDashboard();
-        });
-    }
+    const playerFilter = document.getElementById('playerFilter');
 
     if (matchSelect) {
         matchSelect.addEventListener('change', function() {
@@ -267,17 +122,9 @@ function initializeFilters() {
         });
     }
 
-    if (startDate) {
-        startDate.addEventListener('change', function() {
-            console.log('Start date changed to:', this.value);
-            // Add your filter logic here
-            updateDashboard();
-        });
-    }
-
-    if (endDate) {
-        endDate.addEventListener('change', function() {
-            console.log('End date changed to:', this.value);
+    if (playerFilter) {
+        playerFilter.addEventListener('change', function() {
+            console.log('Player filter changed to:', this.value);
             // Add your filter logic here
             updateDashboard();
         });

@@ -175,6 +175,52 @@ body::before {
     border-color: #a855f7;
 }
 
+/* Match Result Summary */
+.match-result-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.match-result-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 2px solid #E5E5EF;
+    transition: all 0.3s ease;
+}
+
+.match-result-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(74, 2, 59, 0.15);
+}
+
+.match-result-card.wins {
+    border-top: 5px solid #10b981;
+}
+
+.match-result-card.losses {
+    border-top: 5px solid #ef4444;
+}
+
+.match-result-card.draws {
+    border-top: 5px solid #f59e0b;
+}
+
+.match-result-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #310037;
+    margin-bottom: 4px;
+}
+
+.match-result-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
 /* Stats Cards Row */
 .stats-row {
     display: grid;
@@ -253,7 +299,7 @@ body::before {
 /* Charts Row */
 .charts-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 25px;
     margin-bottom: 30px;
 }
@@ -263,10 +309,6 @@ body::before {
     border-radius: 16px;
     padding: 25px;
     border: 2px solid #E5E5EF;
-}
-
-.chart-card.wide {
-    grid-column: span 1;
 }
 
 .card-header {
@@ -285,46 +327,6 @@ body::before {
 .chart-container {
     position: relative;
     height: 300px;
-}
-
-.pie-container {
-    display: flex;
-    align-items: center;
-    gap: 40px;
-}
-
-.pie-container canvas {
-    max-width: 300px;
-    max-height: 300px;
-}
-
-/* Pie Chart Section */
-.pie-chart-section {
-    margin-bottom: 30px;
-}
-
-.pie-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.legend-color {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-}
-
-.legend-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #374151;
 }
 
 /* Player Comparison Section */
@@ -552,6 +554,10 @@ body::before {
     .nav-menu {
         display: none;
     }
+
+    .match-result-row {
+        grid-template-columns: 1fr;
+    }
     
     .stats-row {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -582,13 +588,5 @@ body::before {
     
     .stats-row {
         grid-template-columns: 1fr;
-    }
-    
-    .pie-container {
-        flex-direction: column;
-    }
-    
-    .pie-container canvas {
-        max-width: 100%;
     }
 }
