@@ -11,7 +11,7 @@ define('DB_TYPE', 'mysql');
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'uoc_football');
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', 'NewStrongPass123!');
 
 define('ROOT', 'http://localhost/UOC_Football/public');
 define('ROOT_PATH', dirname(__DIR__, 2));
