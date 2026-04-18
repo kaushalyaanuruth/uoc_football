@@ -4,6 +4,10 @@ class Controller {
     protected $view;
 
     public function view($name, $data = []){
+        // Extract data array into individual variables
+        foreach ($data as $key => $value) {
+            $$key = $value;
+        }
 
         $filename = "../app/views/" .$name.".view.php";
 
