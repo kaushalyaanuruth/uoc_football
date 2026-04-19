@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php
+    $base = rtrim(ROOT, '/');
+    $noticeCount = isset($data['notices']) ? count($data['notices']) : 0;
+    $noticeBadge = $noticeCount > 99 ? '99+' : (string) $noticeCount;
+    ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
     <title>UOC_football - Player Performance</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/coachDashboard/performance-style.css">
+    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/coachDashboard/common.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -15,7 +21,7 @@
         <!-- Header -->
         <div class="header">
             <div class="left-section">
-                <a href="<?php echo ROOT; ?>/coach">
+                <a href="<?php echo ROOT; ?>/coachDashboard">
                     <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
                 </a>
             </div>
@@ -28,8 +34,14 @@
                 <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link">Notices</a>
             </nav>
             <div class="right-section">
-                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Coach Avatar">
-                <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
+                <div class="notification-icon" id="coachNotificationBell">
+                    <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
+                    <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
+                </div>
+                <a class="user-profile" href="<?php echo $base; ?>/coachDashboard#profile" title="Profile">
+                    <img src="<?php echo htmlspecialchars($data['coach_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Coach Avatar">
+                </a>
             </div>
         </div>
 
@@ -319,6 +331,40 @@
         </div>
     </div>
 
+    <div class="notification-overlay" id="coachNotificationOverlay" style="display: none;">
+        <?php foreach (array_slice($data['notices'] ?? [], 0, 5) as $notice): ?>
+            <div style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #eee;">
+                <p style="font-size:0.86rem; color:#4a1150; font-weight:600; margin-bottom:4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
     <script src="<?php echo ROOT; ?>/assets/js/coachDashboard/performance-script.js"></script>
+    <script>
+        const coachBell = document.getElementById('coachNotificationBell');
+        const coachOverlay = document.getElementById('coachNotificationOverlay');
+
+        coachBell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            coachOverlay.style.display = coachOverlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (
+                coachOverlay.style.display === 'block' &&
+                !coachOverlay.contains(e.target) &&
+                !coachBell.contains(e.target)
+            ) {
+                coachOverlay.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                coachOverlay.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

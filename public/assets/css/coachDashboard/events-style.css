@@ -8,7 +8,7 @@
 
 body {
     font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(135deg, #ffe6ff 0%, #FFFAFF 100%);
+    background: #ffffff;
     min-height: 100vh;
     position: relative;
     color: #310037;

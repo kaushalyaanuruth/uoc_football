@@ -47,6 +47,16 @@ let currentModalMode = 'edit';
 let modalDraftItems = [];
 let initialItemCount = 0;
 
+function getApiBase() {
+    return String(window.COACH_MEALPLAN_API_BASE || '/coachMealPlan').replace(/\/+$/, '');
+}
+
+function getInitialServerPlan() {
+    return window.COACH_MEALPLAN_INITIAL && typeof window.COACH_MEALPLAN_INITIAL === 'object'
+        ? window.COACH_MEALPLAN_INITIAL
+        : null;
+}
+
 function clone(value) {
     return JSON.parse(JSON.stringify(value));
 }
@@ -118,6 +128,86 @@ function normalizeWeeklyPlan(rawWeeklyPlan) {
     });
 
     return weekly;
+}
+
+function applyTeamPlanToWeek(teamPlan) {
+    if (!teamPlan || typeof teamPlan !== 'object') {
+        return;
+    }
+
+    DAYS_OF_WEEK.forEach(function (day) {
+        MEAL_TYPES.forEach(function (mealType) {
+            const sourceItems = Array.isArray(teamPlan[mealType])
+                ? teamPlan[mealType]
+                : defaultDayPlan[mealType];
+            weeklyMealPlan[day.key][mealType] = normalizeItems(sourceItems);
+        });
+    });
+}
+
+async function fetchServerPlan() {
+    const response = await fetch(getApiBase() + '/data', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch meal plan data.');
+    }
+
+    const payload = await response.json();
+    if (!payload || payload.success !== true || !payload.plan || typeof payload.plan !== 'object') {
+        throw new Error('Invalid meal plan data response.');
+    }
+
+    return payload.plan;
+}
+
+async function persistMealTypeToServer(mealType, items) {
+    const response = await fetch(getApiBase() + '/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            mealType: mealType,
+            items: items
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error('Unable to save meal plan to database.');
+    }
+
+    const payload = await response.json();
+    if (!payload || payload.success !== true || !payload.plan || typeof payload.plan !== 'object') {
+        throw new Error(payload && payload.message ? payload.message : 'Invalid save response.');
+    }
+
+    return payload.plan;
+}
+
+async function resetPlanOnServer() {
+    const response = await fetch(getApiBase() + '/reset', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Unable to reset meal plan in database.');
+    }
+
+    const payload = await response.json();
+    if (!payload || payload.success !== true || !payload.plan || typeof payload.plan !== 'object') {
+        throw new Error(payload && payload.message ? payload.message : 'Invalid reset response.');
+    }
+
+    return payload.plan;
 }
 
 function buildWeeklyPlanFromLegacy(rawLegacyState) {
@@ -420,7 +510,7 @@ function deleteMealItem(mealType, itemIndex) {
     showSuccessMessage('Deleted meal item from ' + getMealLabel(mealType) + '.');
 }
 
-function handleMealFormSubmit(event) {
+async function handleMealFormSubmit(event) {
     event.preventDefault();
 
     if (!currentMealType) {
@@ -446,8 +536,17 @@ function handleMealFormSubmit(event) {
     }
 
     weeklyMealPlan[selectedDay][currentMealType] = modalDraftItems.slice();
-    saveMealPlanState();
-    renderMealCard(currentMealType);
+
+    try {
+        const savedPlan = await persistMealTypeToServer(currentMealType, modalDraftItems.slice());
+        applyTeamPlanToWeek(savedPlan);
+        saveMealPlanState();
+        renderAllMealCards();
+    } catch (error) {
+        setFormError('Failed to save to database. Please try again.');
+        console.warn(error);
+        return;
+    }
 
     const actionText = currentModalMode === 'create' ? 'added' : 'updated';
     showSuccessMessage(
@@ -468,19 +567,26 @@ function changeSelectedDay(dayKey) {
     renderAllMealCards();
 }
 
-function resetWeeklyPlan() {
+async function resetWeeklyPlan() {
     const confirmed = window.confirm('Reset all meal plans for Monday to Sunday?');
     if (!confirmed) {
         return;
     }
 
-    weeklyMealPlan = clone(defaultWeeklyPlan);
-    selectedDay = 'monday';
-    saveMealPlanState();
-    renderSelectedDayLabel();
-    renderAllMealCards();
-    closeModal();
-    showSuccessMessage('Weekly meal plan reset successfully.');
+    try {
+        const resetPlan = await resetPlanOnServer();
+        weeklyMealPlan = clone(defaultWeeklyPlan);
+        applyTeamPlanToWeek(resetPlan);
+        selectedDay = 'monday';
+        saveMealPlanState();
+        renderSelectedDayLabel();
+        renderAllMealCards();
+        closeModal();
+        showSuccessMessage('Weekly meal plan reset successfully.');
+    } catch (error) {
+        console.warn(error);
+        showSuccessMessage('Unable to reset meal plan right now.');
+    }
 }
 
 function ensureNotificationStyle() {
@@ -548,8 +654,22 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     loadMealPlanState();
+
+    try {
+        const initialServerPlan = getInitialServerPlan();
+        if (initialServerPlan) {
+            applyTeamPlanToWeek(initialServerPlan);
+        } else {
+            const serverPlan = await fetchServerPlan();
+            applyTeamPlanToWeek(serverPlan);
+        }
+    } catch (error) {
+        console.warn('Using local meal plan state. DB sync failed:', error);
+    }
+
+    saveMealPlanState();
     renderSelectedDayLabel();
     renderAllMealCards();
 

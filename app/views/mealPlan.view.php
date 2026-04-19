@@ -50,12 +50,12 @@
         <div class="meal-plan-container">
             <div class="meals-grid" id="mealsGrid">
                 <?php foreach ($data['meals'] as $day => $items): ?>
-                    <div class="meal-day-card">
+                    <div class="meal-day-card" data-day="<?php echo strtolower($day); ?>">
                         <h3><?php echo ucfirst($day); ?></h3>
-                        <span class="calories"><?php echo $items['calories']; ?> cal</span>
-                        <ul>
-                            <?php foreach ($items['items'] as $item): ?>
-                                <li>🔹 <?php echo $item; ?></li>
+                        <span class="calories" data-calories><?php echo (int)($items['Breakfast']['calories'] ?? 0); ?> cal</span>
+                        <ul data-meal-items>
+                            <?php foreach (($items['Breakfast']['items'] ?? []) as $item): ?>
+                                <li><?php echo htmlspecialchars($item); ?></li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
@@ -112,11 +112,62 @@
     </div>
 
     <script>
+        const weeklyMeals = <?php echo json_encode($data['meals'] ?? []); ?>;
+
+        function normalizeMealType(type) {
+            if (!type) {
+                return 'Breakfast';
+            }
+
+            return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+        }
+
+        function renderMealsForType(type) {
+            const mealType = normalizeMealType(type);
+            const cards = document.querySelectorAll('.meal-day-card');
+
+            cards.forEach(card => {
+                const dayKey = card.dataset.day || '';
+                const dayName = dayKey.charAt(0).toUpperCase() + dayKey.slice(1);
+                const dayData = weeklyMeals[dayName] || {};
+                const mealData = dayData[mealType] || { items: [], calories: 0 };
+                const items = Array.isArray(mealData.items) ? mealData.items : [];
+
+                const caloriesNode = card.querySelector('[data-calories]');
+                if (caloriesNode) {
+                    caloriesNode.textContent = String(mealData.calories || 0) + ' cal';
+                }
+
+                const listNode = card.querySelector('[data-meal-items]');
+                if (!listNode) {
+                    return;
+                }
+
+                listNode.innerHTML = '';
+                if (!items.length) {
+                    const li = document.createElement('li');
+                    li.textContent = 'No meal items available.';
+                    listNode.appendChild(li);
+                    return;
+                }
+
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    listNode.appendChild(li);
+                });
+            });
+        }
+
         function showMealType(type, btn) {
             document.querySelectorAll('.meal-tab').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            // Meal type switching logic here
+            renderMealsForType(type);
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            renderMealsForType('breakfast');
+        });
     </script>
 </body>
 </html>

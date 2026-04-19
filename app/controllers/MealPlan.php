@@ -2,6 +2,113 @@
 
 class MealPlan extends Controller
 {
+    private function tableExists($model, $tableName)
+    {
+        $safeTableName = preg_replace('/[^a-zA-Z0-9_]/', '', (string) $tableName);
+        if ($safeTableName === '') {
+            return false;
+        }
+
+        $rows = $model->query("SHOW TABLES LIKE '{$safeTableName}'");
+        return !empty($rows);
+    }
+
+    private function defaultMealItemsByType()
+    {
+        return [
+            'Breakfast' => ['Oatmeal with fruits', 'Boiled eggs', 'Green tea', 'Banana'],
+            'Lunch' => ['Basmati or Red rice', 'Chicken, Egg, Fish', 'Vegetable(minimum 3)', 'Paip', 'Yogurt', 'Fruits'],
+            'Dinner' => ['Grilled chicken breast', 'Steamed vegetables', 'Boiled sweet potato', 'Glass of warm milk'],
+        ];
+    }
+
+    private function estimateCalories($items)
+    {
+        $count = is_array($items) ? count($items) : 0;
+        return 1900 + ($count * 130);
+    }
+
+    private function getPlayerTeamMealMap($nic)
+    {
+        $defaults = $this->defaultMealItemsByType();
+        $mealMap = $defaults;
+
+        $playerModel = $this->model('PlayerModel');
+        if (!$this->tableExists($playerModel, 'players') || !$this->tableExists($playerModel, 'team_players')) {
+            return $mealMap;
+        }
+
+        $teamRows = $playerModel->query(
+            "SELECT tp.team_id
+             FROM players p
+             JOIN team_players tp ON tp.player_id = p.player_id
+             WHERE p.nic = :nic
+             ORDER BY tp.team_id DESC
+             LIMIT 1",
+            ['nic' => $nic]
+        );
+
+        if (empty($teamRows)) {
+            return $mealMap;
+        }
+
+        $teamId = (int) ($teamRows[0]->team_id ?? 0);
+        if ($teamId <= 0 || !$this->tableExists($playerModel, 'meal_plans')) {
+            return $mealMap;
+        }
+
+        $mealRows = $playerModel->query(
+            "SELECT meal_id
+             FROM meal_plans
+             WHERE team_id = :team_id
+             ORDER BY updated_date DESC, meal_id DESC
+             LIMIT 1",
+            ['team_id' => $teamId]
+        );
+
+        if (empty($mealRows)) {
+            return $mealMap;
+        }
+
+        $mealId = (int) ($mealRows[0]->meal_id ?? 0);
+        if ($mealId <= 0) {
+            return $mealMap;
+        }
+
+        $tableMap = [
+            'Breakfast' => 'breakfast',
+            'Lunch' => 'lunch',
+            'Dinner' => 'dinner',
+        ];
+
+        foreach ($tableMap as $slot => $tableName) {
+            if (!$this->tableExists($playerModel, $tableName)) {
+                continue;
+            }
+
+            $rows = $playerModel->query(
+                "SELECT meal
+                 FROM {$tableName}
+                 WHERE meal_id = :meal_id",
+                ['meal_id' => $mealId]
+            );
+
+            $items = [];
+            foreach ($rows as $row) {
+                $value = trim((string) ($row->meal ?? ''));
+                if ($value !== '') {
+                    $items[] = $value;
+                }
+            }
+
+            if (!empty($items)) {
+                $mealMap[$slot] = array_values(array_unique($items));
+            }
+        }
+
+        return $mealMap;
+    }
+
     private function normalizeImageUrl($imagePath)
     {
         if (empty($imagePath)) {
@@ -40,33 +147,29 @@ class MealPlan extends Controller
             exit();
         }
 
+        $mealItemsByType = $this->getPlayerTeamMealMap((string) ($_SESSION['nic'] ?? ''));
+
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $mealsByDay = [];
+        foreach ($days as $day) {
+            $mealsByDay[$day] = [
+                'Breakfast' => [
+                    'items' => $mealItemsByType['Breakfast'],
+                    'calories' => $this->estimateCalories($mealItemsByType['Breakfast']),
+                ],
+                'Lunch' => [
+                    'items' => $mealItemsByType['Lunch'],
+                    'calories' => $this->estimateCalories($mealItemsByType['Lunch']),
+                ],
+                'Dinner' => [
+                    'items' => $mealItemsByType['Dinner'],
+                    'calories' => $this->estimateCalories($mealItemsByType['Dinner']),
+                ],
+            ];
+        }
+
         $data = [
-            'meals' => [
-                'Monday' => [
-                    'calories' => 2450,
-                    'items' => ['Oatmeal with berries', 'Whole wheat toast', 'Green tea', 'Almonds']
-                ],
-                'Tuesday' => [
-                    'calories' => 2380,
-                    'items' => ['Scrambled eggs', 'Whole grain bread', 'Fresh orange juice', 'Mixed nuts']
-                ],
-                'Wednesday' => [
-                    'calories' => 2510,
-                    'items' => ['Protein pancakes', 'Banana', 'Honey drizzle', 'Greek yogurt']
-                ],
-                'Thursday' => [
-                    'calories' => 2420,
-                    'items' => ['Quinoa bowl', 'Chia seeds', 'Almond butter', 'Berries']
-                ],
-                'Friday' => [
-                    'calories' => 2390,
-                    'items' => ['Egg whites omelet', 'Whole wheat toast', 'Fresh fruit', 'Low-fat milk']
-                ],
-                'Saturday' => [
-                    'calories' => 2480,
-                    'items' => ['Power smoothie', 'Protein powder', 'Banana', 'Spinach', 'Almond milk']
-                ]
-            ],
+            'meals' => $mealsByDay,
             'nutrition' => [
                 'calories' => 2440,
                 'protein' => 185,

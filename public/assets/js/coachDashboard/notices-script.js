@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSearch();
     initializeNoticeCards();
     initializeButtons();
+    initializeNoticeModal();
 });
 
 // Search functionality
@@ -88,9 +89,7 @@ function initializeButtons() {
     
     if (addNoticeBtn) {
         addNoticeBtn.addEventListener('click', function() {
-            console.log('Add notice button clicked');
-            // Open modal or navigate to add notice page
-            alert('Add Notice functionality - This would open a form to create a new notice');
+            toggleNoticeModal(true);
         });
     }
     
@@ -100,6 +99,110 @@ function initializeButtons() {
             // Toggle filter panel
             toggleFilterPanel();
         });
+    }
+}
+
+function initializeNoticeModal() {
+    const noticeForm = document.getElementById('coachNoticeForm');
+    const closeBtn = document.getElementById('closeCoachNoticeModal');
+    const cancelBtn = document.getElementById('cancelCoachNotice');
+    const modal = document.getElementById('coachNoticeModal');
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => toggleNoticeModal(false));
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => toggleNoticeModal(false));
+    }
+
+    if (modal) {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                toggleNoticeModal(false);
+            }
+        });
+    }
+
+    if (noticeForm) {
+        noticeForm.addEventListener('submit', submitNoticeForm);
+    }
+}
+
+function toggleNoticeModal(show) {
+    const modal = document.getElementById('coachNoticeModal');
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display = show ? 'flex' : 'none';
+
+    if (show) {
+        const titleInput = document.getElementById('coachNoticeTitle');
+        if (titleInput) {
+            titleInput.focus();
+        }
+    }
+}
+
+async function submitNoticeForm(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const titleInput = document.getElementById('coachNoticeTitle');
+    const contentInput = document.getElementById('coachNoticeContent');
+    const submitBtn = document.getElementById('submitCoachNotice');
+
+    const title = (titleInput ? titleInput.value : '').trim();
+    const content = (contentInput ? contentInput.value : '').trim();
+
+    if (!title || !content) {
+        alert('Title and content are required.');
+        return;
+    }
+
+    const endpoint = (window.COACH_NOTICE_CONFIG && window.COACH_NOTICE_CONFIG.addNoticeUrl)
+        ? window.COACH_NOTICE_CONFIG.addNoticeUrl
+        : '/coachNotices/addNotice';
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Posting...';
+    }
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ title, content })
+        });
+
+        const text = await response.text();
+        let result = null;
+
+        try {
+            result = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('Server returned an invalid response while saving notice.');
+        }
+
+        if (!response.ok || !result || !result.success) {
+            throw new Error((result && result.message) ? result.message : 'Failed to add notice.');
+        }
+
+        form.reset();
+        toggleNoticeModal(false);
+        window.location.reload();
+    } catch (error) {
+        alert(error.message || 'Failed to add notice.');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Post Notice';
+        }
     }
 }
 

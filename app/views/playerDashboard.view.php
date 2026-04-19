@@ -76,8 +76,9 @@
 
                     <div class="card slug-countdown">
                         <span class="slug-number"><?php echo $data['slug_countdown']; ?></span>
-                        <span class="slug-text">days<br>more</span>
-                        <p style="font-size: 0.8rem; margin-top: 10px; color: var(--primary-color);">to be SLUG Champions</p>
+                            <span class="slug-text"><?php echo ((int)($data['slug_countdown'] ?? 0) === 1 ? 'day' : 'days'); ?><br>more</span>
+                            <p style="font-size: 0.8rem; margin-top: 10px; color: var(--primary-color);">to next match</p>
+                            <p style="font-size: 0.8rem; margin-top: 4px; color: #6b7280;"><?php echo htmlspecialchars($data['next_match_countdown_title'] ?? 'No upcoming match'); ?></p>
                     </div>
                 </div>
 

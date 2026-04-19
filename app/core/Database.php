@@ -10,21 +10,43 @@ trait Database
             return $this->pdo;
         }
 
-        $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
         $options = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
 
-        try {
-            $this->pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-            return $this->pdo;
-        } catch (PDOException $e) {
-            $msg = $e->getMessage(); 
-            error_log($msg);
-            return false;
+        $hosts = array_values(array_unique([DB_HOST, 'localhost', '127.0.0.1']));
+
+        $credentials = [
+            ['user' => DB_USER, 'pass' => DB_PASS],
+        ];
+
+        // Common XAMPP local default: root with empty password.
+        if (strtolower((string) DB_USER) === 'root' && (string) DB_PASS !== '') {
+            $credentials[] = ['user' => 'root', 'pass' => ''];
         }
+
+        $lastError = null;
+
+        foreach ($hosts as $host) {
+            $dsn = "mysql:host=" . $host . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+
+            foreach ($credentials as $credential) {
+                try {
+                    $this->pdo = new PDO($dsn, $credential['user'], $credential['pass'], $options);
+                    return $this->pdo;
+                } catch (PDOException $e) {
+                    $lastError = $e;
+                }
+            }
+        }
+
+        if ($lastError instanceof PDOException) {
+            error_log('Database connection failed: ' . $lastError->getMessage());
+        }
+
+        return false;
     }
 
     public function query($query, $data = [])

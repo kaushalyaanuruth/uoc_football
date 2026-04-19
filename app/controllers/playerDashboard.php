@@ -208,6 +208,7 @@ class PlayerDashboard extends Controller
         ];
 
         $slugCountdown = 0;
+        $nextMatchCountdownTitle = 'No upcoming match';
         if (!empty($upcomingEvents)) {
             $eventDate = !empty($upcomingEvents[0]->date) ? strtotime($upcomingEvents[0]->date) : false;
             if ($eventDate) {
@@ -228,6 +229,26 @@ class PlayerDashboard extends Controller
                 'date' => $eventDateText,
                 'location' => $upcomingEvents[0]->location ?: 'Ground'
             ];
+        }
+
+        // Countdown must use the real next match, not just the first upcoming event.
+        foreach ($upcomingEvents as $eventRow) {
+            if (strtolower((string) ($eventRow->event_type ?? '')) !== 'match') {
+                continue;
+            }
+
+            $matchDate = !empty($eventRow->date) ? strtotime($eventRow->date) : false;
+            if ($matchDate) {
+                $dayDiff = (int) floor(($matchDate - strtotime(date('Y-m-d'))) / 86400);
+                $slugCountdown = max(0, $dayDiff);
+            } else {
+                $slugCountdown = 0;
+            }
+
+            $nextMatchCountdownTitle = !empty($eventRow->title)
+                ? (string) $eventRow->title
+                : 'UOC Football Match';
+            break;
         }
 
         $testSummary = [
@@ -333,6 +354,7 @@ class PlayerDashboard extends Controller
             'next_practice' => $nextPractice,
             'next_event' => $nextEvent,
             'slug_countdown' => $slugCountdown,
+            'next_match_countdown_title' => $nextMatchCountdownTitle,
             'notices' => $notices,
             'meal_plan' => $mealPlan,
             'test_summary' => $testSummary,

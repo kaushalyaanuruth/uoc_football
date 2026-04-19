@@ -1,498 +1,305 @@
-// Attendance Page JavaScript
-
-const ATTENDANCE_TREND_LABELS = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'];
-const ATTENDANCE_DISTRIBUTION_LABELS = ['Present', 'Absent', 'Late', 'Excused'];
-const DEFAULT_SEASON_KEY = '2025-season';
+const CONFIG = window.COACH_ATTENDANCE_CONFIG || {};
 
 let attendanceTrendChart = null;
 let attendanceDistributionChart = null;
+let changedData = [];
+const originalStatuses = new Map();
 
-const ATTENDANCE_STATS = {
-    '2025-season': {
-        season: {
-            trend: [90, 91, 89, 92, 93, 94, 92, 95],
-            distribution: [79, 8, 7, 6]
-        },
-        players: {
-            john: {
-                name: 'John Smith',
-                color: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                trend: [94, 96, 93, 95, 97, 98, 96, 97],
-                distribution: [86, 5, 5, 4]
-            },
-            mike: {
-                name: 'Mike Johnson',
-                color: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                trend: [88, 89, 86, 90, 91, 92, 90, 91],
-                distribution: [77, 10, 8, 5]
-            },
-            alex: {
-                name: 'Alex Brown',
-                color: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                trend: [78, 80, 77, 81, 82, 84, 81, 83],
-                distribution: [68, 14, 10, 8]
-            },
-            david: {
-                name: 'David Wilson',
-                color: '#f59e0b',
-                backgroundColor: 'rgba(245, 158, 11, 0.12)',
-                trend: [85, 87, 84, 88, 89, 90, 88, 90],
-                distribution: [74, 11, 9, 6]
-            }
-        }
-    },
-    '2024-season': {
-        season: {
-            trend: [87, 88, 86, 89, 90, 91, 89, 90],
-            distribution: [75, 10, 8, 7]
-        },
-        players: {
-            john: {
-                name: 'John Smith',
-                color: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                trend: [91, 93, 90, 92, 94, 95, 93, 94],
-                distribution: [83, 6, 6, 5]
-            },
-            mike: {
-                name: 'Mike Johnson',
-                color: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                trend: [85, 86, 84, 87, 88, 89, 87, 88],
-                distribution: [73, 11, 9, 7]
-            },
-            alex: {
-                name: 'Alex Brown',
-                color: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                trend: [75, 76, 74, 78, 79, 80, 78, 79],
-                distribution: [65, 16, 11, 8]
-            },
-            david: {
-                name: 'David Wilson',
-                color: '#f59e0b',
-                backgroundColor: 'rgba(245, 158, 11, 0.12)',
-                trend: [82, 84, 81, 85, 86, 87, 85, 86],
-                distribution: [71, 12, 10, 7]
-            }
-        }
-    },
-    '2023-season': {
-        season: {
-            trend: [84, 85, 83, 86, 87, 88, 86, 87],
-            distribution: [72, 12, 9, 7]
-        },
-        players: {
-            john: {
-                name: 'John Smith',
-                color: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                trend: [88, 90, 87, 89, 91, 92, 90, 91],
-                distribution: [80, 7, 7, 6]
-            },
-            mike: {
-                name: 'Mike Johnson',
-                color: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                trend: [81, 82, 80, 83, 84, 85, 83, 84],
-                distribution: [69, 13, 10, 8]
-            },
-            alex: {
-                name: 'Alex Brown',
-                color: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                trend: [72, 74, 71, 75, 76, 77, 75, 76],
-                distribution: [62, 18, 12, 8]
-            },
-            david: {
-                name: 'David Wilson',
-                color: '#f59e0b',
-                backgroundColor: 'rgba(245, 158, 11, 0.12)',
-                trend: [79, 81, 78, 82, 83, 84, 82, 83],
-                distribution: [67, 14, 11, 8]
-            }
-        }
-    }
-};
-
-const DEFAULT_FILTERS = {
-    player: 'all',
-    season: DEFAULT_SEASON_KEY,
-    date: ''
-};
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeFilters();
-    initializeCharts();
-    initializeTableInteractions();
-    filterAttendanceRecords();
-});
-
-// Filter functionality
-function initializeFilters() {
-    const playerFilter = document.getElementById('playerFilter');
-    const seasonFilter = document.getElementById('seasonFilter');
-    const dateFilter = document.getElementById('dateFilter');
-
-    // Add event listeners to filters
-    [playerFilter, seasonFilter, dateFilter].forEach(filter => {
-        if (filter) {
-            filter.addEventListener('change', function() {
-                if (filter.id === 'seasonFilter') {
-                    updateSeasonStatValue();
-                }
-                filterAttendanceRecords();
-            });
-        }
-    });
-
-    updateSeasonStatValue();
+function normalizeStatusClass(status) {
+    return String(status || 'Absent').toLowerCase();
 }
 
-function getActiveAttendanceFilters() {
-    const playerFilter = document.getElementById('playerFilter');
-    const seasonFilter = document.getElementById('seasonFilter');
-    const dateFilter = document.getElementById('dateFilter');
-
-    return {
-        player: playerFilter ? playerFilter.value : DEFAULT_FILTERS.player,
-        season: seasonFilter ? seasonFilter.value : DEFAULT_FILTERS.season,
-        date: dateFilter ? dateFilter.value : DEFAULT_FILTERS.date
-    };
-}
-
-function updateSeasonStatValue() {
-    const seasonFilter = document.getElementById('seasonFilter');
-    const seasonStatValue = document.getElementById('seasonStatValue');
-
-    if (!seasonFilter || !seasonStatValue) {
+function renderStatusBadge(row, status) {
+    const badge = row.querySelector('.status-badge');
+    if (!badge) {
         return;
     }
 
-    seasonStatValue.textContent = seasonFilter.options[seasonFilter.selectedIndex].text;
+    badge.textContent = status;
+    badge.className = 'status-badge ' + normalizeStatusClass(status);
 }
 
-function clamp(value, min, max) {
-    return Math.min(max, Math.max(min, value));
-}
-
-function roundToSingleDecimal(value) {
-    return Math.round(value * 10) / 10;
-}
-
-function normalizeDistribution(distribution) {
-    const safeDistribution = distribution.map(function(value) {
-        return Math.max(0, value);
-    });
-
-    const total = safeDistribution.reduce(function(sum, value) {
-        return sum + value;
-    }, 0) || 1;
-
-    const normalized = safeDistribution.map(function(value) {
-        return roundToSingleDecimal((value / total) * 100);
-    });
-
-    const normalizedTotal = normalized.reduce(function(sum, value) {
-        return sum + value;
-    }, 0);
-
-    const diff = roundToSingleDecimal(100 - normalizedTotal);
-    normalized[0] = roundToSingleDecimal(clamp(normalized[0] + diff, 0, 100));
-
-    return normalized;
-}
-
-function calculateDateImpact(dateFilter) {
-    if (!dateFilter) {
-        return 0;
-    }
-
-    const parsedDate = new Date(dateFilter + 'T00:00:00');
-    if (Number.isNaN(parsedDate.getTime())) {
-        return 0;
-    }
-
-    const dayOfMonth = parsedDate.getDate();
-    return ((dayOfMonth % 7) - 3) * 0.35;
-}
-
-function applyDateAdjustmentsToTrend(trendSeries, dateFilter) {
-    const dateImpact = calculateDateImpact(dateFilter);
-
-    return trendSeries.map(function(point, index) {
-        const weeklyVariance = (index % 2 === 0 ? 0.2 : -0.2);
-        return roundToSingleDecimal(clamp(point + dateImpact + weeklyVariance, 0, 100));
+function getVisibleRows() {
+    return Array.from(document.querySelectorAll('.attendance-table tbody tr')).filter(row => {
+        return row.style.display !== 'none' && row.dataset.playerId;
     });
 }
 
-function applyDateAdjustmentsToDistribution(distributionSeries, dateFilter) {
-    if (!dateFilter) {
-        return normalizeDistribution(distributionSeries.slice());
-    }
+function updateStatsFromTable() {
+    const rows = getVisibleRows();
+    let total = 0;
+    let present = 0;
+    let absent = 0;
+    let late = 0;
 
-    const parsedDate = new Date(dateFilter + 'T00:00:00');
-    if (Number.isNaN(parsedDate.getTime())) {
-        return normalizeDistribution(distributionSeries.slice());
-    }
+    rows.forEach(row => {
+        const badge = row.querySelector('.status-badge');
+        const status = badge ? badge.textContent.trim() : 'Absent';
+        total += 1;
 
-    const dayOfWeek = parsedDate.getDay();
-    const presentShift = (dayOfWeek - 3) * 0.4;
-    const absentShift = -presentShift * 0.6;
-    const lateShift = presentShift < 0 ? Math.abs(presentShift) * 0.45 : -Math.abs(presentShift) * 0.25;
-    const excusedShift = -(presentShift + absentShift + lateShift);
-
-    const adjusted = [
-        distributionSeries[0] + presentShift,
-        distributionSeries[1] + absentShift,
-        distributionSeries[2] + lateShift,
-        distributionSeries[3] + excusedShift
-    ];
-
-    return normalizeDistribution(adjusted);
-}
-
-function applyDateAdjustments(baseData, dateFilter) {
-    return {
-        trend: applyDateAdjustmentsToTrend(baseData.trend, dateFilter),
-        distribution: applyDateAdjustmentsToDistribution(baseData.distribution, dateFilter)
-    };
-}
-
-function createTrendDataset(label, data, color, backgroundColor, options) {
-    return {
-        label: label,
-        data: data,
-        borderColor: color,
-        backgroundColor: backgroundColor,
-        borderWidth: options.borderWidth,
-        tension: 0.4,
-        fill: options.fill,
-        pointRadius: options.pointRadius,
-        pointBackgroundColor: color,
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointHoverRadius: options.pointHoverRadius
-    };
-}
-
-function resolveAttendanceChartData(filters) {
-    const seasonData = ATTENDANCE_STATS[filters.season] || ATTENDANCE_STATS[DEFAULT_SEASON_KEY];
-
-    const seasonBaseData = {
-        trend: seasonData.season.trend.slice(),
-        distribution: seasonData.season.distribution.slice()
-    };
-
-    const adjustedSeasonData = applyDateAdjustments(seasonBaseData, filters.date);
-
-    if (filters.player !== 'all') {
-        const selectedPlayerData = seasonData.players[filters.player];
-
-        if (selectedPlayerData) {
-            const playerBaseData = {
-                trend: selectedPlayerData.trend.slice(),
-                distribution: selectedPlayerData.distribution.slice()
-            };
-
-            const adjustedPlayerData = applyDateAdjustments(playerBaseData, filters.date);
-
-            return {
-                mode: 'player',
-                trend: {
-                    labels: ATTENDANCE_TREND_LABELS,
-                    datasets: [
-                        createTrendDataset(
-                            'Season Average',
-                            adjustedSeasonData.trend,
-                            '#7c3aed',
-                            'rgba(124, 58, 237, 0.08)',
-                            { fill: false, borderWidth: 2, pointRadius: 3, pointHoverRadius: 5 }
-                        ),
-                        createTrendDataset(
-                            selectedPlayerData.name,
-                            adjustedPlayerData.trend,
-                            selectedPlayerData.color,
-                            selectedPlayerData.backgroundColor,
-                            { fill: true, borderWidth: 3, pointRadius: 4, pointHoverRadius: 6 }
-                        )
-                    ]
-                },
-                distribution: {
-                    labels: ATTENDANCE_DISTRIBUTION_LABELS,
-                    data: adjustedPlayerData.distribution
-                }
-            };
+        if (status === 'Present') {
+            present += 1;
+        } else if (status === 'Late') {
+            late += 1;
+        } else {
+            absent += 1;
         }
-    }
+    });
 
-    return {
-        mode: 'season',
-        trend: {
-            labels: ATTENDANCE_TREND_LABELS,
-            datasets: [
-                createTrendDataset(
-                    'Season Average',
-                    adjustedSeasonData.trend,
-                    '#7c3aed',
-                    'rgba(124, 58, 237, 0.1)',
-                    { fill: true, borderWidth: 3, pointRadius: 5, pointHoverRadius: 7 }
-                )
-            ]
-        },
-        distribution: {
-            labels: ATTENDANCE_DISTRIBUTION_LABELS,
-            data: adjustedSeasonData.distribution
-        }
-    };
+    const totalNode = document.getElementById('totalPlayersValue');
+    const presentNode = document.getElementById('presentPlayersValue');
+    const absentNode = document.getElementById('absentPlayersValue');
+    const overallNode = document.getElementById('overallAttendanceValue');
+
+    if (totalNode) totalNode.textContent = String(total);
+    if (presentNode) presentNode.textContent = String(present);
+    if (absentNode) absentNode.textContent = String(absent);
+    if (overallNode) {
+        const percent = total > 0 ? (((present + late) / total) * 100).toFixed(1) : '0.0';
+        overallNode.textContent = percent;
+    }
 }
 
-// Filter attendance records based on selected filters
-function filterAttendanceRecords() {
-    const activeFilters = getActiveAttendanceFilters();
-    const chartData = resolveAttendanceChartData(activeFilters);
+function setStatus(row, status) {
+    const playerId = parseInt(row.dataset.playerId || '0', 10);
+    if (!playerId) {
+        return;
+    }
 
-    updateAttendanceTrendChart(chartData.trend);
-    updateAttendanceDistributionChart(chartData.distribution);
+    renderStatusBadge(row, status);
 
-    console.log('Filtering with:', {
-        player: activeFilters.player,
-        season: activeFilters.season,
-        date: activeFilters.date,
-        mode: chartData.mode
+    const existingIndex = changedData.findIndex(item => item.player_id === playerId);
+    if (existingIndex >= 0) {
+        changedData[existingIndex].status = status;
+    } else {
+        changedData.push({ player_id: playerId, status: status });
+    }
+
+    const original = originalStatuses.get(playerId);
+    if (original === status) {
+        changedData = changedData.filter(item => item.player_id !== playerId);
+    }
+
+    updateStatsFromTable();
+}
+
+function initializeRowStatusActions() {
+    const rows = document.querySelectorAll('.attendance-table tbody tr[data-player-id]');
+    rows.forEach(row => {
+        const playerId = parseInt(row.dataset.playerId || '0', 10);
+        const original = row.dataset.originalStatus || 'Absent';
+        if (playerId) {
+            originalStatuses.set(playerId, original);
+        }
+
+        row.querySelectorAll('.status-action-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const status = btn.dataset.status || 'Absent';
+                setStatus(row, status);
+            });
+        });
     });
 }
 
-// Initialize charts
-function initializeCharts() {
-    const activeFilters = getActiveAttendanceFilters();
-    const chartData = resolveAttendanceChartData(activeFilters);
+function applyPlayerFilter() {
+    const playerFilter = document.getElementById('playerFilter');
+    const selected = playerFilter ? playerFilter.value : 'all';
 
-    createAttendanceTrendChart(chartData.trend);
-    createAttendanceDistributionChart(chartData.distribution);
+    document.querySelectorAll('.attendance-table tbody tr[data-player-id]').forEach(row => {
+        if (selected === 'all') {
+            row.style.display = '';
+            return;
+        }
+
+        row.style.display = row.dataset.playerId === selected ? '' : 'none';
+    });
+
+    updateStatsFromTable();
 }
 
-// Attendance Trend Line Chart
-function createAttendanceTrendChart(trendChartData) {
-    const ctx = document.getElementById('attendanceTrendChart');
-    if (!ctx) return;
+function buildUrlWithFilters() {
+    const dateInput = document.getElementById('dateFilter');
+    const typeSelect = document.getElementById('seasonFilter');
+    const params = new URLSearchParams({
+        date: (dateInput && dateInput.value) || CONFIG.selectedDate || '',
+        type: (typeSelect && typeSelect.value) || CONFIG.selectedType || 'Practice'
+    });
 
-    if (attendanceTrendChart) {
-        attendanceTrendChart.destroy();
+    return String(CONFIG.baseUrl || '/coachAttendance') + '?' + params.toString();
+}
+
+function bindFilterReload() {
+    const applyBtn = document.getElementById('applyFiltersBtn');
+    const dateInput = document.getElementById('dateFilter');
+    const typeSelect = document.getElementById('seasonFilter');
+
+    const reload = () => {
+        if (changedData.length > 0) {
+            const proceed = window.confirm('You have unsaved changes. Continue and discard them?');
+            if (!proceed) {
+                return;
+            }
+        }
+
+        window.location.href = buildUrlWithFilters();
+    };
+
+    if (applyBtn) {
+        applyBtn.addEventListener('click', reload);
+    }
+    if (dateInput) {
+        dateInput.addEventListener('change', reload);
+    }
+    if (typeSelect) {
+        typeSelect.addEventListener('change', reload);
     }
 
-    attendanceTrendChart = new Chart(ctx, {
+    const playerFilter = document.getElementById('playerFilter');
+    if (playerFilter) {
+        playerFilter.addEventListener('change', applyPlayerFilter);
+    }
+}
+
+async function saveAttendance() {
+    if (changedData.length === 0) {
+        alert('No changes to save.');
+        return;
+    }
+
+    const dateInput = document.getElementById('dateFilter');
+    const typeSelect = document.getElementById('seasonFilter');
+
+    const payload = {
+        date: (dateInput && dateInput.value) || CONFIG.selectedDate,
+        type: (typeSelect && typeSelect.value) || CONFIG.selectedType,
+        rows: changedData
+    };
+
+    try {
+        const response = await fetch(String(CONFIG.baseUrl || '/coachAttendance') + '/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const responseText = await response.text();
+        let result = null;
+        try {
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            const preview = responseText.trim().slice(0, 120);
+            throw new Error('Server returned non-JSON response while saving. ' + preview);
+        }
+
+        if (!response.ok || !result || !result.success) {
+            throw new Error((result && result.message) ? result.message : 'Failed to save attendance');
+        }
+
+        alert('Attendance saved successfully.');
+        window.location.href = buildUrlWithFilters();
+    } catch (error) {
+        alert(error.message || 'Failed to save attendance.');
+    }
+}
+
+function resetChanges() {
+    if (changedData.length === 0) {
+        return;
+    }
+
+    const confirmed = window.confirm('Reset all unsaved attendance changes?');
+    if (!confirmed) {
+        return;
+    }
+
+    document.querySelectorAll('.attendance-table tbody tr[data-player-id]').forEach(row => {
+        const playerId = parseInt(row.dataset.playerId || '0', 10);
+        const original = originalStatuses.get(playerId) || row.dataset.originalStatus || 'Absent';
+        renderStatusBadge(row, original);
+    });
+
+    changedData = [];
+    updateStatsFromTable();
+}
+
+function exportReport() {
+    if (changedData.length > 0) {
+        alert('You have unsaved changes. Please save before exporting.');
+        return;
+    }
+
+    const dateInput = document.getElementById('dateFilter');
+    const typeSelect = document.getElementById('seasonFilter');
+    const params = new URLSearchParams({
+        date: (dateInput && dateInput.value) || CONFIG.selectedDate || '',
+        type: (typeSelect && typeSelect.value) || CONFIG.selectedType || 'Practice'
+    });
+
+    window.location.href = String(CONFIG.baseUrl || '/coachAttendance') + '/export?' + params.toString();
+}
+
+function createAttendanceTrendChart() {
+    const canvas = document.getElementById('attendanceTrendChart');
+    if (!canvas || typeof Chart === 'undefined') {
+        return;
+    }
+
+    attendanceTrendChart = new Chart(canvas, {
         type: 'line',
         data: {
-            labels: trendChartData.labels,
-            datasets: trendChartData.datasets
+            labels: Array.isArray(CONFIG.trendLabels) ? CONFIG.trendLabels : ['No Data'],
+            datasets: [{
+                label: 'Attendance Rate',
+                data: Array.isArray(CONFIG.trendValues) ? CONFIG.trendValues : [0],
+                borderColor: '#7c3aed',
+                backgroundColor: 'rgba(124, 58, 237, 0.12)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.35,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#7c3aed'
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20,
-                        font: {
-                            size: 13,
-                            weight: 600,
-                            family: 'Poppins'
-                        }
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14,
-                        weight: 600,
-                        family: 'Poppins'
-                    },
-                    bodyFont: {
-                        size: 13,
-                        family: 'Poppins'
-                    },
-                    cornerRadius: 8,
-                    displayColors: true,
-                    callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + context.parsed.y + '%';
-                        }
-                    }
-                }
+                legend: { display: false }
             },
             scales: {
                 y: {
                     beginAtZero: true,
                     max: 100,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)',
-                        drawBorder: false
-                    },
                     ticks: {
-                        callback: function(value) {
-                            return value + '%';
-                        },
-                        font: {
-                            size: 12,
-                            family: 'Poppins'
-                        },
-                        color: '#6b7280'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    },
-                    ticks: {
-                        font: {
-                            size: 12,
-                            family: 'Poppins'
-                        },
-                        color: '#6b7280'
+                        callback: value => value + '%'
                     }
                 }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
             }
         }
     });
 }
 
-// Attendance Distribution Doughnut Chart
-function createAttendanceDistributionChart(distributionChartData) {
-    const ctx = document.getElementById('attendanceDistributionChart');
-    if (!ctx) return;
-
-    if (attendanceDistributionChart) {
-        attendanceDistributionChart.destroy();
+function createAttendanceDistributionChart() {
+    const canvas = document.getElementById('attendanceDistributionChart');
+    if (!canvas || typeof Chart === 'undefined') {
+        return;
     }
 
-    attendanceDistributionChart = new Chart(ctx, {
+    attendanceDistributionChart = new Chart(canvas, {
         type: 'doughnut',
         data: {
-            labels: distributionChartData.labels,
+            labels: Array.isArray(CONFIG.distributionLabels)
+                ? CONFIG.distributionLabels
+                : ['Present', 'Absent', 'Late', 'Excused'],
             datasets: [{
-                data: distributionChartData.data,
-                backgroundColor: [
-                    '#10b981',
-                    '#ef4444',
-                    '#f59e0b',
-                    '#3b82f6'
-                ],
+                data: Array.isArray(CONFIG.distributionValues) ? CONFIG.distributionValues : [0, 0, 0, 0],
+                backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#3b82f6'],
                 borderWidth: 0,
-                hoverOffset: 10
+                hoverOffset: 8
             }]
         },
         options: {
@@ -500,106 +307,40 @@ function createAttendanceDistributionChart(distributionChartData) {
             maintainAspectRatio: true,
             cutout: '70%',
             plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14,
-                        weight: 600,
-                        family: 'Poppins'
-                    },
-                    bodyFont: {
-                        size: 13,
-                        family: 'Poppins'
-                    },
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.parsed / total) * 100).toFixed(1);
-                            return context.label + ': ' + percentage + '%';
-                        }
-                    }
-                }
+                legend: { display: false }
             }
         }
     });
 }
 
-function updateAttendanceTrendChart(trendChartData) {
-    if (!attendanceTrendChart) {
-        createAttendanceTrendChart(trendChartData);
-        return;
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    initializeRowStatusActions();
+    bindFilterReload();
+    applyPlayerFilter();
 
-    attendanceTrendChart.data.labels = trendChartData.labels;
-    attendanceTrendChart.data.datasets = trendChartData.datasets;
-    attendanceTrendChart.update();
-}
-
-function updateAttendanceDistributionChart(distributionChartData) {
-    if (!attendanceDistributionChart) {
-        createAttendanceDistributionChart(distributionChartData);
-        return;
-    }
-
-    attendanceDistributionChart.data.labels = distributionChartData.labels;
-    attendanceDistributionChart.data.datasets[0].data = distributionChartData.data;
-    attendanceDistributionChart.update();
-}
-
-// Table interactions
-function initializeTableInteractions() {
-    const tableRows = document.querySelectorAll('.attendance-table tbody tr');
-    
-    tableRows.forEach(row => {
-        row.addEventListener('click', function() {
-            // Remove active class from all rows
-            tableRows.forEach(r => r.classList.remove('active-row'));
-            
-            // Add active class to clicked row
-            this.classList.add('active-row');
-            
-            // Get player info
-            const playerName = this.querySelector('.player-info span').textContent;
-            console.log('Selected player:', playerName);
+    const markAllButton = document.getElementById('markAllPresentBtn');
+    if (markAllButton) {
+        markAllButton.addEventListener('click', () => {
+            const visibleRows = getVisibleRows();
+            visibleRows.forEach(row => setStatus(row, 'Present'));
         });
-    });
-}
+    }
 
-// Mark attendance button functionality
-const markBtn = document.querySelector('.mark-btn');
-if (markBtn) {
-    markBtn.addEventListener('click', function() {
-        alert('Mark Attendance functionality - This would open a modal or form to mark attendance');
-    });
-}
+    const saveButton = document.querySelector('.save-attendance');
+    if (saveButton) {
+        saveButton.addEventListener('click', saveAttendance);
+    }
 
-// Add note button functionality
-const addNoteBtn = document.querySelector('.add-note-btn');
-if (addNoteBtn) {
-    addNoteBtn.addEventListener('click', function() {
-        alert('Add Note functionality - This would open a modal or form to add a new note');
-    });
-}
+    const resetButton = document.querySelector('.reset-changes');
+    if (resetButton) {
+        resetButton.addEventListener('click', resetChanges);
+    }
 
-// Load more notes button
-const loadMoreBtn = document.querySelector('.load-more-btn');
-if (loadMoreBtn) {
-    loadMoreBtn.addEventListener('click', function() {
-        console.log('Loading more notes...');
-        // Here you would typically load more notes via AJAX
-        this.textContent = 'Loading...';
-        
-        setTimeout(() => {
-            this.textContent = 'Load more...';
-            alert('More notes loaded');
-        }, 1000);
-    });
-}
+    const exportButton = document.querySelector('.exportreport');
+    if (exportButton) {
+        exportButton.addEventListener('click', exportReport);
+    }
 
-// Console log for debugging
-console.log('Attendance page initialized successfully');
+    createAttendanceTrendChart();
+    createAttendanceDistributionChart();
+});

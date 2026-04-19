@@ -2,6 +2,27 @@
 
 class CaptainAttendance extends Controller
 {
+    private function resolveCaptainTeamId($nic)
+    {
+        $playerModel = $this->model('PlayerModel');
+
+        $rows = $playerModel->query(
+            "SELECT tp.team_id
+             FROM players p
+             JOIN team_players tp ON tp.player_id = p.player_id
+             WHERE p.nic = :nic
+             ORDER BY tp.team_id DESC
+             LIMIT 1",
+            ['nic' => $nic]
+        );
+
+        if (empty($rows)) {
+            return null;
+        }
+
+        return (int) ($rows[0]->team_id ?? 0) ?: null;
+    }
+
     private function buildInitialsAvatarUrl($displayName)
     {
         $name = trim((string) $displayName);
@@ -139,6 +160,7 @@ class CaptainAttendance extends Controller
         $this->ensureCaptainAccess();
 
         $attendanceModel = new AttendanceModel();
+        $teamId = $this->resolveCaptainTeamId((string) ($_SESSION['nic'] ?? ''));
 
         // ✅ Get selected date (from URL)
         $date = $_GET['date'] ?? date('Y-m-d');
@@ -151,8 +173,13 @@ class CaptainAttendance extends Controller
         $event = $attendanceModel->getOrCreateEvent($date, $type);
 
         $event_id = $event->event_id;
-        $players = $attendanceModel->getPlayersWithAttendance($event_id);
-        $stats = $attendanceModel->getStats($event_id);
+        if ($teamId) {
+            $players = $attendanceModel->getPlayersWithAttendanceByTeam($event_id, $teamId);
+            $stats = $attendanceModel->getStatsByTeam($event_id, $teamId);
+        } else {
+            $players = $attendanceModel->getPlayersWithAttendance($event_id);
+            $stats = $attendanceModel->getStats($event_id);
+        }
 
         $uiData = $this->buildCaptainUiData();
         $notices = $this->getCaptainNotices();
@@ -183,6 +210,7 @@ class CaptainAttendance extends Controller
         }
 
         $attendanceModel = new AttendanceModel();
+        $teamId = $this->resolveCaptainTeamId((string) ($_SESSION['nic'] ?? ''));
 
         // Backward compatibility: old format is a direct rows array.
         $rows = is_array($payload) && isset($payload[0]) ? $payload : ($payload['rows'] ?? []);
@@ -202,16 +230,27 @@ class CaptainAttendance extends Controller
             exit;
         }
 
+        $teamPlayerIds = $teamId ? array_flip($attendanceModel->getTeamPlayerIds($teamId)) : [];
+
         foreach ($rows as $row) {
             if (!in_array($row['status'], ['Present', 'Absent', 'Late']))
                 continue;
+
+            $playerId = (int) ($row['player_id'] ?? 0);
+            if ($playerId <= 0) {
+                continue;
+            }
+
+            if ($teamId && !isset($teamPlayerIds[$playerId])) {
+                continue;
+            }
 
             $attendanceModel->query("
             INSERT INTO attendance (player_id, event_id, status)
             VALUES (:player_id, :event_id, :status)
             ON DUPLICATE KEY UPDATE status = :status2
         ", [
-                'player_id' => $row['player_id'],
+                'player_id' => $playerId,
                 'event_id' => $targetEventId,
                 'status' => $row['status'],
                 'status2' => $row['status']
@@ -226,12 +265,17 @@ class CaptainAttendance extends Controller
         $this->ensureCaptainAccess();
 
         $attendanceModel = new AttendanceModel();
+        $teamId = $this->resolveCaptainTeamId((string) ($_SESSION['nic'] ?? ''));
 
         $date = $_GET['date'] ?? date('Y-m-d');
         $type = $_GET['type'] ?? 'Practice';
         $event = $attendanceModel->getOrCreateEvent($date, $type);
 
-        $players = $attendanceModel->getPlayersWithAttendance($event->event_id);
+        if ($teamId) {
+            $players = $attendanceModel->getPlayersWithAttendanceByTeam($event->event_id, $teamId);
+        } else {
+            $players = $attendanceModel->getPlayersWithAttendance($event->event_id);
+        }
 
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="attendance-' . $date . '.csv"');

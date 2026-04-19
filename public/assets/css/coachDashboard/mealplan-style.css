@@ -8,7 +8,7 @@
 
 body {
     font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(135deg, #ffe6ff 0%, #FFFAFF 100%);
+    background: #ffffff;
     min-height: 100vh;
     position: relative;
     color: #310037;
@@ -122,7 +122,7 @@ body::before {
     font-size: 48px;
     font-weight: 700;
     color: #310037;
-    font-family: 'Merriweather', serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .page-controls {
@@ -133,26 +133,36 @@ body::before {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: white;
-    border: 2px solid #E5E5EF;
-    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #d7dbe3;
+    border-radius: 14px;
     padding: 10px 14px;
+    box-shadow: 0 6px 16px rgba(17, 24, 39, 0.08);
 }
 
 .day-picker label {
-    color: #374151;
-    font-size: 14px;
+    color: #4b5563;
+    font-size: 13px;
     font-weight: 600;
+    letter-spacing: 0.01em;
 }
 
 .day-select {
-    border: none;
-    background: transparent;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
     color: #1f2937;
     font-size: 14px;
     font-weight: 600;
     outline: none;
     cursor: pointer;
+    border-radius: 10px;
+    padding: 8px 12px;
+    min-width: 150px;
+}
+
+.day-select:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
 .selected-day-label {
@@ -166,7 +176,7 @@ body::before {
     border: none;
     border-radius: 12px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    background: #5f096b;
     color: white;
     font-size: 14px;
     font-weight: 600;
@@ -254,8 +264,8 @@ body::before {
     border: none;
     border-radius: 10px;
     padding: 10px 12px;
-    background: #ede9fe;
-    color: #6d28d9;
+    background: #5f096b;
+    color: #ffffff;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
@@ -263,7 +273,6 @@ body::before {
 }
 
 .create-btn:hover {
-    background: #ddd6fe;
     transform: translateY(-1px);
 }
 
@@ -272,8 +281,7 @@ body::before {
     height: 36px;
     border-radius: 8px;
     border: none;
-    background: #F3F4F6;
-    color: #6b7280;
+    color: #000000;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -282,8 +290,6 @@ body::before {
 }
 
 .edit-btn:hover {
-    background: #7c3aed;
-    color: white;
     transform: scale(1.1);
 }
 
@@ -292,8 +298,8 @@ body::before {
     height: 36px;
     border-radius: 8px;
     border: none;
-    background: #F3F4F6;
-    color: #6b7280;
+    background: #5f096b;
+    color: #ffffff;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -302,8 +308,6 @@ body::before {
 }
 
 .delete-btn:hover {
-    background: #fee2e2;
-    color: #dc2626;
     transform: scale(1.1);
 }
 
@@ -342,8 +346,7 @@ body::before {
     height: 26px;
     border: none;
     border-radius: 7px;
-    background: #fee2e2;
-    color: #dc2626;
+    color: #575757;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
@@ -354,10 +357,7 @@ body::before {
     flex-shrink: 0;
 }
 
-.meal-item-delete:hover {
-    background: #dc2626;
-    color: white;
-}
+
 
 .meal-empty-state {
     padding: 14px 18px;
@@ -419,18 +419,6 @@ body::before {
     width: 90%;
     max-width: 600px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .modal-header {
@@ -451,9 +439,9 @@ body::before {
     width: 36px;
     height: 36px;
     border-radius: 8px;
-    border: none;
-    background: #F3F4F6;
-    color: #6b7280;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #111827;
     font-size: 24px;
     cursor: pointer;
     display: flex;
@@ -463,9 +451,8 @@ body::before {
 }
 
 .close-btn:hover {
-    background: #ef4444;
-    color: white;
-    transform: rotate(90deg);
+    background: #f3f4f6;
+    color: #111827;
 }
 
 .modal-body {
@@ -519,11 +506,11 @@ body::before {
 }
 
 .btn-add-item {
-    border: none;
+    border: 1px solid #d1d5db;
     border-radius: 10px;
     padding: 12px 18px;
-    background: #7c3aed;
-    color: white;
+    background: #ffffff;
+    color: #111827;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -531,7 +518,7 @@ body::before {
 }
 
 .btn-add-item:hover {
-    background: #6d28d9;
+    background: #f3f4f6;
 }
 
 .form-hint {
@@ -590,9 +577,9 @@ body::before {
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    border: none;
-    background: #fee2e2;
-    color: #dc2626;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #111827;
     cursor: pointer;
     font-size: 16px;
     font-weight: 700;
@@ -601,8 +588,8 @@ body::before {
 }
 
 .modal-item-delete:hover {
-    background: #dc2626;
-    color: white;
+    background: #f3f4f6;
+    color: #111827;
 }
 
 .modal-actions {
@@ -624,23 +611,22 @@ body::before {
 }
 
 .btn-cancel {
-    background: #F3F4F6;
-    color: #374151;
+    background: #5f096b;
+    color: #ffffff;
 }
 
 .btn-cancel:hover {
-    background: #E5E7EB;
-    transform: translateY(-2px);
+    background: #4d0758;
 }
 
 .btn-save {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    background: #5f096b;
     color: white;
 }
 
 .btn-save:hover {
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
-    transform: translateY(-2px);
+    background: #4d0758;
+    box-shadow: 0 4px 12px rgba(95, 9, 107, 0.4);
 }
 
 /* Responsive Design */

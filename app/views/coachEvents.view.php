@@ -3,291 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-    <title>UOC_football - Coach Events</title>
-    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/coachDashboard/events-style.css">
+    <title>Coach Events - UOC Football</title>
+    <?php
+    $base = rtrim(ROOT, '/');
+    $cssFile = __DIR__ . '/../../public/assets/css/schedule.css';
+    $cssVersion = file_exists($cssFile) ? filemtime($cssFile) : time();
+    $commonFile = __DIR__ . '/../../public/assets/css/playerCommon.css';
+    $commonVersion = file_exists($commonFile) ? filemtime($commonFile) : time();
+    $noticeCount = isset($data['notices']) ? count($data['notices']) : 0;
+    $noticeBadge = $noticeCount > 99 ? '99+' : (string) $noticeCount;
+    ?>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/schedule.css?v=<?php echo $cssVersion; ?>">
+    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/playerCommon.css?v=<?php echo $commonVersion; ?>">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="left-section">
-                <a href="<?php echo ROOT; ?>/coach">
-                    <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
+    <div class="dashboard-container">
+        <header class="player-header">
+            <div class="logo-section">
+                <img src="<?php echo $base; ?>/assets/images/landingPage/header/uoclogo.png" alt="UOC Football Logo">
+            </div>
+            <nav class="nav-links">
+                <a href="<?php echo $base; ?>/coachDashboard">Home</a>
+                <a href="<?php echo $base; ?>/coachEvents" class="active">Events</a>
+                <a href="<?php echo $base; ?>/coachMealPlan">Meal Plan</a>
+                <a href="<?php echo $base; ?>/coachPerformance">Performance</a>
+                <a href="<?php echo $base; ?>/coachAttendance">Attendance</a>
+                <a href="<?php echo $base; ?>/coachNotices">Notices</a>
+            </nav>
+            <div class="user-section">
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
+                <div class="notification-icon" id="coachNotificationBell">
+                    <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
+                    <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
+                </div>
+                <a class="user-profile" href="<?php echo $base; ?>/coachDashboard#profile" title="Profile">
+                    <img src="<?php echo htmlspecialchars($data['coach_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Coach Avatar">
                 </a>
             </div>
-            <nav class="nav-menu">
-                <a href="<?php echo ROOT; ?>/coachDashboard" class="nav-link">Home</a>
-                <a href="<?php echo ROOT; ?>/coachEvents" class="nav-link active">Events</a>
-                <a href="<?php echo ROOT; ?>/coachMealPlan" class="nav-link">Meal Plan</a>
-                <a href="<?php echo ROOT; ?>/coachPerformance" class="nav-link">Performance</a>
-                <a href="<?php echo ROOT; ?>/coachAttendance" class="nav-link">Attendance</a>
-                <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link">Notices</a>
-            </nav>
-            <div class="right-section">
-                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Coach Avatar">
-            </div>
+        </header>
+
+        <div class="page-header">
+            <h1>Events</h1>
         </div>
 
-        <!-- Filter and Add Button Section -->
-        <div class="page-controls">
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">All Events</button>
-                <button class="filter-btn" data-filter="matches">Matches Only</button>
-                <button class="filter-btn" data-filter="training">Training Only</button>
-            </div>
-            <button class="add-event-btn" onclick="openAddEventModal()">+ Add Event</button>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterEvents('all', this)">All Events</button>
+            <button class="filter-btn" onclick="filterEvents('matches', this)">Matches Only</button>
+            <button class="filter-btn" onclick="filterEvents('training', this)">Training Only</button>
         </div>
 
-        <!-- Events Grid -->
         <div class="events-grid" id="eventsGrid">
-            <!-- Training Session Card 1 -->
-            <div class="event-card training" data-type="training">
-                <div class="event-card-header">
-                    <div class="event-icon-wrapper">
-                        <span class="event-icon">🏃</span>
+            <?php if (!empty($data['events'])): ?>
+                <?php foreach ($data['events'] as $event): ?>
+                    <?php
+                        $typeKey = strtolower((string) ($event['type_key'] ?? $event['type'] ?? 'other'));
+                        $cardType = $typeKey === 'match' ? 'match' : ($typeKey === 'training' ? 'training' : 'other');
+                        $iconText = $cardType === 'match' ? 'M' : ($cardType === 'training' ? 'T' : 'E');
+                    ?>
+                    <div class="event-card" data-type="<?php echo htmlspecialchars($cardType); ?>">
+                        <div class="event-icon <?php echo htmlspecialchars($cardType); ?>">
+                            <?php echo $iconText; ?>
+                        </div>
+                        <div class="event-content">
+                            <h3><?php echo htmlspecialchars($event['title']); ?></h3>
+                            <p class="event-type"><?php echo htmlspecialchars($event['type']); ?></p>
+                            <div class="event-details">
+                                <span><strong>Date:</strong> <?php echo htmlspecialchars($event['date']); ?></span>
+                                <span><strong>Time:</strong> <?php echo htmlspecialchars($event['time']); ?></span>
+                                <span><strong>Location:</strong> <?php echo htmlspecialchars($event['location']); ?></span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="event-header-content">
-                        <h3 class="event-title">Training Session</h3>
-                        <p class="event-subtitle">Training Session</p>
-                    </div>
-                    <div class="event-card-actions">
-                        <button type="button" class="edit-icon-btn" onclick="editEvent(1)" aria-label="Edit event" title="Edit event">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                        </button>
-                        <button type="button" class="delete-icon-btn" aria-label="Delete event" title="Delete event">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                                <path d="M10 11v6M14 11v6"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="event-details">
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <span>September 01 2025</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span>8.00 am - 12.00 pm</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        <span>University Ground</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span>Coach Silva</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Training Session Card 2 -->
-            <div class="event-card training" data-type="training">
-                <div class="event-card-header">
-                    <div class="event-icon-wrapper">
-                        <span class="event-icon">🏃</span>
-                    </div>
-                    <div class="event-header-content">
-                        <h3 class="event-title">Training Session</h3>
-                        <p class="event-subtitle">Training Session</p>
-                    </div>
-                    <div class="event-card-actions">
-                        <button type="button" class="edit-icon-btn" onclick="editEvent(2)" aria-label="Edit event" title="Edit event">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                        </button>
-                        <button type="button" class="delete-icon-btn" aria-label="Delete event" title="Delete event">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                                <path d="M10 11v6M14 11v6"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="event-details">
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <span>September 01 2025</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span>8.00 am - 12.00 pm</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        <span>University Ground</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span>Coach Silva</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Training Session Card 3 -->
-            <div class="event-card training" data-type="training">
-                <div class="event-card-header">
-                    <div class="event-icon-wrapper">
-                        <span class="event-icon">🏃</span>
-                    </div>
-                    <div class="event-header-content">
-                        <h3 class="event-title">Training Session</h3>
-                        <p class="event-subtitle">Training Session</p>
-                    </div>
-                    <div class="event-card-actions">
-                        <button type="button" class="edit-icon-btn" onclick="editEvent(3)" aria-label="Edit event" title="Edit event">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                        </button>
-                        <button type="button" class="delete-icon-btn" aria-label="Delete event" title="Delete event">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                                <path d="M10 11v6M14 11v6"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="event-details">
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <span>September 01 2025</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span>8.00 am - 12.00 pm</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        <span>University Ground</span>
-                    </div>
-                    <div class="detail-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span>Coach Silva</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- More cards would be added dynamically -->
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination">
-            <button class="pagination-btn" disabled>Previous</button>
-            <button class="pagination-btn page-number active">1</button>
-            <button class="pagination-btn page-number">2</button>
-            <button class="pagination-btn page-number">3</button>
-            <button class="pagination-btn">Next</button>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No upcoming events available right now.</p>
+            <?php endif; ?>
         </div>
     </div>
 
-    <!-- Add/Edit Event Modal -->
-    <div id="eventModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Add New Event</h2>
-                <button class="close-btn" onclick="closeEventModal()">&times;</button>
+    <div class="notification-overlay" id="coachNotificationOverlay" style="display: none;">
+        <?php foreach (array_slice($data['notices'] ?? [], 0, 5) as $notice): ?>
+            <div style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #eee;">
+                <p style="font-size:0.86rem; color:#4a1150; font-weight:600; margin-bottom:4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
             </div>
-            <div class="modal-body">
-                <form id="eventForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="eventType">Event Type</label>
-                            <select id="eventType" required>
-                                <option value="">Select type</option>
-                                <option value="training">Training Session</option>
-                                <option value="match">Match</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="eventTitle">Event Title</label>
-                            <input type="text" id="eventTitle" placeholder="Enter event title" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="eventDate">Date</label>
-                            <input type="date" id="eventDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="eventTime">Time</label>
-                            <input type="text" id="eventTime" placeholder="e.g., 8.00 am - 12.00 pm" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="eventLocation">Location</label>
-                            <input type="text" id="eventLocation" placeholder="Enter location" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="eventCoach">Coach</label>
-                            <input type="text" id="eventCoach" placeholder="Enter coach name" required>
-                        </div>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-cancel" onclick="closeEventModal()">Cancel</button>
-                        <button type="submit" class="btn-save">Save Event</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <?php endforeach; ?>
     </div>
 
-    <script src="<?php echo ROOT; ?>/assets/js/coachDashboard/events-script.js"></script>
+    <script>
+        function filterEvents(type, button) {
+            const cards = document.querySelectorAll('.event-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+
+            buttons.forEach((btn) => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            cards.forEach((card) => {
+                if (type === 'all') {
+                    card.style.display = '';
+                } else if (type === 'matches') {
+                    card.style.display = card.dataset.type === 'match' ? '' : 'none';
+                } else if (type === 'training') {
+                    card.style.display = card.dataset.type === 'training' ? '' : 'none';
+                }
+            });
+        }
+
+        const coachBell = document.getElementById('coachNotificationBell');
+        const coachOverlay = document.getElementById('coachNotificationOverlay');
+
+        coachBell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            coachOverlay.style.display = coachOverlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (
+                coachOverlay.style.display === 'block' &&
+                !coachOverlay.contains(e.target) &&
+                !coachBell.contains(e.target)
+            ) {
+                coachOverlay.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                coachOverlay.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
