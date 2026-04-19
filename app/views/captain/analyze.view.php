@@ -14,6 +14,8 @@
     $trendDatasets = $data['trends']['datasets'] ?? [];
     $testResults = $data['test_results'] ?? [];
     $matchHistory = $data['match_history'] ?? [];
+    $noticeCount = isset($data['notices']) ? count($data['notices']) : 0;
+    $noticeBadge = $noticeCount > 99 ? '99+' : (string) $noticeCount;
     $buildTrendPath = function ($values) {
         $points = is_array($values) ? array_values($values) : [];
         if (empty($points)) {
@@ -56,16 +58,18 @@
                 <a href="<?php echo $base; ?>/CaptainAttendance">Attendance</a>
                 <a href="<?php echo $base; ?>/CaptainInventory">Inventory</a>
                 <a href="<?php echo $base; ?>/CaptainFinance">Finance</a>
+                <a href="<?php echo $base; ?>/CaptainMealPlan">Meal Plan</a>
             </nav>
 
             <div class="user-section">
-                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
                 <button class="notification-icon" id="notificationBell" type="button" aria-label="Show notifications">
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications">
+                    <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
                 </button>
                 <a class="user-profile" href="<?php echo $base; ?>/captainDashboard" title="Open profile">
-                    <img src="<?php echo htmlspecialchars($data['player_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="User Profile">
+                    <img src="<?php echo htmlspecialchars($data['captain_image'] ?? $data['player_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="User Profile">
                 </a>
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
             </div>
         </header>
 
@@ -244,15 +248,26 @@
         </main>
 
         <div class="notification-overlay" id="notificationOverlay" hidden>
-            <p class="notify-title">Notifications</p>
-            <div class="notify-item">
-                <p>New fitness test results have been uploaded. Your speed has improved by 4%.</p>
-                <span>2 hours ago</span>
-            </div>
+            <p class="notify-title">Latest Notices</p>
+            <?php foreach (array_slice($data['notices'] ?? [], 0, 5) as $notice): ?>
+                <div class="notify-item" style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #eee;">
+                    <p style="font-size:0.8rem; color:#4a1150; font-weight:600; margin-bottom:4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                    <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+                </div>
+            <?php endforeach; ?>
+            <?php if (empty($data['notices'])): ?>
+                <p style="font-size:0.82rem; color:#6b7280;">No notices available.</p>
+            <?php endif; ?>
         </div>
     </div>
 
     <script>
+        window.HEADER_PROFILE_MODAL_CONFIG = {
+            fetchUrl: '<?php echo $base; ?>/captainDashboard/profileData',
+            updateUrl: '<?php echo $base; ?>/captainDashboard/updateProfile',
+            triggerSelector: '.user-profile'
+        };
+
         const bell = document.getElementById('notificationBell');
         const overlay = document.getElementById('notificationOverlay');
 
@@ -262,10 +277,11 @@
         });
 
         document.addEventListener('click', function (e) {
-            if (!overlay.contains(e.target) && e.target !== bell) {
+            if (!overlay.contains(e.target) && !bell.contains(e.target)) {
                 overlay.hidden = true;
             }
         });
     </script>
+    <script src="<?php echo $base; ?>/assets/js/common/headerProfileModal.js"></script>
 </body>
 </html>

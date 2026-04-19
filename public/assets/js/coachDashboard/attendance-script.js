@@ -231,14 +231,85 @@ function exportReport() {
         return;
     }
 
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('PDF library is not loaded. Please refresh and try again.');
+        return;
+    }
+
     const dateInput = document.getElementById('dateFilter');
     const typeSelect = document.getElementById('seasonFilter');
-    const params = new URLSearchParams({
-        date: (dateInput && dateInput.value) || CONFIG.selectedDate || '',
-        type: (typeSelect && typeSelect.value) || CONFIG.selectedType || 'Practice'
+    const dateValue = (dateInput && dateInput.value) || CONFIG.selectedDate || '';
+    const typeValue = (typeSelect && typeSelect.value) || CONFIG.selectedType || 'Practice';
+
+    const rows = Array.from(document.querySelectorAll('.attendance-table tbody tr[data-player-id]')).map((row) => {
+        const name = row.querySelector('.player-info span')?.textContent?.trim() || 'Player';
+        const position = row.cells[1]?.textContent?.trim() || '-';
+        const status = row.querySelector('.status-badge')?.textContent?.trim() || 'Absent';
+        return { name, position, status };
     });
 
-    window.location.href = String(CONFIG.baseUrl || '/coachAttendance') + '/export?' + params.toString();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const left = 40;
+    const right = pageWidth - 40;
+    let y = 48;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('UOC Football - Attendance Report', left, y);
+
+    y += 20;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`Date: ${dateValue || 'N/A'}`, left, y);
+    doc.text(`Session Type: ${typeValue}`, left + 180, y);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, left + 340, y);
+
+    y += 22;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(left, y, right, y);
+    y += 18;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Player', left, y);
+    doc.text('Position', left + 270, y);
+    doc.text('Status', left + 420, y);
+
+    y += 10;
+    doc.line(left, y, right, y);
+    y += 16;
+
+    doc.setFont('helvetica', 'normal');
+    rows.forEach((row) => {
+        if (y > pageHeight - 42) {
+            doc.addPage();
+            y = 48;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Player', left, y);
+            doc.text('Position', left + 270, y);
+            doc.text('Status', left + 420, y);
+            y += 10;
+            doc.line(left, y, right, y);
+            y += 16;
+            doc.setFont('helvetica', 'normal');
+        }
+
+        const playerName = String(row.name || '').slice(0, 42);
+        const position = String(row.position || '').slice(0, 22);
+        const status = String(row.status || '').slice(0, 12);
+
+        doc.text(playerName, left, y);
+        doc.text(position, left + 270, y);
+        doc.text(status, left + 420, y);
+        y += 16;
+    });
+
+    const safeType = String(typeValue).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const filename = `coach-attendance-${dateValue || 'report'}-${safeType}.pdf`;
+    doc.save(filename);
 }
 
 function createAttendanceTrendChart() {

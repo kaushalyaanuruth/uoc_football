@@ -12,7 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemName = document.getElementById('item_name');
     const category = document.getElementById('category');
     const quantity = document.getElementById('quantity');
+    const unit = document.getElementById('unit');
     const status = document.getElementById('status');
+    const location = document.getElementById('location');
+    const icon = document.getElementById('icon');
+    const description = document.getElementById('description');
     const categoryFilter = document.getElementById('categoryFilter');
 
     const totalEl = document.getElementById('captainTotalItems');
@@ -113,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${escapeHtml(item.item_name || '')}</td>
                 <td>${escapeHtml(item.category || 'General')}</td>
                 <td>${Number(item.total_count || 0)}</td>
+                <td>${Number(item.available_count || 0)}</td>
+                <td>${escapeHtml(item.taken_by || '-')}</td>
                 <td><span class="status ${escapeHtml(key.replace('_', ''))}">${escapeHtml(statusLabel)}</span></td>
                 <td>${escapeHtml(item.last_updated || '')}</td>
                 <td class="actions">
@@ -248,16 +254,64 @@ document.addEventListener('DOMContentLoaded', () => {
     function openModalForAdd() {
         inventoryForm.reset();
         itemId.value = '';
+        if (unit) {
+            unit.value = 'pcs';
+        }
+        if (icon) {
+            icon.value = 'inventory_2';
+        }
         modal.querySelector('.modal-header span').innerText = 'Add Inventory Item';
         modal.style.display = 'flex';
     }
 
+    function findItemById(id) {
+        const numericId = Number(id || 0);
+        return allItems.find((item) => Number(item.item_id || 0) === numericId) || null;
+    }
+
     function openModalForEdit(row) {
-        itemId.value = row.dataset.id || '';
-        itemName.value = row.children[0].innerText.trim();
-        category.value = row.children[1].innerText.trim();
-        quantity.value = row.children[2].innerText.trim();
-        status.value = row.children[3].innerText.trim();
+        const idVal = row.dataset.id || '';
+        const item = findItemById(idVal);
+
+        itemId.value = idVal;
+        if (!item) {
+            itemName.value = row.children[0].innerText.trim();
+            category.value = row.children[1].innerText.trim();
+            quantity.value = row.children[2].innerText.trim();
+            status.value = row.children[5].innerText.trim();
+            if (unit) {
+                unit.value = 'pcs';
+            }
+            if (location) {
+                location.value = '';
+            }
+            if (icon) {
+                icon.value = 'inventory_2';
+            }
+            if (description) {
+                description.value = '';
+            }
+            modal.querySelector('.modal-header span').innerText = 'Edit Inventory Item';
+            modal.style.display = 'flex';
+            return;
+        }
+
+        itemName.value = item.item_name || '';
+        category.value = item.category || 'General';
+        quantity.value = Number(item.total_count || 0);
+        if (unit) {
+            unit.value = item.unit || 'pcs';
+        }
+        status.value = item.status || 'Available';
+        if (location) {
+            location.value = item.location || '';
+        }
+        if (icon) {
+            icon.value = item.icon || 'inventory_2';
+        }
+        if (description) {
+            description.value = item.description || '';
+        }
         modal.querySelector('.modal-header span').innerText = 'Edit Inventory Item';
         modal.style.display = 'flex';
     }
@@ -270,7 +324,11 @@ document.addEventListener('DOMContentLoaded', () => {
             item_name: itemName.value.trim(),
             quantity: Number(quantity.value || 0),
             category: category.value.trim(),
-            status: status.value.trim()
+            unit: unit ? unit.value.trim() : 'pcs',
+            status: status.value.trim(),
+            location: location ? location.value.trim() : '',
+            icon: icon ? icon.value.trim() : 'inventory_2',
+            description: description ? description.value.trim() : ''
         };
 
         const isEdit = payload.item_id > 0;

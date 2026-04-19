@@ -73,8 +73,13 @@ function inventoryIconSymbol($icon, $itemName = '')
                     <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
                 </a>
             </div>
-            <div class="right-section">
-                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Admin Avatar">
+            <div class="right-section user-section">
+                <a href="<?php echo ROOT; ?>/adminDashboard?openNotifications=1" class="notification-icon" title="Notifications" aria-label="Notifications">
+                    <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+                </a>
+                <a href="<?php echo ROOT; ?>/adminDashboard?openProfile=1" class="user-profile" title="Admin Profile" aria-label="Admin Profile">
+                    <img class="avatar" src="<?php echo htmlspecialchars($_SESSION['admin_profile_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Admin Avatar">
+                </a>
                 <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -116,7 +121,9 @@ function inventoryIconSymbol($icon, $itemName = '')
                 <div class="inventory-list-head">
                     <span>Item</span>
                     <span>Category</span>
-                    <span>Stock</span>
+                    <span>Total</span>
+                    <span>Available</span>
+                    <span>Taken By</span>
                     <span>Status</span>
                     <span>Location</span>
                     <span>Actions</span>
@@ -135,6 +142,8 @@ function inventoryIconSymbol($icon, $itemName = '')
                             </div>
                             <span class="item-category"><?php echo htmlspecialchars($item['category'], ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="item-stock"><?php echo (int) $item['quantity']; ?> <?php echo htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span class="item-available"><?php echo (int) ($item['available_quantity'] ?? 0); ?> <?php echo htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span class="item-taken-by"><?php echo htmlspecialchars((string) ($item['taken_by'] ?? '-'), ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="status-badge status-<?php echo htmlspecialchars($item['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($item['status_label'] ?? ucfirst($item['status']), ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="item-location"><?php echo htmlspecialchars($item['location'], ENT_QUOTES, 'UTF-8'); ?></span>
                             <div class="row-actions">
@@ -228,5 +237,9 @@ function inventoryIconSymbol($icon, $itemName = '')
         };
     </script>
     <script src="<?php echo ROOT; ?>/assets/js/inventoryManagement/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/potal/adminHeaderPopup.js"></script>
 </body>
 </html>
+
+
+

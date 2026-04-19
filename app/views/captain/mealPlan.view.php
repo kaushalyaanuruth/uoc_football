@@ -8,6 +8,8 @@
     $base = rtrim(ROOT, '/');
     $commonFile = __DIR__ . '/../../../public/assets/css/playerCommon.css';
     $commonVersion = file_exists($commonFile) ? filemtime($commonFile) : time();
+    $noticeCount = isset($data['notices']) ? count($data['notices']) : 0;
+    $noticeBadge = $noticeCount > 99 ? '99+' : (string) $noticeCount;
     ?>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/mealPlan.css">
@@ -24,18 +26,34 @@
                 <a href="<?php echo $base; ?>/CaptainSchedule">Schedule</a>
                 <a href="<?php echo $base; ?>/CaptainAnalyze">Analyze</a>
                 <a href="<?php echo $base; ?>/CaptainAttendance">Attendance</a>
+                <a href="<?php echo $base; ?>/CaptainInventory">Inventory</a>
                 <a href="<?php echo $base; ?>/CaptainFinance">Finance</a>
                 <a href="<?php echo $base; ?>/CaptainMealPlan" class="active">Meal Plan</a>
             </nav>
             <div class="user-section">
                 <div class="notification-icon" id="notificationBell">
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
+                    <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
                 </div>
-                <div class="user-profile">
+                <a class="user-profile" href="<?php echo $base; ?>/captainDashboard" title="Open profile">
                     <img src="<?php echo htmlspecialchars($data['captain_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Captain Profile">
-                </div>
+                </a>
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
             </div>
         </header>
+
+        <div class="notification-overlay" id="notificationOverlay" style="display: none;">
+            <p style="font-size: 0.82rem; color: #4a1150; font-weight: 700; margin-bottom: 10px;">Latest Notices</p>
+            <?php foreach (array_slice($data['notices'] ?? [], 0, 5) as $notice): ?>
+                <div style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #eee;">
+                    <p style="font-size:0.8rem; color:#4a1150; font-weight:600; margin-bottom:4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                    <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+                </div>
+            <?php endforeach; ?>
+            <?php if (empty($data['notices'])): ?>
+                <p style="font-size:0.82rem; color:#6b7280;">No notices available.</p>
+            <?php endif; ?>
+        </div>
 
         <div class="page-header">
             <h1>Weekly Meal Plan</h1>
@@ -106,6 +124,12 @@
     </div>
 
     <script>
+        window.HEADER_PROFILE_MODAL_CONFIG = {
+            fetchUrl: '<?php echo $base; ?>/captainDashboard/profileData',
+            updateUrl: '<?php echo $base; ?>/captainDashboard/updateProfile',
+            triggerSelector: '.user-profile'
+        };
+
         const weeklyMeals = <?php echo json_encode($data['meals'] ?? []); ?>;
 
         function normalizeMealType(type) {
@@ -161,6 +185,21 @@
         document.addEventListener('DOMContentLoaded', function () {
             renderMealsForType('breakfast');
         });
+
+        const bell = document.getElementById('notificationBell');
+        const overlay = document.getElementById('notificationOverlay');
+
+        bell?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (overlay && overlay.style.display === 'block' && !overlay.contains(e.target) && !bell.contains(e.target)) {
+                overlay.style.display = 'none';
+            }
+        });
     </script>
+    <script src="<?php echo $base; ?>/assets/js/common/headerProfileModal.js"></script>
 </body>
 </html>

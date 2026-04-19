@@ -50,7 +50,6 @@
                 <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link">Notices</a>
             </nav>
             <div class="right-section">
-                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
                 <div class="notification-icon" id="coachNotificationBell">
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                     <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
@@ -58,6 +57,7 @@
                 <a class="user-profile" href="<?php echo $base; ?>/coachDashboard#profile" title="Profile">
                     <img src="<?php echo htmlspecialchars($data['coach_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Coach Avatar">
                 </a>
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
             </div>
         </div>
 
@@ -353,6 +353,14 @@
             'selected_player_id' => $selectedPlayerId,
         ]); ?>;
     </script>
+    <script>
+        window.HEADER_PROFILE_MODAL_CONFIG = {
+            fetchUrl: '<?php echo $base; ?>/coachDashboard/profileData',
+            updateUrl: '<?php echo $base; ?>/coachDashboard/updateProfile',
+            triggerSelector: '.user-profile'
+        };
+    </script>
+    <script src="<?php echo $base; ?>/assets/js/common/headerProfileModal.js"></script>
     <script src="<?php echo ROOT; ?>/assets/js/coachDashboard/performance-script.js"></script>
     <script>
         const coachBell = document.getElementById('coachNotificationBell');

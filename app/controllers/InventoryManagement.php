@@ -118,23 +118,47 @@ class InventoryManagement extends Controller
         return 'Available';
     }
 
-    private function mapDbItemToView($row)
+    private function mapDbItemToView($row, $takenSummary = [])
     {
         $statusKey = $this->normalizeStatusKey($row->status ?? 'Available');
+        $itemId = (int) ($row->item_id ?? 0);
+        $borrowInfo = $takenSummary[$itemId] ?? ['borrowed_qty' => 0, 'taken_by' => ''];
+        $takenBy = trim((string) ($borrowInfo['taken_by'] ?? ''));
 
         return [
-            'id' => (int) ($row->item_id ?? 0),
+            'id' => $itemId,
             'name' => trim((string) ($row->item_name ?? '')),
             'category' => trim((string) ($row->category ?? 'General')),
             'quantity' => (int) ($row->total_count ?? 0),
+            'available_quantity' => (int) ($row->available_count ?? 0),
             'unit' => trim((string) ($row->unit ?? 'pcs')),
             'status' => $statusKey,
             'status_label' => $this->statusLabelFromKey($statusKey),
             'location' => trim((string) ($row->location ?? '')),
             'description' => trim((string) ($row->description ?? '')),
             'icon' => $this->normalizeStoredIcon($row->icon ?? '', $row->item_name ?? ''),
+            'borrowed_quantity' => (int) ($borrowInfo['borrowed_qty'] ?? 0),
+            'taken_by' => $takenBy !== '' ? $takenBy : '-',
             'last_updated' => (string) ($row->last_updated ?? ''),
         ];
+    }
+
+    private function buildTakenSummaryMap($rows)
+    {
+        $map = [];
+        foreach ($rows as $row) {
+            $itemId = (int) ($row->item_id ?? 0);
+            if ($itemId <= 0) {
+                continue;
+            }
+
+            $map[$itemId] = [
+                'borrowed_qty' => (int) ($row->borrowed_qty ?? 0),
+                'taken_by' => trim((string) ($row->taken_by ?? '')),
+            ];
+        }
+
+        return $map;
     }
 
     private function ensureAuth()
@@ -170,9 +194,10 @@ class InventoryManagement extends Controller
         $model = new InventoryModel();
         $model->seedDummyItemsIfEmpty($teamId, (string) ($_SESSION['nic'] ?? $_SESSION['user_nic'] ?? ''));
         $rows = $model->getAllItems($teamId);
+        $takenSummary = $this->buildTakenSummaryMap($model->getOpenTakenSummaryByItem($teamId));
         $items = [];
         foreach ($rows as $row) {
-            $items[] = $this->mapDbItemToView($row);
+            $items[] = $this->mapDbItemToView($row, $takenSummary);
         }
 
         $stats = $model->getStats($teamId);
@@ -340,10 +365,11 @@ class InventoryManagement extends Controller
             if ($row === null) {
                 throw new Exception('Item not found');
             }
+            $takenSummary = $this->buildTakenSummaryMap($model->getOpenTakenSummaryByItem($teamId));
 
             $this->respond([
                 'success' => true,
-                'data' => $this->mapDbItemToView($row)
+                'data' => $this->mapDbItemToView($row, $takenSummary)
             ]);
         } catch (Exception $e) {
             $this->respond([
@@ -366,10 +392,11 @@ class InventoryManagement extends Controller
             $model = new InventoryModel();
             $model->seedDummyItemsIfEmpty($teamId, (string) ($_SESSION['nic'] ?? $_SESSION['user_nic'] ?? ''));
             $snapshot = $model->getSnapshot($teamId);
+            $takenSummary = $this->buildTakenSummaryMap($model->getOpenTakenSummaryByItem($teamId));
 
             $items = [];
             foreach ($snapshot['items'] as $row) {
-                $items[] = $this->mapDbItemToView($row);
+                $items[] = $this->mapDbItemToView($row, $takenSummary);
             }
 
             $stats = $snapshot['stats'];

@@ -6,6 +6,7 @@ class InventoryModel
 
     protected $table = 'inventory_items';
     private $columnCache = null;
+    private $inventoryLogReady = false;
 
     private function getColumns()
     {
@@ -163,6 +164,49 @@ class InventoryModel
 
         $rows = $this->query("SELECT nic FROM users ORDER BY nic ASC LIMIT 1");
         return (string) ($rows[0]->nic ?? '');
+    }
+
+    private function ensureInventoryLogTable()
+    {
+        if ($this->inventoryLogReady) {
+            return;
+        }
+
+        try {
+            $this->query(
+                "CREATE TABLE IF NOT EXISTS inventory_log (
+                    log_id INT(32) PRIMARY KEY AUTO_INCREMENT,
+                    item_id INT(32) NOT NULL,
+                    taken_by INT(32) NOT NULL,
+                    quantity INT(32) NOT NULL,
+                    taken_date DATE NOT NULL,
+                    return_date DATE DEFAULT NULL,
+                    FOREIGN KEY (item_id) REFERENCES inventory_items(item_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                    FOREIGN KEY (taken_by) REFERENCES players(player_id) ON DELETE RESTRICT ON UPDATE CASCADE
+                )"
+            );
+        } catch (Exception $e) {
+            // If table creation is not allowed, queries below will throw with a clear message.
+        }
+
+        $this->inventoryLogReady = true;
+    }
+
+    private function statusFromCounts($totalCount, $availableCount, $existingStatus = 'Available')
+    {
+        $existing = $this->normalizeStatusLabel($existingStatus);
+        if ($existing === 'Damaged') {
+            return 'Damaged';
+        }
+
+        $total = max(0, (int) $totalCount);
+        $available = max(0, min($total, (int) $availableCount));
+
+        if ($total > 0 && $available === $total) {
+            return 'Available';
+        }
+
+        return 'In Use';
     }
 
     public function addItem($data, $teamId = null)
@@ -497,5 +541,294 @@ class InventoryModel
                 'updated_by' => $validUpdatedBy,
             ], $teamId);
         }
+    }
+
+    public function getPlayerOpenLogs($playerId, $teamId)
+    {
+        $this->ensureInventoryLogTable();
+
+        $params = ['player_id' => (int) $playerId];
+        $teamWhere = '';
+        if ($this->hasColumn('team_id')) {
+            $teamWhere = ' AND i.team_id = :team_id';
+            $params['team_id'] = (int) $teamId;
+        }
+
+        return $this->query(
+            "SELECT
+                l.log_id,
+                l.item_id,
+                l.quantity,
+                l.taken_date,
+                l.return_date,
+                i.item_name,
+                " . $this->categoryExpression() . " AS category,
+                " . $this->unitExpression() . " AS unit
+             FROM inventory_log l
+             JOIN inventory_items i ON i.item_id = l.item_id
+             WHERE l.taken_by = :player_id
+               AND l.return_date IS NULL{$teamWhere}
+             ORDER BY l.taken_date DESC, l.log_id DESC",
+            $params
+        );
+    }
+
+    public function getPlayerRecentLogs($playerId, $teamId, $limit = 15)
+    {
+        $this->ensureInventoryLogTable();
+
+        $params = ['player_id' => (int) $playerId];
+        $teamWhere = '';
+        if ($this->hasColumn('team_id')) {
+            $teamWhere = ' AND i.team_id = :team_id';
+            $params['team_id'] = (int) $teamId;
+        }
+
+        $limitVal = max(1, (int) $limit);
+
+        return $this->query(
+            "SELECT
+                l.log_id,
+                l.item_id,
+                l.quantity,
+                l.taken_date,
+                l.return_date,
+                i.item_name,
+                " . $this->categoryExpression() . " AS category,
+                " . $this->unitExpression() . " AS unit
+             FROM inventory_log l
+             JOIN inventory_items i ON i.item_id = l.item_id
+             WHERE l.taken_by = :player_id
+               AND l.return_date IS NOT NULL{$teamWhere}
+             ORDER BY l.return_date DESC, l.log_id DESC
+             LIMIT {$limitVal}",
+            $params
+        );
+    }
+
+    public function getOpenTakenSummaryByItem($teamId)
+    {
+        $this->ensureInventoryLogTable();
+
+        $params = [];
+        $teamWhere = '';
+        if ($this->hasColumn('team_id')) {
+            $teamWhere = ' AND i.team_id = :team_id';
+            $params['team_id'] = (int) $teamId;
+        }
+
+        return $this->query(
+            "SELECT
+                l.item_id,
+                COALESCE(SUM(l.quantity), 0) AS borrowed_qty,
+                GROUP_CONCAT(
+                    CONCAT(
+                        COALESCE(NULLIF(TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))), ''), p.nic),
+                        ' (',
+                        l.quantity,
+                        ')'
+                    )
+                    ORDER BY l.log_id ASC
+                    SEPARATOR ', '
+                ) AS taken_by
+             FROM inventory_log l
+             JOIN inventory_items i ON i.item_id = l.item_id
+             JOIN players p ON p.player_id = l.taken_by
+             JOIN users u ON u.nic = p.nic
+             WHERE l.return_date IS NULL{$teamWhere}
+             GROUP BY l.item_id",
+            $params
+        );
+    }
+
+    public function takeItemForPlayer($itemId, $playerId, $teamId, $quantity, $updatedByNic)
+    {
+        $this->ensureStatusColumn();
+        $this->ensureInventoryLogTable();
+
+        $itemId = (int) $itemId;
+        $playerId = (int) $playerId;
+        $teamId = (int) $teamId;
+        $quantity = max(1, (int) $quantity);
+
+        $item = $this->getItemById($itemId, $teamId);
+        if ($item === null) {
+            throw new Exception('Item not found');
+        }
+
+        $itemStatus = $this->normalizeStatusLabel($item->status ?? 'Available');
+        if ($itemStatus === 'Damaged') {
+            throw new Exception('Damaged items cannot be taken');
+        }
+
+        $available = max(0, (int) ($item->available_count ?? 0));
+        if ($available < $quantity) {
+            throw new Exception('Requested quantity is not available');
+        }
+
+        $total = max(0, (int) ($item->total_count ?? 0));
+        $newAvailable = max(0, $available - $quantity);
+        $newStatus = $this->statusFromCounts($total, $newAvailable, $item->status ?? 'Available');
+        $updatedBy = $this->resolveUpdatedByNic($updatedByNic);
+        if ($updatedBy === '') {
+            throw new Exception('Unable to resolve update user');
+        }
+
+        $params = [
+            'item_id' => $itemId,
+            'available_count' => $newAvailable,
+            'updated_by' => $updatedBy,
+        ];
+
+        $where = 'item_id = :item_id';
+        if ($this->hasColumn('team_id')) {
+            $where .= ' AND team_id = :team_id';
+            $params['team_id'] = $teamId;
+        }
+
+        if ($this->hasColumn('status')) {
+            $params['status'] = $newStatus;
+            $this->query(
+                "UPDATE inventory_items
+                 SET available_count = :available_count,
+                     status = :status,
+                     updated_by = :updated_by
+                 WHERE {$where}",
+                $params
+            );
+        } else {
+            $this->query(
+                "UPDATE inventory_items
+                 SET available_count = :available_count,
+                     updated_by = :updated_by
+                 WHERE {$where}",
+                $params
+            );
+        }
+
+        $this->query(
+            "INSERT INTO inventory_log (item_id, taken_by, quantity, taken_date, return_date)
+             VALUES (:item_id, :player_id, :quantity, CURDATE(), NULL)",
+            [
+                'item_id' => $itemId,
+                'player_id' => $playerId,
+                'quantity' => $quantity,
+            ]
+        );
+
+        return [
+            'item_id' => $itemId,
+            'taken_quantity' => $quantity,
+            'available_count' => $newAvailable,
+            'status' => $newStatus,
+        ];
+    }
+
+    public function returnItemForPlayer($logId, $playerId, $teamId, $updatedByNic)
+    {
+        $this->ensureStatusColumn();
+        $this->ensureInventoryLogTable();
+
+        $logId = (int) $logId;
+        $playerId = (int) $playerId;
+        $teamId = (int) $teamId;
+
+        if ($logId <= 0) {
+            throw new Exception('Log ID is required');
+        }
+
+        $params = [
+            'log_id' => $logId,
+            'player_id' => $playerId,
+        ];
+
+        $teamWhere = '';
+        if ($this->hasColumn('team_id')) {
+            $teamWhere = ' AND i.team_id = :team_id';
+            $params['team_id'] = $teamId;
+        }
+
+        $rows = $this->query(
+            "SELECT
+                l.log_id,
+                l.item_id,
+                l.quantity,
+                i.total_count,
+                i.available_count,
+                " . $this->statusExpression() . " AS status
+             FROM inventory_log l
+             JOIN inventory_items i ON i.item_id = l.item_id
+             WHERE l.log_id = :log_id
+               AND l.taken_by = :player_id
+               AND l.return_date IS NULL{$teamWhere}",
+            $params
+        );
+
+        $log = $rows[0] ?? null;
+        if ($log === null) {
+            throw new Exception('Borrow record not found');
+        }
+
+        $total = max(0, (int) ($log->total_count ?? 0));
+        $available = max(0, (int) ($log->available_count ?? 0));
+        $returnQty = max(0, (int) ($log->quantity ?? 0));
+        $newAvailable = min($total, $available + $returnQty);
+        $newStatus = $this->statusFromCounts($total, $newAvailable, $log->status ?? 'In Use');
+        $updatedBy = $this->resolveUpdatedByNic($updatedByNic);
+        if ($updatedBy === '') {
+            throw new Exception('Unable to resolve update user');
+        }
+
+        $itemParams = [
+            'item_id' => (int) $log->item_id,
+            'available_count' => $newAvailable,
+            'updated_by' => $updatedBy,
+        ];
+
+        $where = 'item_id = :item_id';
+        if ($this->hasColumn('team_id')) {
+            $where .= ' AND team_id = :team_id';
+            $itemParams['team_id'] = $teamId;
+        }
+
+        if ($this->hasColumn('status')) {
+            $itemParams['status'] = $newStatus;
+            $this->query(
+                "UPDATE inventory_items
+                 SET available_count = :available_count,
+                     status = :status,
+                     updated_by = :updated_by
+                 WHERE {$where}",
+                $itemParams
+            );
+        } else {
+            $this->query(
+                "UPDATE inventory_items
+                 SET available_count = :available_count,
+                     updated_by = :updated_by
+                 WHERE {$where}",
+                $itemParams
+            );
+        }
+
+        $this->query(
+            "UPDATE inventory_log
+             SET return_date = CURDATE()
+             WHERE log_id = :log_id
+               AND taken_by = :player_id
+               AND return_date IS NULL",
+            [
+                'log_id' => $logId,
+                'player_id' => $playerId,
+            ]
+        );
+
+        return [
+            'log_id' => $logId,
+            'item_id' => (int) $log->item_id,
+            'returned_quantity' => $returnQty,
+            'available_count' => $newAvailable,
+            'status' => $newStatus,
+        ];
     }
 }

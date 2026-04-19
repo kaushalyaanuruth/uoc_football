@@ -32,7 +32,6 @@
                 <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link">Notices</a>
             </nav>
             <div class="right-section">
-                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
                 <div class="notification-icon" id="coachNotificationBell">
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                     <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
@@ -40,6 +39,7 @@
                 <div class="user-profile" id="profileTrigger" title="Edit Profile" role="button" tabindex="0">
                     <img id="navbarProfileImage" src="<?php echo htmlspecialchars($data['coach_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Coach Avatar">
                 </div>
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
             </div>
         </div>
 

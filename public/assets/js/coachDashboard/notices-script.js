@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNoticeCards();
     initializeButtons();
     initializeNoticeModal();
+    initializeNoticeActions();
 });
 
 // Search functionality
@@ -53,7 +54,11 @@ function initializeNoticeCards() {
     const noticeCards = document.querySelectorAll('.notice-card');
     
     noticeCards.forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function(event) {
+            if (event.target.closest('.notice-actions')) {
+                return;
+            }
+
             const title = this.querySelector('.notice-title').textContent;
             const description = this.querySelector('.notice-description').textContent;
             const author = this.querySelector('.meta-item:first-child span').textContent;
@@ -89,7 +94,7 @@ function initializeButtons() {
     
     if (addNoticeBtn) {
         addNoticeBtn.addEventListener('click', function() {
-            toggleNoticeModal(true);
+            openNoticeModalForCreate();
         });
     }
     
@@ -100,6 +105,58 @@ function initializeButtons() {
             toggleFilterPanel();
         });
     }
+}
+
+function initializeNoticeActions() {
+    document.querySelectorAll('.notice-edit-btn').forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const card = event.currentTarget.closest('.notice-card');
+            const noticeId = Number(card && card.dataset ? card.dataset.noticeId : 0);
+            const title = card ? (card.querySelector('.notice-title')?.textContent || '') : '';
+            const content = card ? (card.querySelector('.notice-description')?.textContent || '') : '';
+            openNoticeModalForEdit(noticeId, title.trim(), content.trim());
+        });
+    });
+
+    document.querySelectorAll('.notice-delete-btn').forEach((btn) => {
+        btn.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const card = event.currentTarget.closest('.notice-card');
+            const noticeId = Number(card && card.dataset ? card.dataset.noticeId : 0);
+            if (!noticeId) {
+                return;
+            }
+
+            if (!confirm('Delete this notice?')) {
+                return;
+            }
+
+            const endpoint = (window.COACH_NOTICE_CONFIG && window.COACH_NOTICE_CONFIG.deleteNoticeUrl)
+                ? window.COACH_NOTICE_CONFIG.deleteNoticeUrl
+                : '/coachNotices/deleteNotice';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ notice_id: noticeId })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result || !result.success) {
+                    throw new Error((result && result.message) ? result.message : 'Failed to delete notice.');
+                }
+
+                window.location.reload();
+            } catch (error) {
+                alert(error.message || 'Failed to delete notice.');
+            }
+        });
+    });
 }
 
 function initializeNoticeModal() {
@@ -145,6 +202,71 @@ function toggleNoticeModal(show) {
     }
 }
 
+function openNoticeModalForCreate() {
+    const form = document.getElementById('coachNoticeForm');
+    const title = document.getElementById('coachNoticeTitle');
+    const content = document.getElementById('coachNoticeContent');
+    const idInput = document.getElementById('coachNoticeId');
+    const modalTitle = document.getElementById('coachNoticeModalTitle');
+    const submitBtn = document.getElementById('submitCoachNotice');
+
+    if (form) {
+        form.reset();
+    }
+
+    if (idInput) {
+        idInput.value = '';
+    }
+
+    if (modalTitle) {
+        modalTitle.textContent = 'Add Notice';
+    }
+
+    if (submitBtn) {
+        submitBtn.textContent = 'Post Notice';
+    }
+
+    if (title) {
+        title.value = '';
+    }
+
+    if (content) {
+        content.value = '';
+    }
+
+    toggleNoticeModal(true);
+}
+
+function openNoticeModalForEdit(noticeId, title, content) {
+    const idInput = document.getElementById('coachNoticeId');
+    const titleInput = document.getElementById('coachNoticeTitle');
+    const contentInput = document.getElementById('coachNoticeContent');
+    const modalTitle = document.getElementById('coachNoticeModalTitle');
+    const submitBtn = document.getElementById('submitCoachNotice');
+
+    if (idInput) {
+        idInput.value = String(noticeId || '');
+    }
+
+    if (titleInput) {
+        titleInput.value = title || '';
+    }
+
+    if (contentInput) {
+        contentInput.value = content || '';
+    }
+
+    if (modalTitle) {
+        modalTitle.textContent = 'Edit Notice';
+    }
+
+    if (submitBtn) {
+        submitBtn.textContent = 'Update Notice';
+    }
+
+    toggleNoticeModal(true);
+}
+
 async function submitNoticeForm(event) {
     event.preventDefault();
 
@@ -155,15 +277,22 @@ async function submitNoticeForm(event) {
 
     const title = (titleInput ? titleInput.value : '').trim();
     const content = (contentInput ? contentInput.value : '').trim();
+    const noticeIdInput = document.getElementById('coachNoticeId');
+    const noticeId = Number(noticeIdInput ? noticeIdInput.value : 0);
+    const isEditMode = noticeId > 0;
 
     if (!title || !content) {
         alert('Title and content are required.');
         return;
     }
 
-    const endpoint = (window.COACH_NOTICE_CONFIG && window.COACH_NOTICE_CONFIG.addNoticeUrl)
-        ? window.COACH_NOTICE_CONFIG.addNoticeUrl
-        : '/coachNotices/addNotice';
+    const endpoint = isEditMode
+        ? ((window.COACH_NOTICE_CONFIG && window.COACH_NOTICE_CONFIG.updateNoticeUrl)
+            ? window.COACH_NOTICE_CONFIG.updateNoticeUrl
+            : '/coachNotices/updateNotice')
+        : ((window.COACH_NOTICE_CONFIG && window.COACH_NOTICE_CONFIG.addNoticeUrl)
+            ? window.COACH_NOTICE_CONFIG.addNoticeUrl
+            : '/coachNotices/addNotice');
 
     if (submitBtn) {
         submitBtn.disabled = true;
@@ -177,7 +306,9 @@ async function submitNoticeForm(event) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ title, content })
+            body: JSON.stringify(isEditMode
+                ? { notice_id: noticeId, title, content }
+                : { title, content })
         });
 
         const text = await response.text();
@@ -201,7 +332,7 @@ async function submitNoticeForm(event) {
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Post Notice';
+            submitBtn.textContent = isEditMode ? 'Update Notice' : 'Post Notice';
         }
     }
 }

@@ -31,10 +31,10 @@
             <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
             <a href="<?= ROOT ?>/CaptainInventory">Inventory</a>
             <a href="#" class="active">Finance</a>
+            <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a>
         </nav>
 
         <div class="nav-right">
-            <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
             <div class="notification-icon" id="captainNotificationBell">
                 <img src="<?php echo ROOT; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                 <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
@@ -42,6 +42,7 @@
             <a class="user-profile" href="<?= ROOT ?>/captainDashboard" title="Profile">
                 <img src="<?php echo htmlspecialchars($data['captain_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Captain Avatar">
             </a>
+            <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
         </div>
     </header>
 
@@ -333,6 +334,11 @@
 </body>
 <script>
     window.APP_ROOT = "<?= ROOT ?>";
+    window.HEADER_PROFILE_MODAL_CONFIG = {
+        fetchUrl: '<?= ROOT ?>/captainDashboard/profileData',
+        updateUrl: '<?= ROOT ?>/captainDashboard/updateProfile',
+        triggerSelector: '.user-profile'
+    };
 
     const captainBell = document.getElementById('captainNotificationBell');
     const captainOverlay = document.getElementById('captainNotificationOverlay');
@@ -349,6 +355,7 @@
     });
 </script>
 
+<script src="<?= ROOT ?>/assets/js/common/headerProfileModal.js"></script>
 <script src="<?= ROOT ?>/assets/js/captain/CaptainFinance.js"></script>
 
 </html>

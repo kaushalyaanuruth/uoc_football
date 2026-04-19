@@ -1,7 +1,5 @@
 <?php
-// Store Items Management View
-$storeItems = $storeItems ?? [];
-$categories = $categories ?? [];
+$items = $data['items'] ?? [];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -10,561 +8,123 @@ $categories = $categories ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
-    <title>Store Management - UOC Football</title>
-    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/teamResult/teamResult.css">
-    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/potal/header.css">
-    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/potal/page.css">
-    <style>
-        .store-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .store-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .store-card {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .store-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .store-card-image {
-            width: 100%;
-            height: 200px;
-            background: #f5f5f5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .store-card-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .store-card-body {
-            padding: 15px;
-        }
-
-        .store-card-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-        }
-
-        .category-badge {
-            background: #7c3aed;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .store-card-price {
-            font-size: 20px;
-            font-weight: 700;
-            color: #7c3aed;
-            margin-bottom: 10px;
-        }
-
-        .store-card-info {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
-
-        .status-available {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-soldout {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .store-card-actions {
-            display: flex;
-            gap: 8px;
-            border-top: 1px solid #eee;
-            padding-top: 12px;
-        }
-
-        .store-card-actions button {
-            flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-edit {
-            background: #7c3aed;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #6d28d9;
-        }
-
-        .btn-delete {
-            background: #f3f4f6;
-            color: #721c24;
-        }
-
-        .btn-delete:hover {
-            background: #f8d7da;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 5px;
-            color: #333;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        .btn-submit {
-            flex: 1;
-            padding: 12px;
-            background: #7c3aed;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-submit:hover {
-            background: #6d28d9;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            padding: 12px;
-            background: #f3f4f6;
-            color: #333;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-cancel:hover {
-            background: #e5e7eb;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            color: #ddd;
-        }
-
-        .close-modal {
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            color: #aaa;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .close-modal:hover {
-            color: #333;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>UOC Football Store</title>
+    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/header/style.css">
+    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/footer/style.css">
+    <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/store/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="header">
+        <nav class="nav-container">
             <div class="left-section">
-                <a href="<?php echo ROOT; ?>/admin">
-                    <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
-                </a>
+                <a href="<?php echo ROOT; ?>/landingPage"><img class="header-logo" src="<?php echo ROOT; ?>/assets/images/landingPage/header/uoclogo.png" alt="UOC Football Logo"></a>
             </div>
-            <div class="right-section">
-                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Admin Avatar">
-                <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
+            <ul class="nav-menu">
+                <li><a href="<?php echo ROOT; ?>/landingPage#news">News</a></li>
+                <li><a href="<?php echo ROOT; ?>/landingPage#events">Events</a></li>
+                <li><a href="<?php echo ROOT; ?>/landingPage#team">Team</a></li>
+                <li><a href="<?php echo ROOT; ?>/gallery">Gallery</a></li>
+                <li><a href="<?php echo ROOT; ?>/store" class="active">Store</a></li>
+            </ul>
+            <a href="<?php echo ROOT; ?>/login" class="team-portal" target="_blank" rel="noopener noreferrer">Team Portal</a>
+            <button class="hamburger-menu" id="hamburgerMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </div>
+
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-content">
+            <a href="<?php echo ROOT; ?>/landingPage#news">News</a>
+            <a href="<?php echo ROOT; ?>/landingPage#events">Events</a>
+            <a href="<?php echo ROOT; ?>/landingPage#team">Team</a>
+            <a href="<?php echo ROOT; ?>/gallery">Gallery</a>
+            <a href="<?php echo ROOT; ?>/store">Store</a>
+            <div class="mobile-drawer-buttons">
+                <a href="<?php echo ROOT; ?>/login" class="team-portal store-mobile-portal" target="_blank" rel="noopener noreferrer">Team Portal</a>
             </div>
         </div>
+    </div>
 
-        <a href="<?php echo ROOT; ?>/admin" class="back-btn">&lt; Back</a>
+    <main class="store-page">
+        <section class="store-hero">
+            <h1>Official Store</h1>
+            <p>Shop official UOC Football jerseys and merchandise. Support the team and wear the colors with pride.</p>
+        </section>
 
-        <div class="store-container">
-            <div class="title-container">
-                <h1 class="section-title">Team Store Management</h1>
-                <button class="add-result-btn" type="button" onclick="openAddStoreItemModal()">
-                    <span class="plus-sign">+</span>Add Item
-                </button>
-            </div>
-
-            <?php if (empty($storeItems)): ?>
-                <div class="empty-state">
-                    <div class="empty-state-icon">📦</div>
-                    <h3>No Items Yet</h3>
-                    <p>Start by adding merchandise items to your team store</p>
+        <section class="store-container">
+            <?php if (empty($items)): ?>
+                <div class="store-empty">
+                    <h3>Store items are coming soon</h3>
+                    <p>Please check back later for the latest merchandise.</p>
                 </div>
             <?php else: ?>
-                <div class="store-grid">
-                    <?php foreach ($storeItems as $item): ?>
-                        <div class="store-card">
-                            <div class="store-card-image">
-                                <?php if (!empty($item->item_image)): ?>
-                                    <img src="<?php echo ROOT; ?>/assets/images/<?php echo htmlspecialchars($item->item_image); ?>" alt="<?php echo htmlspecialchars($item->item_name); ?>">
+                <div class="store-grid" id="storeGrid">
+                    <?php foreach ($items as $item): ?>
+                        <?php
+                        $status = trim((string) ($item->status ?? 'Available'));
+                        $isSoldOut = strcasecmp($status, 'Sold Out') === 0;
+                        $image = trim((string) ($item->item_image ?? ''));
+                        $imageUrl = $image !== '' ? (ROOT . '/' . ltrim(str_replace('\\', '/', $image), '/')) : '';
+                        ?>
+                        <article class="store-card">
+                            <div class="store-image">
+                                <?php if ($imageUrl !== ''): ?>
+                                    <img src="<?php echo htmlspecialchars($imageUrl); ?>" alt="<?php echo htmlspecialchars((string) ($item->item_name ?? 'Store item')); ?>">
                                 <?php else: ?>
-                                    <span style="font-size: 64px; color: #ddd;">🛍️</span>
+                                    <span class="store-image-fallback">Store</span>
                                 <?php endif; ?>
                             </div>
-                            <div class="store-card-body">
-                                <div class="store-card-title">
-                                    <span><?php echo htmlspecialchars($item->item_name); ?></span>
-                                    <span class="category-badge"><?php echo htmlspecialchars($item->category); ?></span>
+                            <div class="store-body">
+                                <div class="store-head">
+                                    <h3 class="store-name"><?php echo htmlspecialchars((string) ($item->item_name ?? 'Item')); ?></h3>
+                                    <span class="store-category"><?php echo htmlspecialchars((string) ($item->category ?? 'Other')); ?></span>
                                 </div>
-                                <div class="store-card-price">Rs. <?php echo number_format($item->price, 2); ?></div>
-                                <div class="store-card-info">
-                                    <strong>Stock:</strong> <?php echo htmlspecialchars($item->quantity); ?> units
+                                <div class="store-price">Rs. <?php echo number_format((float) ($item->price ?? 0), 2); ?></div>
+                                <div class="store-stock <?php echo $isSoldOut ? 'sold' : ''; ?>">
+                                    <?php echo $isSoldOut ? 'Sold Out' : ('In stock: ' . (int) ($item->quantity ?? 0)); ?>
                                 </div>
-                                <div>
-                                    <span class="status-badge <?php echo $item->status === 'Available' ? 'status-available' : 'status-soldout'; ?>">
-                                        <?php echo htmlspecialchars($item->status); ?>
-                                    </span>
-                                </div>
-                                <div class="store-card-actions">
-                                    <button class="btn-edit" onclick="editStoreItem(<?php echo (int) $item->item_id; ?>)">
-                                        <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">edit</span> Edit
-                                    </button>
-                                    <button class="btn-delete" onclick="deleteStoreItem(<?php echo (int) $item->item_id; ?>)">
-                                        <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">delete</span>
-                                    </button>
-                                </div>
+                                <p class="store-description"><?php echo htmlspecialchars((string) ($item->description ?? 'Official UOC Football merchandise.')); ?></p>
                             </div>
-                        </div>
+                        </article>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-row">
+            <div class="footer-left">
+                <img src="<?php echo ROOT; ?>/assets/images/landingPage/footer/uoc-football-logo.png" alt="UOC Football Logo" class="footer-logo">
+                <img src="<?php echo ROOT; ?>/assets/images/landingPage/footer/uoc-logo.png" alt="UOC Logo" class="footer-logo">
+            </div>
+            <div class="footer-center">
+                <h4 class="sponsor-title">Sponsors</h4>
+                <div class="sponsor-logos">
+                    <img src="<?php echo ROOT; ?>/assets/images/landingPage/footer/lanka-lands-logo.png" alt="Lanka Lands" class="footer-sponsor">
+                    <img src="<?php echo ROOT; ?>/assets/images/landingPage/footer/appeton-logo.png" alt="Appeton" class="footer-sponsor">
+                </div>
+            </div>
+            <div class="footer-right">
+                <p class="follow-text">Follow us</p>
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <img src="<?php echo ROOT; ?>/assets/images/landingPage/footer/instagram.png" alt="Instagram" class="social-icon">
+                    </a>
+                    <a href="#" class="social-link">
+                        <img src="<?php echo ROOT; ?>/assets/images/landingPage/footer/facebook.png" alt="Facebook" class="social-icon">
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
+        <p class="footer-copy">UOC FOOTBALL © 2025 All rights reserved</p>
+    </footer>
 
-    <!-- Add Store Item Modal -->
-    <div class="modal" id="addStoreItemModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeAddStoreItemModal()">&times;</span>
-            <div class="modal-header">Add Store Item</div>
-            <form id="addStoreItemForm" onsubmit="submitAddStoreItemForm(event)">
-                <div class="form-group">
-                    <label for="itemName">Item Name *</label>
-                    <input type="text" id="itemName" name="item_name" required placeholder="e.g., Team Jersey">
-                </div>
-                <div class="form-group">
-                    <label for="itemCategory">Category *</label>
-                    <select id="itemCategory" name="category" required>
-                        <option value="">Select Category</option>
-                        <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo htmlspecialchars($cat); ?>"><?php echo htmlspecialchars($cat); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="itemPrice">Price (Rs.) *</label>
-                    <input type="number" id="itemPrice" name="price" required placeholder="0.00" step="0.01" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="itemQuantity">Quantity *</label>
-                    <input type="number" id="itemQuantity" name="quantity" required placeholder="0" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="itemDescription">Description</label>
-                    <textarea id="itemDescription" name="description" placeholder="Item description..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="itemImage">Item Image</label>
-                    <input type="file" id="itemImage" name="item_image" accept="image/*">
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-submit">Add Item</button>
-                    <button type="button" class="btn-cancel" onclick="closeAddStoreItemModal()">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Store Item Modal -->
-    <div class="modal" id="editStoreItemModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeEditStoreItemModal()">&times;</span>
-            <div class="modal-header">Edit Store Item</div>
-            <form id="editStoreItemForm" onsubmit="submitEditStoreItemForm(event)">
-                <input type="hidden" id="editItemId" name="item_id">
-                <div class="form-group">
-                    <label for="editItemName">Item Name *</label>
-                    <input type="text" id="editItemName" name="item_name" required>
-                </div>
-                <div class="form-group">
-                    <label for="editItemCategory">Category *</label>
-                    <select id="editItemCategory" name="category" required>
-                        <option value="">Select Category</option>
-                        <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo htmlspecialchars($cat); ?>"><?php echo htmlspecialchars($cat); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="editItemPrice">Price (Rs.) *</label>
-                    <input type="number" id="editItemPrice" name="price" required step="0.01" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="editItemQuantity">Quantity *</label>
-                    <input type="number" id="editItemQuantity" name="quantity" required min="0">
-                </div>
-                <div class="form-group">
-                    <label for="editItemStatus">Status *</label>
-                    <select id="editItemStatus" name="status" required>
-                        <option value="Available">Available</option>
-                        <option value="Sold Out">Sold Out</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="editItemDescription">Description</label>
-                    <textarea id="editItemDescription" name="description"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="editItemImage">Item Image</label>
-                    <input type="file" id="editItemImage" name="item_image" accept="image/*">
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-submit">Update Item</button>
-                    <button type="button" class="btn-cancel" onclick="closeEditStoreItemModal()">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        const baseUrl = window.ROOT || '<?php echo ROOT; ?>';
-
-        function openAddStoreItemModal() {
-            document.getElementById("addStoreItemModal").classList.add("active");
-        }
-
-        function closeAddStoreItemModal() {
-            document.getElementById("addStoreItemModal").classList.remove("active");
-            document.getElementById("addStoreItemForm").reset();
-        }
-
-        function submitAddStoreItemForm(event) {
-            event.preventDefault();
-            const form = document.getElementById("addStoreItemForm");
-            const formData = new FormData(form);
-
-            fetch(`${baseUrl}/store/addStoreItem`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    closeAddStoreItemModal();
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred');
-            });
-        }
-
-        function editStoreItem(itemId) {
-            fetch(`${baseUrl}/store/getStoreItem?item_id=${itemId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.item) {
-                        document.getElementById("editItemId").value = data.item.item_id;
-                        document.getElementById("editItemName").value = data.item.item_name;
-                        document.getElementById("editItemCategory").value = data.item.category;
-                        document.getElementById("editItemPrice").value = data.item.price;
-                        document.getElementById("editItemQuantity").value = data.item.quantity;
-                        document.getElementById("editItemStatus").value = data.item.status;
-                        document.getElementById("editItemDescription").value = data.item.description || '';
-                        document.getElementById("editStoreItemModal").classList.add("active");
-                    } else {
-                        alert('Error loading item');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred');
-                });
-        }
-
-        function closeEditStoreItemModal() {
-            document.getElementById("editStoreItemModal").classList.remove("active");
-            document.getElementById("editStoreItemForm").reset();
-        }
-
-        function submitEditStoreItemForm(event) {
-            event.preventDefault();
-            const form = document.getElementById("editStoreItemForm");
-            const formData = new FormData(form);
-
-            fetch(`${baseUrl}/store/editStoreItem`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    closeEditStoreItemModal();
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred');
-            });
-        }
-
-        function deleteStoreItem(itemId) {
-            if (!confirm('Are you sure you want to delete this item?')) return;
-
-            fetch(`${baseUrl}/store/deleteStoreItem`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `item_id=${itemId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred');
-            });
-        }
-    </script>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/header/script.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/landingPage/store/script.js"></script>
 </body>
 </html>

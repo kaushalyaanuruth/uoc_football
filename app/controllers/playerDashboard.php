@@ -170,6 +170,16 @@ class PlayerDashboard extends Controller
             }
         }
 
+        $todayDayName = date('l');
+        $mealPlanByDay = [];
+        $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        foreach ($daysOfWeek as $dayName) {
+            // Current schema stores meal types without day columns, so each day maps to the latest team plan.
+            $mealPlanByDay[$dayName] = $mealPlan;
+        }
+
+        $todayMealPlan = $mealPlanByDay[$todayDayName] ?? $mealPlan;
+
         $eventModel = $this->model('EventModel');
         $upcomingEvents = [];
         try {
@@ -231,24 +241,69 @@ class PlayerDashboard extends Controller
             ];
         }
 
-        // Countdown must use the real next match, not just the first upcoming event.
+        // Countdown must use the nearest upcoming match with tolerant type matching.
+        $now = new DateTime('now');
+        $todayMidnight = new DateTime('today');
+        $closestMatchAt = null;
+        $closestMatchTitle = 'UOC Football Match';
+
         foreach ($upcomingEvents as $eventRow) {
-            if (strtolower((string) ($eventRow->event_type ?? '')) !== 'match') {
+            $eventTypeRaw = strtolower(trim((string) ($eventRow->event_type ?? '')));
+            $eventTitleRaw = strtolower(trim((string) ($eventRow->title ?? '')));
+            $isMatch = (
+                $eventTypeRaw === 'match'
+                || strpos($eventTypeRaw, 'match') !== false
+                || strpos($eventTitleRaw, 'match') !== false
+            );
+            if (!$isMatch) {
                 continue;
             }
 
-            $matchDate = !empty($eventRow->date) ? strtotime($eventRow->date) : false;
-            if ($matchDate) {
-                $dayDiff = (int) floor(($matchDate - strtotime(date('Y-m-d'))) / 86400);
-                $slugCountdown = max(0, $dayDiff);
-            } else {
-                $slugCountdown = 0;
+            $dateRaw = trim((string) ($eventRow->date ?? ''));
+            if ($dateRaw === '') {
+                continue;
             }
 
-            $nextMatchCountdownTitle = !empty($eventRow->title)
-                ? (string) $eventRow->title
-                : 'UOC Football Match';
-            break;
+            $timeRaw = trim((string) ($eventRow->event_time ?? ''));
+            $matchAt = DateTime::createFromFormat('Y-m-d H:i:s', $dateRaw . ' ' . ($timeRaw !== '' ? $timeRaw : '00:00:00'));
+            if (!$matchAt) {
+                $matchAt = DateTime::createFromFormat('Y-m-d H:i', $dateRaw . ' ' . ($timeRaw !== '' ? $timeRaw : '00:00'));
+            }
+            if (!$matchAt) {
+                $matchAt = DateTime::createFromFormat('Y-m-d', $dateRaw);
+            }
+            if (!$matchAt) {
+                continue;
+            }
+
+            // Ignore matches that are already in the past.
+            $hasTime = $timeRaw !== '';
+            if ($hasTime) {
+                if ($matchAt < $now) {
+                    continue;
+                }
+            } else {
+                if ($matchAt < $todayMidnight) {
+                    continue;
+                }
+            }
+
+            if ($closestMatchAt === null || $matchAt < $closestMatchAt) {
+                $closestMatchAt = $matchAt;
+                $closestMatchTitle = !empty($eventRow->title)
+                    ? (string) $eventRow->title
+                    : 'UOC Football Match';
+            }
+        }
+
+        if ($closestMatchAt !== null) {
+            // Show 0 when match is today, 1 for tomorrow, etc.
+            $dayDiff = (int) $todayMidnight->diff($closestMatchAt)->format('%r%a');
+            $slugCountdown = max(0, $dayDiff);
+            $nextMatchCountdownTitle = $closestMatchTitle;
+        } else {
+            $slugCountdown = 0;
+            $nextMatchCountdownTitle = 'No upcoming match';
         }
 
         $testSummary = [
@@ -357,6 +412,9 @@ class PlayerDashboard extends Controller
             'next_match_countdown_title' => $nextMatchCountdownTitle,
             'notices' => $notices,
             'meal_plan' => $mealPlan,
+            'meal_plan_by_day' => $mealPlanByDay,
+            'today_day_name' => $todayDayName,
+            'today_meal_plan' => $todayMealPlan,
             'test_summary' => $testSummary,
             'attendance' => $attendance,
             'team' => $teamRows[0] ?? null
@@ -480,6 +538,50 @@ class PlayerDashboard extends Controller
             echo json_encode(['success' => false, 'message' => 'Profile update failed']);
         }
 
+        exit();
+    }
+
+    public function profileData()
+    {
+        header('Content-Type: application/json');
+
+        if (!isset($_SESSION['user_id'], $_SESSION['nic']) || (($_SESSION['user_type'] ?? '') !== 'player')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit();
+        }
+
+        $currentNic = (string) $_SESSION['nic'];
+        $playerModel = $this->model('PlayerModel');
+
+        $rows = $playerModel->query(
+            "SELECT u.first_name, u.last_name, u.user_id, u.nic, u.email, u.phone_number, u.image
+             FROM users u
+             WHERE u.nic = :nic
+             LIMIT 1",
+            ['nic' => $currentNic]
+        );
+
+        if (empty($rows)) {
+            echo json_encode(['success' => false, 'message' => 'Profile not found']);
+            exit();
+        }
+
+        $profile = $rows[0];
+        $fullName = trim((($profile->first_name ?? '') . ' ' . ($profile->last_name ?? '')));
+
+        echo json_encode([
+            'success' => true,
+            'profile' => [
+                'name' => $fullName !== '' ? $fullName : ($profile->user_id ?? $currentNic),
+                'first_name' => $profile->first_name ?? '',
+                'last_name' => $profile->last_name ?? '',
+                'id_number' => $profile->user_id ?? '',
+                'nic' => $profile->nic ?? $currentNic,
+                'email' => $profile->email ?? '',
+                'phone_number' => $profile->phone_number ?? '',
+                'image_url' => $this->normalizeImageUrl($profile->image ?? '', $fullName !== '' ? $fullName : ($profile->user_id ?? $currentNic))
+            ]
+        ]);
         exit();
     }
 }

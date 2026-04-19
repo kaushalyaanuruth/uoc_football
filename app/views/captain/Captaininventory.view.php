@@ -32,10 +32,10 @@
             <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a>
             <a href="#" class="active">Inventory</a>
             <a href="<?= ROOT ?>/CaptainFinance">Finance</a>
+            <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a>
         </nav>
 
         <div class="nav-right">
-            <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
             <div class="notification-icon" id="captainNotificationBell">
                 <img src="<?php echo ROOT; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                 <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
@@ -43,6 +43,7 @@
             <a class="user-profile" href="<?= ROOT ?>/captainDashboard" title="Profile">
                 <img src="<?php echo htmlspecialchars($data['captain_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Captain Avatar">
             </a>
+            <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
         </div>
     </header>
 
@@ -133,7 +134,9 @@
                     <tr>
                         <th>Item Name</th>
                         <th>Category</th>
-                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Available</th>
+                        <th>Taken By</th>
                         <th>Status</th>
                         <th>Last Updated</th>
                         <th>Actions</th>
@@ -146,6 +149,8 @@
                             <td><?= htmlspecialchars((string) ($item['item_name'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string) ($item['category'] ?? 'General')) ?></td>
                             <td><?= (int) ($item['total_count'] ?? 0) ?></td>
+                            <td><?= (int) ($item['available_count'] ?? 0) ?></td>
+                            <td><?= htmlspecialchars((string) ($item['taken_by'] ?? '-')) ?></td>
                             <td>
                                 <span class="status <?= htmlspecialchars(strtolower(str_replace(' ', '', (string) ($item['status'] ?? 'Available')))) ?>">
                                     <?= htmlspecialchars((string) ($item['status'] ?? 'Available')) ?>
@@ -170,29 +175,52 @@
                     <span id="close">×</span>
                 </div>
 
-                <form id="inventoryForm" method="POST" action="<?= ROOT ?>/CaptainInventory/store"> <input type="hidden"
-                        id="item_id">
+                <form id="inventoryForm" method="POST" action="<?= ROOT ?>/CaptainInventory/store">
+                    <input type="hidden" id="item_id">
 
                     <label>Item Name</label>
                     <input type="text" id="item_name" name="item_name" required>
 
                     <label>Category</label>
-                    <select id="category" name="category">
-                        <option>Kits</option>
-                        <option>Balls</option>
-                        <option>Equipment</option>
-                        <option>Accessories</option>
-                    </select>
+                    <input type="text" id="category" name="category" placeholder="Training, Match..." required>
 
-                    <label>Quantity</label>
-                    <input type="number" id="quantity" name="quantity" min="0">
+                    <div class="form-two-col">
+                        <div>
+                            <label>Quantity</label>
+                            <input type="number" id="quantity" name="quantity" min="0" required>
+                        </div>
+                        <div>
+                            <label>Unit</label>
+                            <input type="text" id="unit" name="unit" placeholder="pcs, sets, bottles" required>
+                        </div>
+                    </div>
 
-                    <label>Status</label>
-                    <select id="status" name="status">
-                        <option>Available</option>
-                        <option>In Use</option>
-                        <option>Damaged</option>
-                    </select>
+                    <div class="form-two-col">
+                        <div>
+                            <label>Status</label>
+                            <select id="status" name="status" required>
+                                <option value="Available">Available</option>
+                                <option value="In Use">In Use</option>
+                                <option value="Damaged">Damaged</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Icon</label>
+                            <select id="icon" name="icon" required>
+                                <option value="inventory_2">Inventory</option>
+                                <option value="sports_soccer">Football</option>
+                                <option value="checkroom">Bib</option>
+                                <option value="fitness_center">Gym</option>
+                                <option value="sports_bar">Bottle</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label>Location</label>
+                    <input type="text" id="location" name="location" required>
+
+                    <label>Description</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Add item notes"></textarea>
 
                     <div class="modal-actions">
                         <button type="button" id="closeModal">Cancel</button>
@@ -228,6 +256,11 @@
             root: '<?= ROOT ?>',
             pollMs: 15000
         };
+        window.HEADER_PROFILE_MODAL_CONFIG = {
+            fetchUrl: '<?= ROOT ?>/captainDashboard/profileData',
+            updateUrl: '<?= ROOT ?>/captainDashboard/updateProfile',
+            triggerSelector: '.user-profile'
+        };
 
         const captainBell = document.getElementById('captainNotificationBell');
         const captainOverlay = document.getElementById('captainNotificationOverlay');
@@ -244,6 +277,7 @@
         });
     </script>
 
+    <script src="<?= ROOT ?>/assets/js/common/headerProfileModal.js"></script>
     <script src="<?= ROOT ?>/assets/js/captain/Captaininventory.js" defer></script>
 </body>
 

@@ -151,30 +151,85 @@ document.addEventListener("DOMContentLoaded", () => {
     
    
 
-    /* ================= EXPORT BUTTON ================= */
-    exportBtn.addEventListener("click", () => {
+    function exportPdfReport() {
         if (changedData.length > 0) {
             alert("You have unsaved changes. Please save before downloading.");
-            return; 
+            return;
         }
 
-        const choice = confirm(
-            "Click OK to download PDF\n"
-            
-        );
-
-        if (choice) {
-            
-            window.location.href =
-    window.location.origin +
-    "/uoc_football/public/CaptainAttendance/export?date=" +
-    dateInput.value +
-    "&type=" +
-    typeSelect.value;
-
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert("PDF library is not loaded. Please refresh and try again.");
+            return;
         }
-       
-    });
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const left = 40;
+        const right = pageWidth - 40;
+        const reportDate = dateInput && dateInput.value ? dateInput.value : new Date().toISOString().split("T")[0];
+        const reportType = typeSelect && typeSelect.value ? typeSelect.value : "Practice";
+
+        let y = 48;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("UOC Football - Attendance Report", left, y);
+
+        y += 20;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.text(`Date: ${reportDate}`, left, y);
+        doc.text(`Session Type: ${reportType}`, left + 170, y);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, left + 330, y);
+
+        y += 22;
+        doc.setDrawColor(220, 220, 220);
+        doc.line(left, y, right, y);
+        y += 18;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Player", left, y);
+        doc.text("Position", left + 270, y);
+        doc.text("Status", left + 420, y);
+
+        y += 10;
+        doc.line(left, y, right, y);
+        y += 16;
+
+        doc.setFont("helvetica", "normal");
+        const rows = document.querySelectorAll(".attendance-table tbody tr[data-player-id]");
+        rows.forEach((row) => {
+            if (y > pageHeight - 42) {
+                doc.addPage();
+                y = 48;
+                doc.setFont("helvetica", "bold");
+                doc.text("Player", left, y);
+                doc.text("Position", left + 270, y);
+                doc.text("Status", left + 420, y);
+                y += 10;
+                doc.line(left, y, right, y);
+                y += 16;
+                doc.setFont("helvetica", "normal");
+            }
+
+            const player = (row.cells[0] && row.cells[0].innerText || "Player").replace(/\s+/g, " ").trim().slice(0, 42);
+            const position = (row.cells[1] && row.cells[1].innerText || "-").trim().slice(0, 22);
+            const status = (row.querySelector(".status")?.innerText || "Absent").trim().slice(0, 12);
+
+            doc.text(player, left, y);
+            doc.text(position, left + 270, y);
+            doc.text(status, left + 420, y);
+            y += 16;
+        });
+
+        const safeType = String(reportType).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        doc.save(`captain-attendance-${reportDate}-${safeType}.pdf`);
+    }
+
+    /* ================= EXPORT BUTTON ================= */
+    exportBtn.addEventListener("click", exportPdfReport);
     
 
 const typeSelect = document.getElementById("eventType");

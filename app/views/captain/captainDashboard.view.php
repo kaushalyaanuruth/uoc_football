@@ -46,7 +46,6 @@
             <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a>
         </nav>
         <div class="nav-right">
-            <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
             <div class="notification-icon" id="captainNotificationBell">
                 <img src="<?php echo ROOT; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                 <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
@@ -55,6 +54,7 @@
                 <img id="navbarProfileImage" src="<?php echo htmlspecialchars($data['captain_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>"
                     alt="Captain Avatar">
             </div>
+            <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
         </div>
     </header>
 
@@ -79,25 +79,25 @@
             <div class="dashboard-grid">
 
                 <div class="card">
-                    <h3>📅 Upcoming Training</h3>
+                    <h3> Upcoming Training</h3>
                     <div class="event-info">
                         <p><strong><?php echo htmlspecialchars($nextTraining['title'] ?? 'No training session scheduled'); ?></strong></p>
-                        <p>📍 <?php echo htmlspecialchars($nextTraining['location'] ?? 'Ground'); ?></p>
-                        <p>⏰ <?php echo htmlspecialchars($nextTraining['time'] ?? 'TBA'); ?></p>
+                        <p> <?php echo htmlspecialchars($nextTraining['location'] ?? 'Ground'); ?></p>
+                        <p> <?php echo htmlspecialchars($nextTraining['time'] ?? 'TBA'); ?></p>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3>⚽ Next Match</h3>
+                    <h3> Next Match</h3>
                     <div class="event-info">
                         <p><strong><?php echo htmlspecialchars($nextMatch['title'] ?? 'No match scheduled'); ?></strong></p>
-                        <p>📍 <?php echo htmlspecialchars($nextMatch['location'] ?? 'Ground'); ?></p>
-                        <p>⏰ <?php echo htmlspecialchars($nextMatch['date_time'] ?? 'TBA'); ?></p>
+                        <p> <?php echo htmlspecialchars($nextMatch['location'] ?? 'Ground'); ?></p>
+                        <p> <?php echo htmlspecialchars($nextMatch['date_time'] ?? 'TBA'); ?></p>
                     </div>
                 </div>
 
                 <div class="card countdown">
-                    <h3>⏱️ Days Until Next Match</h3>
+                    <h3>⏱ Days Until Next Match</h3>
                     <div class="countdown-number"><?php echo $daysUntilMatch; ?></div>
                     <div class="countdown-text"><?php echo $countdownLabel; ?></div>
                     <p class="countdown-subtitle"><?php echo htmlspecialchars($nextMatch['title'] ?? 'No match scheduled'); ?></p>
@@ -109,17 +109,26 @@
             <div class="sidebar-container">
 
                 <div class="announcements">
-                    <h3>📢 Latest Announcements</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h3> Latest Announcements</h3>
+                        <button type="button" id="openCaptainNoticeModal" style="height:34px; border:none; background:#4A1150; color:#fff; border-radius:8px; padding:0 12px; cursor:pointer;">+ Add</button>
+                    </div>
                     <?php foreach (array_slice($data['notices'] ?? [], 0, 3) as $notice): ?>
-                        <div class="announcement-item">
+                        <div class="announcement-item" data-notice-id="<?php echo (int) ($notice['id'] ?? 0); ?>">
                             <h4><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></h4>
                             <p><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+                            <?php if (!empty($notice['id'])): ?>
+                                <div style="display:flex; gap:8px; margin-top:8px;">
+                                    <button type="button" class="captain-notice-edit" style="height:30px; border:none; background:#4A1150; color:#fff; border-radius:8px; padding:0 10px; cursor:pointer;">Edit</button>
+                                    <button type="button" class="captain-notice-delete" style="height:30px; border:none; background:#b91c1c; color:#fff; border-radius:8px; padding:0 10px; cursor:pointer;">Delete</button>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
 
                 <div class="quick-links">
-                    <h3>🔗 Quick Links</h3>
+                    <h3> Quick Links</h3>
 
                     <a href="<?= ROOT ?>/CaptainMealPlan" class="link-item">
                         <span class="link-icon" aria-hidden="true">
@@ -161,6 +170,29 @@
                 <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
             </div>
         <?php endforeach; ?>
+    </div>
+
+    <div id="captainNoticeModal" style="display:none; position:fixed; inset:0; background:rgba(17,24,39,0.45); z-index:1200; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:#fff; border-radius:14px; width:100%; max-width:520px; padding:18px; box-shadow:0 18px 36px rgba(17,24,39,0.25);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <h3 style="margin:0; color:#4A1150;" id="captainNoticeModalTitle">Add Notice</h3>
+                <button type="button" id="closeCaptainNoticeModal" style="border:none; background:transparent; font-size:22px; cursor:pointer;">&times;</button>
+            </div>
+
+            <form id="captainNoticeForm">
+                <input type="hidden" id="captainNoticeId" value="">
+                <label for="captainNoticeTitle" style="display:block; margin-bottom:6px; font-size:14px; color:#4b5563;">Title</label>
+                <input id="captainNoticeTitle" type="text" required style="width:100%; height:40px; border:1px solid #d1d5db; border-radius:10px; padding:0 12px; margin-bottom:12px;">
+
+                <label for="captainNoticeContent" style="display:block; margin-bottom:6px; font-size:14px; color:#4b5563;">Content</label>
+                <textarea id="captainNoticeContent" rows="5" required style="width:100%; border:1px solid #d1d5db; border-radius:10px; padding:10px 12px; margin-bottom:14px; resize:vertical;"></textarea>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" id="cancelCaptainNoticeBtn" style="height:38px; border:none; background:#e5e7eb; color:#374151; border-radius:10px; padding:0 14px; cursor:pointer;">Cancel</button>
+                    <button type="submit" id="saveCaptainNoticeBtn" style="height:38px; border:none; background:#4A1150; color:#fff; border-radius:10px; padding:0 16px; cursor:pointer;">Save Notice</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="profile-modal" id="profileModal" style="display: none;">
@@ -230,6 +262,18 @@
         const navbarProfileImage = document.getElementById('navbarProfileImage');
         const welcomeName = document.querySelector('.welcome-text h1');
         const baseUrl = '<?php echo rtrim(ROOT, '/'); ?>';
+        const captainNoticeModal = document.getElementById('captainNoticeModal');
+        const openCaptainNoticeModal = document.getElementById('openCaptainNoticeModal');
+        const closeCaptainNoticeModal = document.getElementById('closeCaptainNoticeModal');
+        const cancelCaptainNoticeBtn = document.getElementById('cancelCaptainNoticeBtn');
+        const captainNoticeForm = document.getElementById('captainNoticeForm');
+        const captainNoticeId = document.getElementById('captainNoticeId');
+        const captainNoticeTitle = document.getElementById('captainNoticeTitle');
+        const captainNoticeContent = document.getElementById('captainNoticeContent');
+        const captainNoticeModalTitle = document.getElementById('captainNoticeModalTitle');
+        const saveCaptainNoticeBtn = document.getElementById('saveCaptainNoticeBtn');
+
+        let isCaptainNoticeEdit = false;
 
         const initialProfileState = {
             first_name: document.getElementById('profileFirstName').value,
@@ -278,6 +322,106 @@
         captainBell.addEventListener('click', (e) => {
             e.stopPropagation();
             captainOverlay.style.display = captainOverlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        function toggleCaptainNoticeModal(show) {
+            captainNoticeModal.style.display = show ? 'flex' : 'none';
+        }
+
+        function openCaptainNoticeCreate() {
+            isCaptainNoticeEdit = false;
+            captainNoticeModalTitle.textContent = 'Add Notice';
+            saveCaptainNoticeBtn.textContent = 'Save Notice';
+            captainNoticeId.value = '';
+            captainNoticeForm.reset();
+            toggleCaptainNoticeModal(true);
+        }
+
+        function openCaptainNoticeEdit(noticeId, title, content) {
+            isCaptainNoticeEdit = true;
+            captainNoticeModalTitle.textContent = 'Edit Notice';
+            saveCaptainNoticeBtn.textContent = 'Update Notice';
+            captainNoticeId.value = String(noticeId || '');
+            captainNoticeTitle.value = title || '';
+            captainNoticeContent.value = content || '';
+            toggleCaptainNoticeModal(true);
+        }
+
+        openCaptainNoticeModal?.addEventListener('click', openCaptainNoticeCreate);
+        closeCaptainNoticeModal?.addEventListener('click', () => toggleCaptainNoticeModal(false));
+        cancelCaptainNoticeBtn?.addEventListener('click', () => toggleCaptainNoticeModal(false));
+        captainNoticeModal?.addEventListener('click', (e) => {
+            if (e.target === captainNoticeModal) {
+                toggleCaptainNoticeModal(false);
+            }
+        });
+
+        document.querySelectorAll('.captain-notice-edit').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                const card = e.currentTarget.closest('.announcement-item');
+                const noticeId = Number(card?.dataset?.noticeId || 0);
+                const title = card?.querySelector('h4')?.textContent?.trim() || '';
+                const content = card?.querySelector('p')?.textContent?.trim() || '';
+                openCaptainNoticeEdit(noticeId, title, content);
+            });
+        });
+
+        document.querySelectorAll('.captain-notice-delete').forEach((btn) => {
+            btn.addEventListener('click', async (e) => {
+                const card = e.currentTarget.closest('.announcement-item');
+                const noticeId = Number(card?.dataset?.noticeId || 0);
+                if (!noticeId) {
+                    return;
+                }
+
+                if (!confirm('Delete this notice?')) {
+                    return;
+                }
+
+                const response = await fetch(`${baseUrl}/captainDashboard/deleteNotice`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notice_id: noticeId })
+                });
+
+                const result = await response.json();
+                if (!result.success) {
+                    alert(result.message || 'Failed to delete notice');
+                    return;
+                }
+
+                window.location.reload();
+            });
+        });
+
+        captainNoticeForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = captainNoticeTitle.value.trim();
+            const content = captainNoticeContent.value.trim();
+            const noticeIdVal = Number(captainNoticeId.value || 0);
+
+            const endpoint = isCaptainNoticeEdit
+                ? `${baseUrl}/captainDashboard/updateNotice`
+                : `${baseUrl}/captainDashboard/addNotice`;
+
+            const payload = isCaptainNoticeEdit
+                ? { notice_id: noticeIdVal, title, content }
+                : { title, content };
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (!result.success) {
+                alert(result.message || 'Failed to save notice');
+                return;
+            }
+
+            window.location.reload();
         });
 
         function openProfileModal() {

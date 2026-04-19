@@ -237,9 +237,14 @@ body::before {
 .inventory-list-head,
 .inventory-item {
     display: grid;
-    grid-template-columns: 2.4fr 1fr 0.8fr 0.9fr 1.2fr 0.7fr;
+    grid-template-columns: 2.2fr 0.9fr 0.7fr 0.8fr 1.4fr 0.8fr 1fr 0.7fr;
     gap: 12px;
     align-items: center;
+}
+
+.item-taken-by {
+    color: #374151;
+    font-size: 13px;
 }
 
 .inventory-list-head {

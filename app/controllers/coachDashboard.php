@@ -161,5 +161,49 @@ class coachDashboard extends CoachBaseController {
 
         exit();
     }
+
+    public function profileData()
+    {
+        header('Content-Type: application/json');
+
+        if (!isset($_SESSION['user_id'], $_SESSION['nic']) || strtolower((string) ($_SESSION['user_type'] ?? '')) !== 'coach') {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit();
+        }
+
+        $currentNic = (string) $_SESSION['nic'];
+        $coachModel = $this->model('CoachModel');
+
+        $rows = $coachModel->query(
+            "SELECT u.first_name, u.last_name, u.user_id, u.nic, u.email, u.phone_number, u.image
+             FROM users u
+             WHERE u.nic = :nic
+             LIMIT 1",
+            ['nic' => $currentNic]
+        );
+
+        if (empty($rows)) {
+            echo json_encode(['success' => false, 'message' => 'Profile not found']);
+            exit();
+        }
+
+        $profile = $rows[0];
+        $fullName = trim((($profile->first_name ?? '') . ' ' . ($profile->last_name ?? '')));
+
+        echo json_encode([
+            'success' => true,
+            'profile' => [
+                'name' => $fullName !== '' ? $fullName : ($profile->user_id ?? $currentNic),
+                'first_name' => $profile->first_name ?? '',
+                'last_name' => $profile->last_name ?? '',
+                'id_number' => $profile->user_id ?? '',
+                'nic' => $profile->nic ?? $currentNic,
+                'email' => $profile->email ?? '',
+                'phone_number' => $profile->phone_number ?? '',
+                'image_url' => $this->normalizeImageUrl($profile->image ?? '', $fullName !== '' ? $fullName : ($profile->user_id ?? $currentNic))
+            ]
+        ]);
+        exit();
+    }
 }
 

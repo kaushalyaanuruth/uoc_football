@@ -25,8 +25,13 @@ $categories = $categories ?? [];
                     <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
                 </a>
             </div>
-            <div class="right-section">
-                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Admin Avatar">
+            <div class="right-section user-section">
+                <a href="<?php echo ROOT; ?>/adminDashboard?openNotifications=1" class="notification-icon" title="Notifications" aria-label="Notifications">
+                    <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+                </a>
+                <a href="<?php echo ROOT; ?>/adminDashboard?openProfile=1" class="user-profile" title="Admin Profile" aria-label="Admin Profile">
+                    <img class="avatar" src="<?php echo htmlspecialchars($_SESSION['admin_profile_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Admin Avatar">
+                </a>
                 <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -224,5 +229,9 @@ $categories = $categories ?? [];
         window.ROOT = '<?php echo ROOT; ?>';
     </script>
     <script src="<?php echo ROOT; ?>/assets/js/storeManagement/storeManagement.js"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/potal/adminHeaderPopup.js"></script>
 </body>
 </html>
+
+
+

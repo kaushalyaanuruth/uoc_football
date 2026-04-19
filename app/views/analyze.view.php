@@ -14,6 +14,9 @@
     $trendDatasets = $data['trends']['datasets'] ?? [];
     $testResults = $data['test_results'] ?? [];
     $matchHistory = $data['match_history'] ?? [];
+    $notices = is_array($data['notices'] ?? null) ? $data['notices'] : [];
+    $noticeCount = count($notices);
+    $noticeBadge = $noticeCount > 99 ? '99+' : (string) $noticeCount;
     $buildTrendPath = function ($values) {
         $points = is_array($values) ? array_values($values) : [];
         if (empty($points)) {
@@ -55,15 +58,18 @@
                 <a href="<?php echo $base; ?>/Analyze" class="active">Analyze</a>
                 <a href="<?php echo $base; ?>/Notices">Notices</a>
                 <a href="<?php echo $base; ?>/MealPlan">Meal Plan</a>
+                <a href="<?php echo $base; ?>/PlayerInventory">Inventory</a>
             </nav>
 
             <div class="user-section">
                 <button class="notification-icon" id="notificationBell" type="button" aria-label="Show notifications">
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications">
+                    <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
                 </button>
                 <div class="user-profile">
                     <img src="<?php echo htmlspecialchars($data['player_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="User Profile">
                 </div>
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
             </div>
         </header>
 
@@ -242,15 +248,27 @@
         </main>
 
         <div class="notification-overlay" id="notificationOverlay" hidden>
-            <p class="notify-title">Notifications</p>
-            <div class="notify-item">
-                <p>New fitness test results have been uploaded. Your speed has improved by 4%.</p>
-                <span>2 hours ago</span>
-            </div>
+            <p class="notify-title">Latest Notices</p>
+            <?php if (!empty($notices)): ?>
+                <?php foreach (array_slice($notices, 0, 5) as $notice): ?>
+                    <div class="notify-item" style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #eee;">
+                        <p style="font-size:0.8rem; color:#4a1150; font-weight:600; margin-bottom:4px;"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></p>
+                        <p style="font-size:0.82rem; color:#4b5563; line-height:1.35;"><?php echo htmlspecialchars($notice['content'] ?? ($notice['text'] ?? '')); ?></p>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p style="font-size:0.82rem; color:#6b7280;">No notices available.</p>
+            <?php endif; ?>
         </div>
     </div>
 
     <script>
+        window.HEADER_PROFILE_MODAL_CONFIG = {
+            fetchUrl: '<?php echo $base; ?>/PlayerDashboard/profileData',
+            updateUrl: '<?php echo $base; ?>/PlayerDashboard/updateProfile',
+            triggerSelector: '.user-profile'
+        };
+
         const bell = document.getElementById('notificationBell');
         const overlay = document.getElementById('notificationOverlay');
 
@@ -260,10 +278,11 @@
         });
 
         document.addEventListener('click', function (e) {
-            if (!overlay.contains(e.target) && e.target !== bell) {
+            if (!overlay.contains(e.target) && !bell.contains(e.target)) {
                 overlay.hidden = true;
             }
         });
     </script>
+    <script src="<?php echo $base; ?>/assets/js/common/headerProfileModal.js"></script>
 </body>
 </html>

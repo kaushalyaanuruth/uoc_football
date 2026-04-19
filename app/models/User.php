@@ -64,7 +64,7 @@ class User
     public function updateByNic($nic, $data)
     {
         $fields = [];
-        $params = ['nic' => $nic];
+        $params = ['where_nic' => $nic];
         
         foreach ($data as $key => $value) {
             $fields[] = "$key = :$key";
@@ -72,7 +72,7 @@ class User
         }
         
         $fieldString = implode(', ', $fields);
-        $query = "UPDATE $this->table SET $fieldString WHERE nic = :nic";
+        $query = "UPDATE $this->table SET $fieldString WHERE nic = :where_nic";
         
         return $this->query($query, $params);
     }

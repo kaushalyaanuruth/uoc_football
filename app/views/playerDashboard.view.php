@@ -27,9 +27,9 @@
                 <a href="<?php echo $base; ?>/Analyze">Analyze</a>
                 <a href="<?php echo $base; ?>/Notices">Notices</a>
                 <a href="<?php echo $base; ?>/MealPlan">Meal Plan</a>
+                <a href="<?php echo $base; ?>/PlayerInventory">Inventory</a>
             </nav>
             <div class="user-section">
-                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
                 <div class="notification-icon" id="notificationBell">
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                     <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
@@ -37,6 +37,7 @@
                 <div class="user-profile" id="profileTrigger" title="Edit Profile" role="button" tabindex="0">
                     <img id="navbarProfileImage" src="<?php echo htmlspecialchars($data['player_image']); ?>" alt="Player Profile">
                 </div>
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
             </div>
         </header>
 
@@ -70,8 +71,8 @@
                         <h3>Next Event...</h3>
                         <p style="color: #888; font-size: 0.9rem;"><?php echo $data['next_event']['type']; ?></p>
                         <h4 style="margin: 5px 0; color: #333;"><?php echo $data['next_event']['title']; ?></h4>
-                        <p style="font-size: 0.85rem;">📍 <?php echo $data['next_event']['date']; ?></p>
-                        <p style="font-size: 0.85rem;">📌 <?php echo $data['next_event']['location']; ?></p>
+                        <p style="font-size: 0.85rem;"> <?php echo $data['next_event']['date']; ?></p>
+                        <p style="font-size: 0.85rem;"> <?php echo $data['next_event']['location']; ?></p>
                     </div>
 
                     <div class="card slug-countdown">
@@ -144,16 +145,13 @@
 
                 <div class="card">
                     <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Meal Plan</h3>
+                    <p style="font-size: 0.84rem; color: #6b7280; margin-bottom: 10px;">Showing <?php echo htmlspecialchars((string) ($data['today_day_name'] ?? date('l'))); ?> meal plan</p>
                     <div class="meal-plan-tabs">
                         <button class="meal-btn" onclick="showMeal('Breakfast', this)">Breakfast</button>
                         <button class="meal-btn active" onclick="showMeal('Lunch', this)">Lunch</button>
                         <button class="meal-btn" onclick="showMeal('Dinner', this)">Dinner</button>
                     </div>
-                    <ul class="meal-list" id="mealList">
-                        <?php foreach ($data['meal_plan']['Lunch'] as $item): ?>
-                            <li><?php echo $item; ?></li>
-                        <?php endforeach; ?>
-                    </ul>
+                    <ul class="meal-list" id="mealList"></ul>
                 </div>
             </div>
         </div>
@@ -385,20 +383,35 @@
                 }
             });
 
-            const mealPlans = <?php echo json_encode($data['meal_plan']); ?>;
+            const todayMeals = <?php echo json_encode($data['today_meal_plan'] ?? ($data['meal_plan'] ?? [])); ?>;
 
             function showMeal(mealType, btn) {
-                document.querySelectorAll('.meal-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.meal-btn').forEach((b) => b.classList.remove('active'));
                 btn.classList.add('active');
+
                 const list = document.getElementById('mealList');
                 list.innerHTML = '';
-                if (mealPlans[mealType]) {
-                    mealPlans[mealType].forEach(item => {
-                        const li = document.createElement('li');
-                        li.textContent = item;
-                        list.appendChild(li);
-                    });
+
+                const items = Array.isArray(todayMeals[mealType]) ? todayMeals[mealType] : [];
+                if (!items.length) {
+                    const li = document.createElement('li');
+                    li.style.color = '#9ca3af';
+                    li.textContent = `No ${mealType.toLowerCase()} items set.`;
+                    list.appendChild(li);
+                    return;
                 }
+
+                items.forEach((item) => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    list.appendChild(li);
+                });
+            }
+
+            // Default tab state: Lunch
+            const defaultMealBtn = document.querySelector('.meal-btn.active');
+            if (defaultMealBtn) {
+                showMeal('Lunch', defaultMealBtn);
             }
 
             function updateClock() {

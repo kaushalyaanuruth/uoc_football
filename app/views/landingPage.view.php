@@ -47,6 +47,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
                 <li><a href="#events">Events</a></li>
                 <li><a href="#team">Team</a></li>
                 <li><a href="http://localhost/UOC_Football/public/gallery">Gallery</a></li>
+                <li><a href="<?php echo ROOT; ?>/store">Store</a></li>
             </ul>
             <a href="http://localhost/UOC_Football/public/login" class="team-portal" target="_blank" rel="noopener noreferrer">Team Portal</a>
             <button class="hamburger-menu" id="hamburgerMenu">
@@ -63,6 +64,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
             <a href="#events">Events</a>
             <a href="#team">Team</a>
             <a href="http://localhost/UOC_Football/public/gallery">Gallery</a>
+            <a href="<?php echo ROOT; ?>/store">Store</a>
             <div class="mobile-drawer-buttons">
                 <a href="http://localhost/UOC_Football/public/login" class="team-portal" target="_blank" rel="noopener noreferrer" style="text-align: center; padding: 0.8rem; margin: 0;">Team Portal</a>
             </div>

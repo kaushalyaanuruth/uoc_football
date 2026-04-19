@@ -70,19 +70,47 @@ class CaptainInventory extends Controller
         return (int) ($rows[0]->team_id ?? 0);
     }
 
-    private function mapItem($row)
+    private function mapItem($row, $takenSummary = [])
     {
         $statusLabel = $this->normalizeStatusLabel($row->status ?? 'Available');
+        $itemId = (int) ($row->item_id ?? 0);
+        $borrowInfo = $takenSummary[$itemId] ?? ['borrowed_qty' => 0, 'taken_by' => ''];
+        $takenBy = trim((string) ($borrowInfo['taken_by'] ?? ''));
+
         return [
-            'item_id' => (int) ($row->item_id ?? 0),
+            'item_id' => $itemId,
             'item_name' => trim((string) ($row->item_name ?? '')),
             'category' => trim((string) ($row->category ?? 'General')),
             'total_count' => (int) ($row->total_count ?? 0),
             'available_count' => (int) ($row->available_count ?? 0),
+            'unit' => trim((string) ($row->unit ?? 'pcs')),
+            'location' => trim((string) ($row->location ?? '')),
+            'description' => trim((string) ($row->description ?? '')),
+            'icon' => trim((string) ($row->icon ?? 'inventory_2')),
             'status' => $statusLabel,
             'status_key' => $this->statusKey($statusLabel),
+            'borrowed_quantity' => (int) ($borrowInfo['borrowed_qty'] ?? 0),
+            'taken_by' => $takenBy !== '' ? $takenBy : '-',
             'last_updated' => (string) ($row->last_updated ?? ''),
         ];
+    }
+
+    private function buildTakenSummaryMap($rows)
+    {
+        $map = [];
+        foreach ($rows as $row) {
+            $itemId = (int) ($row->item_id ?? 0);
+            if ($itemId <= 0) {
+                continue;
+            }
+
+            $map[$itemId] = [
+                'borrowed_qty' => (int) ($row->borrowed_qty ?? 0),
+                'taken_by' => trim((string) ($row->taken_by ?? '')),
+            ];
+        }
+
+        return $map;
     }
     private function buildInitialsAvatarUrl($displayName)
     {
@@ -224,9 +252,10 @@ class CaptainInventory extends Controller
         $inventoryModel->seedDummyItemsIfEmpty($teamId, (string) ($_SESSION['nic'] ?? $_SESSION['user_nic'] ?? ''));
 
         $items = $inventoryModel->getAllItems($teamId);
+        $takenSummary = $this->buildTakenSummaryMap($inventoryModel->getOpenTakenSummaryByItem($teamId));
         $mappedItems = [];
         foreach ($items as $item) {
-            $mappedItems[] = $this->mapItem($item);
+            $mappedItems[] = $this->mapItem($item, $takenSummary);
         }
 
         $stats = $inventoryModel->getStats($teamId);
@@ -274,6 +303,10 @@ class CaptainInventory extends Controller
             'total_count' => max(0, (int) ($input['quantity'] ?? 0)),
             'available_count' => max(0, (int) ($input['quantity'] ?? 0)),
             'status' => $this->normalizeStatusLabel($input['status'] ?? 'Available'),
+            'unit' => trim((string) ($input['unit'] ?? 'pcs')),
+            'location' => trim((string) ($input['location'] ?? '')),
+            'description' => trim((string) ($input['description'] ?? '')),
+            'icon' => trim((string) ($input['icon'] ?? 'inventory_2')),
             'updated_by' => (string) ($_SESSION['nic'] ?? ''),
         ];
 
@@ -315,6 +348,10 @@ class CaptainInventory extends Controller
             'total_count' => $quantity,
             'available_count' => $quantity,
             'status' => $this->normalizeStatusLabel($input['status'] ?? ($existing->status ?? 'Available')),
+            'unit' => trim((string) ($input['unit'] ?? $existing->unit ?? 'pcs')),
+            'location' => trim((string) ($input['location'] ?? $existing->location ?? '')),
+            'description' => trim((string) ($input['description'] ?? $existing->description ?? '')),
+            'icon' => trim((string) ($input['icon'] ?? $existing->icon ?? 'inventory_2')),
             'updated_by' => (string) ($_SESSION['nic'] ?? ''),
         ];
 
@@ -375,9 +412,10 @@ class CaptainInventory extends Controller
         $model = new InventoryModel();
         $model->seedDummyItemsIfEmpty($teamId, (string) ($_SESSION['nic'] ?? $_SESSION['user_nic'] ?? ''));
         $snapshot = $model->getSnapshot($teamId);
+        $takenSummary = $this->buildTakenSummaryMap($model->getOpenTakenSummaryByItem($teamId));
         $items = [];
         foreach ($snapshot['items'] as $row) {
-            $items[] = $this->mapItem($row);
+            $items[] = $this->mapItem($row, $takenSummary);
         }
 
         $stats = $snapshot['stats'];

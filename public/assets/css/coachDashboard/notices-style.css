@@ -108,7 +108,7 @@ body::before {
 
 .logout-btn:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: #340134;
     box-shadow: 0 4px 12px rgba(74, 2, 59, 0.3);
     color: white;
     border: none;
@@ -238,6 +238,30 @@ body::before {
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
+}
+
+.notice-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.notice-action-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.notice-edit-btn {
+    background: #4A1150;
+}
+
+.notice-delete-btn {
+    background: #b91c1c;
 }
 
 .notice-card:hover {

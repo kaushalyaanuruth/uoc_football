@@ -75,4 +75,51 @@ class NoticeModel
             ]
         );
     }
+
+    public function getById($noticeId)
+    {
+        $this->ensureTable();
+
+        $rows = $this->query(
+            "SELECT notice_id, title, content, target_group, created_by, created_at
+             FROM {$this->table}
+             WHERE notice_id = :notice_id
+               AND is_active = 1
+             LIMIT 1",
+            ['notice_id' => (int) $noticeId]
+        );
+
+        return $rows[0] ?? null;
+    }
+
+    public function updateNotice($noticeId, $title, $content)
+    {
+        $this->ensureTable();
+
+        return $this->query(
+            "UPDATE {$this->table}
+             SET title = :title,
+                 content = :content
+             WHERE notice_id = :notice_id
+               AND is_active = 1",
+            [
+                'notice_id' => (int) $noticeId,
+                'title' => $title,
+                'content' => $content,
+            ]
+        );
+    }
+
+    public function deleteNotice($noticeId)
+    {
+        $this->ensureTable();
+
+        return $this->query(
+            "UPDATE {$this->table}
+             SET is_active = 0
+             WHERE notice_id = :notice_id
+               AND is_active = 1",
+            ['notice_id' => (int) $noticeId]
+        );
+    }
 }

@@ -381,13 +381,12 @@ button:hover {
 }
 
 .btn-edit {
-  background: #1804ce;
+  background: #4A1150;
   color: white;
 }
 
 .btn-delete {
-  background: #c00a1c;
-  color: white;
+  color: rgb(0, 0, 0);
 }
 .save,
 #closeSuccess {
@@ -462,6 +461,29 @@ button:hover {
   outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, .2);
+}
+
+.modal-content textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: .2s;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.modal-content textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, .2);
+}
+
+.form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .modal-content input:invalid,

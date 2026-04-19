@@ -2,10 +2,47 @@
 
 class CaptainSchedule extends Controller
 {
-    private function normalizeImageUrl($imagePath)
+    private function buildInitialsAvatarUrl($displayName)
+    {
+        $name = trim((string) $displayName);
+        if ($name === '') {
+            $name = 'Captain';
+        }
+
+        $parts = preg_split('/\s+/', $name);
+        $initials = '';
+        foreach ($parts as $part) {
+            if ($part === '') {
+                continue;
+            }
+            $initials .= strtoupper(substr($part, 0, 1));
+            if (strlen($initials) >= 2) {
+                break;
+            }
+        }
+
+        if ($initials === '') {
+            $initials = 'C';
+        }
+
+        $palette = ['#4f46e5', '#0ea5e9', '#059669', '#d97706', '#dc2626', '#7c3aed'];
+        $color = $palette[abs(crc32($name)) % count($palette)];
+
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">'
+            . '<rect width="320" height="320" fill="' . $color . '"/>'
+            . '<text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" '
+            . 'font-family="Arial, Helvetica, sans-serif" font-size="120" font-weight="700" fill="#ffffff">'
+            . htmlspecialchars($initials, ENT_QUOTES, 'UTF-8')
+            . '</text>'
+            . '</svg>';
+
+        return 'data:image/svg+xml;utf8,' . rawurlencode($svg);
+    }
+
+    private function normalizeImageUrl($imagePath, $displayName = '')
     {
         if (empty($imagePath)) {
-            return ROOT . '/assets/images/adminDashboard/header/avatar.jpg';
+            return $this->buildInitialsAvatarUrl($displayName);
         }
 
         $normalized = str_replace('\\', '/', ltrim((string) $imagePath, '/'));
@@ -41,16 +78,47 @@ class CaptainSchedule extends Controller
     {
         $nic = $_SESSION['nic'] ?? '';
         if ($nic === '') {
-            return $this->normalizeImageUrl('');
+            return $this->normalizeImageUrl('', 'Captain');
         }
 
         $playerModel = $this->model('PlayerModel');
         $rows = $playerModel->query(
-            "SELECT u.image FROM users u WHERE u.nic = :nic LIMIT 1",
+            "SELECT u.image, u.first_name, u.last_name, u.user_id FROM users u WHERE u.nic = :nic LIMIT 1",
             ['nic' => $nic]
         );
 
-        return $this->normalizeImageUrl($rows[0]->image ?? '');
+        $row = $rows[0] ?? null;
+        $fullName = trim((($row->first_name ?? '') . ' ' . ($row->last_name ?? '')));
+        if ($fullName === '') {
+            $fullName = (string) ($row->user_id ?? $nic);
+        }
+
+        return $this->normalizeImageUrl($row->image ?? '', $fullName);
+    }
+
+    private function getCaptainNotices($limit = 6)
+    {
+        $noticeModel = $this->model('NoticeModel');
+        $rows = [];
+
+        try {
+            $rows = $noticeModel->getRecent($limit, 'present_team');
+        } catch (Exception $e) {
+            $rows = [];
+        }
+
+        $notices = [];
+        foreach ($rows as $row) {
+            $notices[] = [
+                'id' => (int) ($row->notice_id ?? 0),
+                'title' => $row->title ?? 'Notice',
+                'content' => $row->content ?? '',
+                'author' => $row->created_by ?? 'Admin',
+                'date' => !empty($row->created_at) ? date('M d, Y h:i A', strtotime($row->created_at)) : '',
+            ];
+        }
+
+        return $notices;
     }
 
     public function index()
@@ -84,9 +152,12 @@ class CaptainSchedule extends Controller
             ];
         }
 
+        $profileImage = $this->getPlayerImageBySession();
         $data = [
             'events' => $events,
-            'player_image' => $this->getPlayerImageBySession()
+            'captain_image' => $profileImage,
+            'player_image' => $profileImage,
+            'notices' => $this->getCaptainNotices(),
         ];
 
         $this->view('captain/schedule', $data);

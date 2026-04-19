@@ -2,6 +2,13 @@
 
 class captainDashboard extends Controller {
 
+    private function jsonResponse($payload)
+    {
+        header('Content-Type: application/json');
+        echo json_encode($payload);
+        exit;
+    }
+
     private function buildInitialsAvatarUrl($displayName)
     {
         $name = trim((string) $displayName);
@@ -141,6 +148,7 @@ class captainDashboard extends Controller {
         $notices = [];
         foreach ($noticeRows as $row) {
             $notices[] = [
+                'id' => (int) ($row->notice_id ?? 0),
                 'title' => $row->title ?? 'Notice',
                 'content' => $row->content ?? '',
                 'author' => $row->created_by ?? 'Admin',
@@ -236,6 +244,109 @@ class captainDashboard extends Controller {
         ];
         
         $this->view('captain/captainDashboard', $data);
+    }
+
+    public function addNotice()
+    {
+        $this->ensureCaptainAccess();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['success' => false, 'message' => 'Invalid request method']);
+        }
+
+        $payload = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($payload)) {
+            $this->jsonResponse(['success' => false, 'message' => 'Invalid payload']);
+        }
+
+        $title = trim((string) ($payload['title'] ?? ''));
+        $content = trim((string) ($payload['content'] ?? ''));
+        if ($title === '' || $content === '') {
+            $this->jsonResponse(['success' => false, 'message' => 'Title and content are required']);
+        }
+
+        try {
+            $noticeModel = $this->model('NoticeModel');
+            $createdBy = trim((string) ($_SESSION['user_id'] ?? 'Captain'));
+            if ($createdBy === '') {
+                $createdBy = 'Captain';
+            }
+
+            $noticeModel->createNotice($title, $content, $createdBy, 'present_team');
+            $this->jsonResponse(['success' => true, 'message' => 'Notice added successfully']);
+        } catch (Exception $e) {
+            error_log('Captain failed to add notice: ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Failed to add notice']);
+        }
+    }
+
+    public function updateNotice()
+    {
+        $this->ensureCaptainAccess();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['success' => false, 'message' => 'Invalid request method']);
+        }
+
+        $payload = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($payload)) {
+            $this->jsonResponse(['success' => false, 'message' => 'Invalid payload']);
+        }
+
+        $noticeId = (int) ($payload['notice_id'] ?? 0);
+        $title = trim((string) ($payload['title'] ?? ''));
+        $content = trim((string) ($payload['content'] ?? ''));
+
+        if ($noticeId <= 0 || $title === '' || $content === '') {
+            $this->jsonResponse(['success' => false, 'message' => 'Notice ID, title and content are required']);
+        }
+
+        try {
+            $noticeModel = $this->model('NoticeModel');
+            $existing = $noticeModel->getById($noticeId);
+            if ($existing === null) {
+                $this->jsonResponse(['success' => false, 'message' => 'Notice not found']);
+            }
+
+            $noticeModel->updateNotice($noticeId, $title, $content);
+            $this->jsonResponse(['success' => true, 'message' => 'Notice updated successfully']);
+        } catch (Exception $e) {
+            error_log('Captain failed to update notice: ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Failed to update notice']);
+        }
+    }
+
+    public function deleteNotice()
+    {
+        $this->ensureCaptainAccess();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['success' => false, 'message' => 'Invalid request method']);
+        }
+
+        $payload = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($payload)) {
+            $this->jsonResponse(['success' => false, 'message' => 'Invalid payload']);
+        }
+
+        $noticeId = (int) ($payload['notice_id'] ?? 0);
+        if ($noticeId <= 0) {
+            $this->jsonResponse(['success' => false, 'message' => 'Notice ID is required']);
+        }
+
+        try {
+            $noticeModel = $this->model('NoticeModel');
+            $existing = $noticeModel->getById($noticeId);
+            if ($existing === null) {
+                $this->jsonResponse(['success' => false, 'message' => 'Notice not found']);
+            }
+
+            $noticeModel->deleteNotice($noticeId);
+            $this->jsonResponse(['success' => true, 'message' => 'Notice deleted successfully']);
+        } catch (Exception $e) {
+            error_log('Captain failed to delete notice: ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Failed to delete notice']);
+        }
     }
 
     public function updateProfile()
@@ -360,6 +471,58 @@ class captainDashboard extends Controller {
             echo json_encode(['success' => false, 'message' => 'Profile update failed']);
         }
 
+        exit();
+    }
+
+    public function profileData()
+    {
+        header('Content-Type: application/json');
+
+        if (!isset($_SESSION['user_id'], $_SESSION['nic'])) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit();
+        }
+
+        $userType = strtolower((string) ($_SESSION['user_type'] ?? ''));
+        $playerRole = (string) ($_SESSION['player_role'] ?? '');
+        $isCaptain = $userType === 'captain' || ($userType === 'player' && $this->isCaptainLikeRole($playerRole));
+        if (!$isCaptain) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit();
+        }
+
+        $currentNic = (string) $_SESSION['nic'];
+        $playerModel = $this->model('PlayerModel');
+
+        $rows = $playerModel->query(
+            "SELECT u.first_name, u.last_name, u.user_id, u.nic, u.email, u.phone_number, u.image
+             FROM users u
+             WHERE u.nic = :nic
+             LIMIT 1",
+            ['nic' => $currentNic]
+        );
+
+        if (empty($rows)) {
+            echo json_encode(['success' => false, 'message' => 'Profile not found']);
+            exit();
+        }
+
+        $profile = $rows[0];
+        $fullName = trim((($profile->first_name ?? '') . ' ' . ($profile->last_name ?? '')));
+
+        echo json_encode([
+            'success' => true,
+            'profile' => [
+                'name' => $fullName !== '' ? $fullName : ($profile->user_id ?? $currentNic),
+                'first_name' => $profile->first_name ?? '',
+                'last_name' => $profile->last_name ?? '',
+                'id_number' => $profile->user_id ?? '',
+                'nic' => $profile->nic ?? $currentNic,
+                'email' => $profile->email ?? '',
+                'phone_number' => $profile->phone_number ?? '',
+                'image_url' => $this->normalizeImageUrl($profile->image ?? '', $fullName !== '' ? $fullName : ($profile->user_id ?? $currentNic))
+            ]
+        ]);
         exit();
     }
 }

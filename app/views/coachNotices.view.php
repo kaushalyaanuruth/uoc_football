@@ -34,7 +34,6 @@
                 <a href="<?php echo ROOT; ?>/coachNotices" class="nav-link active">Notices</a>
             </nav>
             <div class="right-section">
-                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
                 <div class="notification-icon" id="coachNotificationBell">
                     <img src="<?php echo $base; ?>/assets/images/common/notification.png" alt="Notifications" style="width: 24px; cursor: pointer;">
                     <span class="notification-count <?php echo $noticeCount > 0 ? '' : 'hidden'; ?>"><?php echo htmlspecialchars($noticeBadge); ?></span>
@@ -42,6 +41,7 @@
                 <a class="user-profile" href="<?php echo $base; ?>/coachDashboard#profile" title="Profile">
                     <img src="<?php echo htmlspecialchars($data['coach_image'] ?? ($base . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Coach Avatar">
                 </a>
+                <a class="player-logout-btn" href="<?php echo $base; ?>/login/logout">Logout</a>
             </div>
         </div>
 
@@ -68,7 +68,7 @@
         <div class="notices-grid">
             <?php if ($hasRealNotices): ?>
                 <?php foreach ($notices as $index => $notice): ?>
-                    <div class="notice-card">
+                    <div class="notice-card" data-notice-id="<?php echo (int) ($notice['id'] ?? 0); ?>">
                         <div class="notice-header">
                             <h3 class="notice-title"><?php echo htmlspecialchars($notice['title'] ?? 'Notice'); ?></h3>
                             <?php if ($index < 3): ?>
@@ -94,6 +94,10 @@
                             </div>
                         </div>
                         <p class="notice-description"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
+                        <div class="notice-actions">
+                            <button type="button" class="notice-action-btn notice-edit-btn">Edit</button>
+                            <button type="button" class="notice-action-btn notice-delete-btn">Delete</button>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
@@ -108,10 +112,11 @@
     <div id="coachNoticeModal" class="notice-modal" style="display:none;">
         <div class="notice-modal-card">
             <div class="notice-modal-header">
-                <h3>Add Notice</h3>
+                <h3 id="coachNoticeModalTitle">Add Notice</h3>
                 <button type="button" id="closeCoachNoticeModal" class="notice-modal-close" aria-label="Close">&times;</button>
             </div>
             <form id="coachNoticeForm" class="notice-modal-form">
+                <input id="coachNoticeId" name="notice_id" type="hidden" value="">
                 <label for="coachNoticeTitle">Title</label>
                 <input id="coachNoticeTitle" name="title" type="text" maxlength="255" required>
 
@@ -138,9 +143,19 @@
     <script src="<?php echo ROOT; ?>/assets/js/coachDashboard/notices-script.js"></script>
     <script>
         window.COACH_NOTICE_CONFIG = {
-            addNoticeUrl: '<?php echo ROOT; ?>/coachNotices/addNotice'
+            addNoticeUrl: '<?php echo ROOT; ?>/coachNotices/addNotice',
+            updateNoticeUrl: '<?php echo ROOT; ?>/coachNotices/updateNotice',
+            deleteNoticeUrl: '<?php echo ROOT; ?>/coachNotices/deleteNotice'
         };
     </script>
+    <script>
+        window.HEADER_PROFILE_MODAL_CONFIG = {
+            fetchUrl: '<?php echo $base; ?>/coachDashboard/profileData',
+            updateUrl: '<?php echo $base; ?>/coachDashboard/updateProfile',
+            triggerSelector: '.user-profile'
+        };
+    </script>
+    <script src="<?php echo $base; ?>/assets/js/common/headerProfileModal.js"></script>
     <script>
         const coachBell = document.getElementById('coachNotificationBell');
         const coachOverlay = document.getElementById('coachNotificationOverlay');

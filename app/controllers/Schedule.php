@@ -28,6 +28,31 @@ class Schedule extends Controller
         return $this->normalizeImageUrl($rows[0]->image ?? '');
     }
 
+    private function getPlayerNotices($limit = 6)
+    {
+        $noticeModel = $this->model('NoticeModel');
+        $rows = [];
+
+        try {
+            $rows = $noticeModel->getRecent($limit, 'present_team');
+        } catch (Exception $e) {
+            $rows = [];
+        }
+
+        $notices = [];
+        foreach ($rows as $row) {
+            $notices[] = [
+                'id' => (int) ($row->notice_id ?? 0),
+                'title' => $row->title ?? 'Notice',
+                'content' => $row->content ?? '',
+                'author' => $row->created_by ?? 'Admin',
+                'date' => !empty($row->created_at) ? date('M d, Y h:i A', strtotime($row->created_at)) : '',
+            ];
+        }
+
+        return $notices;
+    }
+
     public function index()
     {
         if (!isset($_SESSION['user_id'], $_SESSION['nic'])) {
@@ -69,7 +94,8 @@ class Schedule extends Controller
 
         $data = [
             'events' => $events,
-            'player_image' => $this->getPlayerImageBySession()
+            'player_image' => $this->getPlayerImageBySession(),
+            'notices' => $this->getPlayerNotices(),
         ];
 
         $this->view('schedule', $data);

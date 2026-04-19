@@ -179,6 +179,8 @@
             '</div>',
             '<span class="item-category">' + escapeHtml(item.category || '') + '</span>',
             '<span class="item-stock">' + escapeHtml(String(item.quantity || 0)) + ' ' + escapeHtml(item.unit || 'pcs') + '</span>',
+            '<span class="item-available">' + escapeHtml(String(item.available_quantity || 0)) + ' ' + escapeHtml(item.unit || 'pcs') + '</span>',
+            '<span class="item-taken-by">' + escapeHtml(item.taken_by || '-') + '</span>',
             '<span class="status-badge status-' + escapeHtml(statusKey) + '">' + escapeHtml(statusLabel) + '</span>',
             '<span class="item-location">' + escapeHtml(item.location || '') + '</span>',
             '<div class="row-actions">',

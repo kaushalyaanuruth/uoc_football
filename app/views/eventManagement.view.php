@@ -3,7 +3,7 @@ $events = $data['events'] ?? [];
 $eventScriptFile = __DIR__ . '/../../public/assets/js/eventManagement/script.js';
 $eventScriptVersion = file_exists($eventScriptFile) ? filemtime($eventScriptFile) : time();
 
-$upcomingCount = 0;
+$upcomingMatchCount = 0;
 $typeCounts = [
     'training' => 0,
     'meeting' => 0,
@@ -12,15 +12,18 @@ $typeCounts = [
 ];
 
 foreach ($events as $event) {
-    $eventDateValue = $event->date ?? null;
-    if (!empty($eventDateValue) && strtotime($eventDateValue) >= strtotime(date('Y-m-d'))) {
-        $upcomingCount++;
-    }
-
-    $eventType = strtolower((string)($event->event_type ?? 'other'));
+    $eventTypeRaw = strtolower(trim((string)($event->event_type ?? 'other')));
+    $isMatchType = ($eventTypeRaw === 'match' || strpos($eventTypeRaw, 'match') !== false);
+    $eventType = $isMatchType ? 'match' : $eventTypeRaw;
     if (!isset($typeCounts[$eventType])) {
         $eventType = 'other';
     }
+
+    $eventDateValue = $event->date ?? null;
+    if (!empty($eventDateValue) && strtotime($eventDateValue) >= strtotime(date('Y-m-d')) && $eventType === 'match') {
+        $upcomingMatchCount++;
+    }
+
     $typeCounts[$eventType]++;
 }
 ?>
@@ -46,8 +49,13 @@ foreach ($events as $event) {
                     <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
                 </a>
             </div>
-            <div class="right-section">
-                <img class="avatar" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/avatar.jpg" alt="Admin Avatar">
+            <div class="right-section user-section">
+                <a href="<?php echo ROOT; ?>/adminDashboard?openNotifications=1" class="notification-icon" title="Notifications" aria-label="Notifications">
+                    <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+                </a>
+                <a href="<?php echo ROOT; ?>/adminDashboard?openProfile=1" class="user-profile" title="Admin Profile" aria-label="Admin Profile">
+                    <img class="avatar" src="<?php echo htmlspecialchars($_SESSION['admin_profile_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Admin Avatar">
+                </a>
                 <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -58,7 +66,7 @@ foreach ($events as $event) {
             <article class="stat-card">
                 <div class="stat-content">
                     <p class="stat-title">Upcoming Matches</p>
-                    <h3 class="stat-value"><?php echo (int) $upcomingCount; ?></h3>
+                    <h3 class="stat-value"><?php echo (int) $upcomingMatchCount; ?></h3>
                 </div>
                 <div class="stat-icon match">trophy</div>
             </article>
@@ -270,5 +278,9 @@ foreach ($events as $event) {
         };
     </script>
     <script src="<?php echo ROOT; ?>/assets/js/eventManagement/script.js?v=<?php echo $eventScriptVersion; ?>"></script>
+    <script src="<?php echo ROOT; ?>/assets/js/potal/adminHeaderPopup.js"></script>
 </body>
 </html>
+
+
+
