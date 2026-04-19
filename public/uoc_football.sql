@@ -286,3 +286,14 @@ CREATE TABLE player_match_stats (
 
     UNIQUE (match_id, player_id)
 );
+
+CREATE TABLE IF NOT EXISTS store_management (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    item_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    category VARCHAR(100),
+    price DECIMAL(10, 2) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,
+    item_image VARCHAR(255),
+    status ENUM('Available', 'Sold Out') DEFAULT 'Available'
+);
