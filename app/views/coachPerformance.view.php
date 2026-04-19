@@ -7,6 +7,23 @@
     $base = rtrim(ROOT, '/');
     $noticeCount = isset($data['notices']) ? count($data['notices']) : 0;
     $noticeBadge = $noticeCount > 99 ? '99+' : (string) $noticeCount;
+    $performancePayload = $data['performance_payload'] ?? [];
+    $summary = $performancePayload['summary'] ?? ['wins' => 0, 'losses' => 0, 'draws' => 0];
+    $stats = $performancePayload['stats'] ?? [
+        'goals_scored' => 0,
+        'fouls' => 0,
+        'passing_target' => 0,
+        'possession' => 0,
+        'pass_accuracy' => 0,
+        'tackles_fouls' => '0/0',
+    ];
+    $matchOptions = $performancePayload['match_options'] ?? [];
+    $playerOptions = $performancePayload['player_options'] ?? [];
+    $tableRows = $performancePayload['table_rows'] ?? [];
+    $comparisonRows = $performancePayload['comparison_rows'] ?? [];
+    $selectedMatchId = (int) ($performancePayload['selected_match_id'] ?? 0);
+    $selectedPlayerId = (int) ($performancePayload['selected_player_id'] ?? 0);
+    $trend = $performancePayload['trend'] ?? ['labels' => [], 'datasets' => []];
     ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +31,6 @@
     <title>UOC_football - Player Performance</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/coachDashboard/performance-style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/coachDashboard/common.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -48,15 +64,15 @@
        <!-- Match Result Summary -->
         <div class="match-result-row">
             <div class="match-result-card wins">
-                <div class="match-result-value">12</div>
+                <div class="match-result-value"><?php echo (int) ($summary['wins'] ?? 0); ?></div>
                 <div class="match-result-label">Won Matches</div>
             </div>
             <div class="match-result-card losses">
-                <div class="match-result-value">4</div>
+                <div class="match-result-value"><?php echo (int) ($summary['losses'] ?? 0); ?></div>
                 <div class="match-result-label">Lost Matches</div>
             </div>
             <div class="match-result-card draws">
-                <div class="match-result-value">3</div>
+                <div class="match-result-value"><?php echo (int) ($summary['draws'] ?? 0); ?></div>
                 <div class="match-result-label">Draw Matches</div>
             </div>
         </div>
@@ -67,18 +83,28 @@
             <div class="filter-group">
                 <label>Match</label>
                 <select class="filter-select" id="matchSelect">
-                    <option value="uc-arsenal">Vs Arsenal FC</option>
-                    <option value="uc-chelsea">Vs Chelsea FC</option>
-                    <option value="uc-liverpool">Vs Liverpool FC</option>
+                    <option value="0">All Matches</option>
+                    <?php foreach ($matchOptions as $match): ?>
+                        <?php $matchId = (int) ($match->result_id ?? 0); ?>
+                        <option value="<?php echo $matchId; ?>" <?php echo $matchId === $selectedMatchId ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars((string) ($match->opponent_team ?? 'Opponent')); ?>
+                            <?php if (!empty($match->date)): ?>
+                                - <?php echo htmlspecialchars(date('M d, Y', strtotime((string) $match->date))); ?>
+                            <?php endif; ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div class="filter-group">
                 <label>Player</label>
                 <select class="filter-select" id="playerFilter">
-                    <option value="all" selected>All Players</option>
-                    <option value="marcus-johnson">Marcus Johnson</option>
-                    <option value="david-wilson">David Wilson</option>
-                    <option value="alex-rodriguez">Alex Rodriguez</option>
+                    <option value="0">All Players</option>
+                    <?php foreach ($playerOptions as $player): ?>
+                        <?php $playerId = (int) ($player->player_id ?? 0); ?>
+                        <option value="<?php echo $playerId; ?>" <?php echo $playerId === $selectedPlayerId ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars(trim((string) ($player->player_name ?? 'Player'))); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
         </div>
@@ -94,7 +120,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">92M</div>
+                    <div class="stat-value"><?php echo (int) ($stats['goals_scored'] ?? 0); ?></div>
                     <div class="stat-label">Goals Scored</div>
                 </div>
             </div>
@@ -108,7 +134,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">23</div>
+                    <div class="stat-value"><?php echo (int) ($stats['fouls'] ?? 0); ?></div>
                     <div class="stat-label">Fouls/Faults</div>
                 </div>
             </div>
@@ -122,7 +148,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">68%</div>
+                    <div class="stat-value"><?php echo (int) ($stats['passing_target'] ?? 0); ?>%</div>
                     <div class="stat-label">Passing Target</div>
                 </div>
             </div>
@@ -135,7 +161,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">62%</div>
+                    <div class="stat-value"><?php echo (int) ($stats['possession'] ?? 0); ?>%</div>
                     <div class="stat-label">Possession</div>
                 </div>
             </div>
@@ -147,7 +173,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">84%</div>
+                    <div class="stat-value"><?php echo (int) ($stats['pass_accuracy'] ?? 0); ?>%</div>
                     <div class="stat-label">Pass Accuracy</div>
                 </div>
             </div>
@@ -159,7 +185,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">18/2</div>
+                    <div class="stat-value"><?php echo htmlspecialchars((string) ($stats['tackles_fouls'] ?? '0/0')); ?></div>
                     <div class="stat-label">Tackles/Fouls</div>
                 </div>
             </div>
@@ -174,14 +200,16 @@
                 </div>
                 <div class="comparison-selects">
                     <select class="player-select" id="player1">
-                        <option value="player1">Select Player 1</option>
-                        <option value="john">John Doe</option>
-                        <option value="jane">Jane Smith</option>
+                        <option value="">Select Player 1</option>
+                        <?php foreach ($comparisonRows as $row): ?>
+                            <option value="<?php echo (int) ($row->player_id ?? 0); ?>"><?php echo htmlspecialchars(trim((string) ($row->player_name ?? 'Player'))); ?></option>
+                        <?php endforeach; ?>
                     </select>
                     <select class="player-select" id="player2">
-                        <option value="player2">Select Player 2</option>
-                        <option value="mike">Mike Johnson</option>
-                        <option value="sarah">Sarah Williams</option>
+                        <option value="">Select Player 2</option>
+                        <?php foreach ($comparisonRows as $row): ?>
+                            <option value="<?php echo (int) ($row->player_id ?? 0); ?>"><?php echo htmlspecialchars(trim((string) ($row->player_name ?? 'Player'))); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="comparison-metrics">
@@ -190,60 +218,46 @@
                             <span>G</span>
                         </div>
                         <div class="metric-info">
-                            <div class="metric-value">8</div>
+                            <div class="metric-value" id="cmpGoals">0 / 0</div>
                             <div class="metric-label">Goals</div>
                         </div>
                     </div>
                     <div class="metric-item">
                         <div class="metric-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);">
-                            <span>12</span>
+                            <span>A</span>
                         </div>
                         <div class="metric-info">
-                            <div class="metric-value">12</div>
+                            <div class="metric-value" id="cmpAssists">0 / 0</div>
                             <div class="metric-label">Assists</div>
                         </div>
                     </div>
                     <div class="metric-item">
                         <div class="metric-icon" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">
-                            <span>92%</span>
+                            <span>%</span>
                         </div>
                         <div class="metric-info">
-                            <div class="metric-value">92%</div>
+                            <div class="metric-value" id="cmpPassAccuracy">0% / 0%</div>
                             <div class="metric-label">Pass Accuracy</div>
                         </div>
                     </div>
                     <div class="metric-item">
                         <div class="metric-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
-                            <span>86%</span>
+                            <span>S</span>
                         </div>
                         <div class="metric-info">
-                            <div class="metric-value">86%</div>
+                            <div class="metric-value" id="cmpStamina">0% / 0%</div>
                             <div class="metric-label">Stamina</div>
                         </div>
                     </div>
                     <div class="metric-item">
                         <div class="metric-icon" style="background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);">
-                            <span>A+</span>
+                            <span>R</span>
                         </div>
                         <div class="metric-info">
-                            <div class="metric-value">A+</div>
+                            <div class="metric-value" id="cmpOverall">0 / 0</div>
                             <div class="metric-label">Overall Rating</div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Charts Row -->
-        <div class="charts-row">
-            <!-- Performance Trend Chart -->
-            <div class="chart-card">
-                <div class="card-header">
-                    <h2>Performance Trend</h2>
-                </div>
-                <div class="chart-container">
-                    <canvas id="performanceChart"></canvas>
                 </div>
             </div>
         </div>
@@ -269,48 +283,39 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>
-                                    <div class="player-cell">
-                                        <img src="<?php echo ROOT; ?>/assets/images/players/avatar1.jpg" alt="Player" class="player-avatar">
-                                        <span>Marcus Johnson</span>
-                                    </div>
-                                </td>
-                                <td>90</td>
-                                <td>2</td>
-                                <td>1</td>
-                                <td>45/52</td>
-                                <td>6</td>
-                                <td>8</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="player-cell">
-                                        <img src="<?php echo ROOT; ?>/assets/images/players/avatar2.jpg" alt="Player" class="player-avatar">
-                                        <span>David Wilson</span>
-                                    </div>
-                                </td>
-                                <td>85</td>
-                                <td>1</td>
-                                <td>3</td>
-                                <td>38/42</td>
-                                <td>4</td>
-                                <td>12</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="player-cell">
-                                        <img src="<?php echo ROOT; ?>/assets/images/players/avatar3.jpg" alt="Player" class="player-avatar">
-                                        <span>Alex Rodriguez</span>
-                                    </div>
-                                </td>
-                                <td>90</td>
-                                <td>0</td>
-                                <td>2</td>
-                                <td>52/58</td>
-                                <td>2</td>
-                                <td>15</td>
-                            </tr>
+                            <?php if (!empty($tableRows)): ?>
+                                <?php foreach ($tableRows as $row): ?>
+                                    <?php
+                                    $name = trim((string) ($row->player_name ?? 'Player'));
+                                    $avatar = !empty($row->player_image)
+                                        ? (ROOT . '/' . ltrim(str_replace('\\', '/', (string) $row->player_image), '/'))
+                                        : '';
+                                    $initial = strtoupper(substr($name !== '' ? $name : 'P', 0, 1));
+                                    ?>
+                                    <tr>
+                                        <td>
+                                            <div class="player-cell">
+                                                <?php if ($avatar !== ''): ?>
+                                                    <img src="<?php echo htmlspecialchars($avatar); ?>" alt="Player" class="player-avatar">
+                                                <?php else: ?>
+                                                    <span class="player-avatar-fallback"><?php echo htmlspecialchars($initial); ?></span>
+                                                <?php endif; ?>
+                                                <span><?php echo htmlspecialchars(trim((string) ($row->player_name ?? 'Player'))); ?></span>
+                                            </div>
+                                        </td>
+                                        <td><?php echo (int) ($row->minutes_played ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->goals ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->assists ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->passes ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->shots ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->defense ?? 0); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="7" style="text-align:center; color:#6b7280;">No player performance records found for the selected filters.</td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -340,6 +345,14 @@
         <?php endforeach; ?>
     </div>
 
+    <script>
+        window.COACH_PERFORMANCE_DATA = <?php echo json_encode([
+            'trend' => $trend,
+            'comparisonRows' => $comparisonRows,
+            'selected_match_id' => $selectedMatchId,
+            'selected_player_id' => $selectedPlayerId,
+        ]); ?>;
+    </script>
     <script src="<?php echo ROOT; ?>/assets/js/coachDashboard/performance-script.js"></script>
     <script>
         const coachBell = document.getElementById('coachNotificationBell');

@@ -2,112 +2,10 @@
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    initializeCharts();
     initializeFilters();
     initializePlayerComparison();
     initializeNotes();
 });
-
-// Initialize all charts
-function initializeCharts() {
-    createPerformanceTrendChart();
-}
-
-// Performance Trend Line Chart
-function createPerformanceTrendChart() {
-    const ctx = document.getElementById('performanceChart');
-    if (!ctx) return;
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
-            datasets: [
-                {
-                    label: 'Player A',
-                    data: [65, 72, 68, 80, 85],
-                    borderColor: '#7c3aed',
-                    backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    pointBackgroundColor: '#7c3aed',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2
-                },
-                {
-                    label: 'Player B',
-                    data: [70, 68, 75, 73, 78],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    pointBackgroundColor: '#3b82f6',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'bottom',
-                    labels: {
-                        padding: 15,
-                        font: {
-                            size: 12,
-                            weight: '600'
-                        },
-                        usePointStyle: true,
-                        pointStyle: 'circle'
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    cornerRadius: 8
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        font: {
-                            size: 12
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    }
-                },
-                x: {
-                    ticks: {
-                        font: {
-                            size: 12
-                        }
-                    },
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-}
 
 // Filter functionality
 function initializeFilters() {
@@ -133,12 +31,14 @@ function initializeFilters() {
 
 // Update dashboard based on filters
 function updateDashboard() {
-    // This function would typically make an AJAX call to fetch new data
-    // For now, we'll just log that an update is needed
-    console.log('Dashboard update triggered');
-    
-    // You can add animations here
-    animateStats();
+    const matchSelect = document.getElementById('matchSelect');
+    const playerFilter = document.getElementById('playerFilter');
+
+    const params = new URLSearchParams(window.location.search);
+    params.set('match_id', matchSelect ? matchSelect.value : '0');
+    params.set('player_id', playerFilter ? playerFilter.value : '0');
+
+    window.location.search = params.toString();
 }
 
 // Animate stat cards on update
@@ -161,25 +61,67 @@ function initializePlayerComparison() {
     const player1Select = document.getElementById('player1');
     const player2Select = document.getElementById('player2');
 
-    if (player1Select) {
-        player1Select.addEventListener('change', function() {
-            console.log('Player 1 selected:', this.value);
-            updateComparison();
-        });
+    if (!player1Select || !player2Select) {
+        return;
     }
 
-    if (player2Select) {
-        player2Select.addEventListener('change', function() {
-            console.log('Player 2 selected:', this.value);
-            updateComparison();
-        });
+    const rows = (window.COACH_PERFORMANCE_DATA && Array.isArray(window.COACH_PERFORMANCE_DATA.comparisonRows))
+        ? window.COACH_PERFORMANCE_DATA.comparisonRows
+        : [];
+
+    if (rows.length > 0) {
+        if (!player1Select.value && rows[0] && rows[0].player_id) {
+            player1Select.value = String(rows[0].player_id);
+        }
+        if (!player2Select.value && rows[1] && rows[1].player_id) {
+            player2Select.value = String(rows[1].player_id);
+        } else if (!player2Select.value && rows[0] && rows[0].player_id) {
+            player2Select.value = String(rows[0].player_id);
+        }
     }
+
+    player1Select.addEventListener('change', updateComparison);
+    player2Select.addEventListener('change', updateComparison);
+
+    updateComparison();
 }
 
 // Update comparison metrics
 function updateComparison() {
-    // This would typically fetch comparison data via AJAX
-    console.log('Updating player comparison');
+    const rows = (window.COACH_PERFORMANCE_DATA && Array.isArray(window.COACH_PERFORMANCE_DATA.comparisonRows))
+        ? window.COACH_PERFORMANCE_DATA.comparisonRows
+        : [];
+    const byId = {};
+    rows.forEach((row) => {
+        byId[String(row.player_id)] = row;
+    });
+
+    const player1 = byId[String((document.getElementById('player1') || {}).value || '')] || null;
+    const player2 = byId[String((document.getElementById('player2') || {}).value || '')] || null;
+
+    const v = (player, key, suffix = '') => {
+        if (!player || player[key] === undefined || player[key] === null || player[key] === '') {
+            return '0' + suffix;
+        }
+        const n = Number(player[key]);
+        if (Number.isNaN(n)) {
+            return String(player[key]) + suffix;
+        }
+        return String(Math.round(n)) + suffix;
+    };
+
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = text;
+        }
+    };
+
+    setText('cmpGoals', v(player1, 'goals') + ' / ' + v(player2, 'goals'));
+    setText('cmpAssists', v(player1, 'assists') + ' / ' + v(player2, 'assists'));
+    setText('cmpPassAccuracy', v(player1, 'pass_accuracy', '%') + ' / ' + v(player2, 'pass_accuracy', '%'));
+    setText('cmpStamina', v(player1, 'stamina', '%') + ' / ' + v(player2, 'stamina', '%'));
+    setText('cmpOverall', v(player1, 'overall_rating') + ' / ' + v(player2, 'overall_rating'));
     
     // Animate the comparison cards
     const metricItems = document.querySelectorAll('.metric-item');

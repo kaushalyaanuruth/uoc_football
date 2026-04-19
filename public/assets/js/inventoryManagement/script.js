@@ -5,6 +5,7 @@
 
     const config = window.INVENTORY_MANAGEMENT_CONFIG || {};
     const root = config.root || '';
+    const pollMs = Number(config.pollMs || 15000);
 
     const itemModal = byId('itemModal');
     const itemForm = byId('itemForm');
@@ -24,6 +25,7 @@
 
     let isEditMode = false;
     let currentItemId = null;
+    let pollHandle = null;
 
     function clearMessage() {
         if (!formMessage) {
@@ -86,6 +88,31 @@
         return root + path;
     }
 
+    function normalizeStatusKey(status) {
+        const value = String(status || '').trim().toLowerCase().replace(/[-\s]+/g, '_');
+        if (value === 'damaged') {
+            return 'damaged';
+        }
+
+        if (value === 'in_use' || value === 'inuse' || value === 'low' || value === 'reserved') {
+            return 'in_use';
+        }
+
+        return 'available';
+    }
+
+    function statusLabelFromKey(statusKey) {
+        if (statusKey === 'damaged') {
+            return 'Damaged';
+        }
+
+        if (statusKey === 'in_use') {
+            return 'In Use';
+        }
+
+        return 'Available';
+    }
+
     function normalizeIcon(icon, itemName) {
         const value = String(icon || '').trim().toLowerCase();
         const normalizedName = String(itemName || '').trim().toLowerCase();
@@ -131,12 +158,14 @@
 
 
     function itemToRow(item) {
+        const statusKey = normalizeStatusKey(item.status || item.status_key);
+        const statusLabel = item.status_label || statusLabelFromKey(statusKey);
         const row = document.createElement('div');
         row.className = 'inventory-item';
         row.dataset.itemId = item.id;
         row.dataset.name = (item.name || '').toLowerCase();
         row.dataset.category = item.category || '';
-        row.dataset.status = item.status || '';
+        row.dataset.status = statusKey;
 
         row.innerHTML = [
             '<div class="item-main">',
@@ -150,7 +179,7 @@
             '</div>',
             '<span class="item-category">' + escapeHtml(item.category || '') + '</span>',
             '<span class="item-stock">' + escapeHtml(String(item.quantity || 0)) + ' ' + escapeHtml(item.unit || 'pcs') + '</span>',
-            '<span class="status-badge status-' + escapeHtml(item.status || 'available') + '">' + escapeHtml(capitalize(item.status || 'available')) + '</span>',
+            '<span class="status-badge status-' + escapeHtml(statusKey) + '">' + escapeHtml(statusLabel) + '</span>',
             '<span class="item-location">' + escapeHtml(item.location || '') + '</span>',
             '<div class="row-actions">',
             '    <button type="button" class="icon-btn edit-btn" data-id="' + item.id + '" aria-label="Edit item">',
@@ -197,7 +226,7 @@
         byId('itemCategory').value = item.category || '';
         byId('itemQuantity').value = item.quantity || 0;
         byId('itemUnit').value = item.unit || 'pcs';
-        byId('itemStatus').value = item.status || 'available';
+        byId('itemStatus').value = normalizeStatusKey(item.status || item.status_key);
         byId('itemLocation').value = item.location || '';
         byId('itemIcon').value = normalizeIcon(item.icon, item.name);
         byId('itemDescription').value = item.description || '';
@@ -228,7 +257,7 @@
             category: byId('itemCategory').value.trim(),
             quantity: byId('itemQuantity').value,
             unit: byId('itemUnit').value.trim(),
-            status: byId('itemStatus').value,
+            status: normalizeStatusKey(byId('itemStatus').value),
             location: byId('itemLocation').value.trim(),
             icon: byId('itemIcon').value,
             description: byId('itemDescription').value.trim()
@@ -293,9 +322,10 @@
             }
 
             setMessage(result.message || 'Item saved successfully', 'success');
+            await refreshSnapshot();
             setTimeout(function () {
-                window.location.reload();
-            }, 400);
+                closeModal();
+            }, 250);
         } catch (error) {
             setMessage(error.message, 'error');
             itemSubmitBtn.disabled = false;
@@ -324,11 +354,66 @@
             if (!result.success) {
                 throw new Error(result.message || 'Unable to delete item');
             }
-
-            window.location.reload();
+            await refreshSnapshot();
         } catch (error) {
             setMessage(error.message, 'error');
         }
+    }
+
+    function renderRows(items) {
+        if (!listBody) {
+            return;
+        }
+
+        listBody.innerHTML = '';
+        (items || []).forEach(function (item) {
+            listBody.appendChild(itemToRow(item));
+        });
+
+        toggleEmptyState();
+        filterRows();
+    }
+
+    async function fetchSnapshot() {
+        const response = await fetch(buildEndpoint('/inventoryManagement/snapshot'), {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error('Request failed with status ' + response.status);
+        }
+
+        return response.json();
+    }
+
+    async function refreshSnapshot() {
+        const result = await fetchSnapshot();
+        if (!result.success || !result.data) {
+            throw new Error(result.message || 'Unable to refresh inventory');
+        }
+
+        renderRows(result.data.items || []);
+    }
+
+    function startPolling() {
+        if (pollHandle) {
+            clearInterval(pollHandle);
+        }
+
+        pollHandle = setInterval(function () {
+            if (document.hidden) {
+                return;
+            }
+
+            if (itemModal && itemModal.classList.contains('active')) {
+                return;
+            }
+
+            refreshSnapshot().catch(function () {
+                // Keep UI usable even if a poll fails.
+            });
+        }, pollMs);
     }
 
     function filterRows() {
@@ -421,5 +506,6 @@
         bindEvents();
         toggleEmptyState();
         filterRows();
+        startPolling();
     });
 })();

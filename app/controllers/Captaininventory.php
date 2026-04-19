@@ -2,6 +2,88 @@
 
 class CaptainInventory extends Controller
 {
+    private function jsonInput()
+    {
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return [];
+        }
+
+        return is_array($input) ? $input : [];
+    }
+
+    private function respond($payload)
+    {
+        header('Content-Type: application/json');
+        echo json_encode($payload);
+        exit;
+    }
+
+    private function normalizeStatusLabel($status)
+    {
+        $value = strtolower(trim((string) $status));
+        $value = str_replace(['-', '_'], ' ', $value);
+
+        if ($value === 'damaged') {
+            return 'Damaged';
+        }
+
+        if (in_array($value, ['in use', 'inuse', 'low', 'reserved'], true)) {
+            return 'In Use';
+        }
+
+        return 'Available';
+    }
+
+    private function statusKey($status)
+    {
+        $label = $this->normalizeStatusLabel($status);
+        if ($label === 'Damaged') {
+            return 'damaged';
+        }
+
+        if ($label === 'In Use') {
+            return 'in_use';
+        }
+
+        return 'available';
+    }
+
+    private function getCaptainTeamId()
+    {
+        $nic = (string) ($_SESSION['nic'] ?? '');
+        if ($nic === '') {
+            return 0;
+        }
+
+        $playerModel = $this->model('PlayerModel');
+        $rows = $playerModel->query(
+            "SELECT tp.team_id
+             FROM players p
+             JOIN team_players tp ON tp.player_id = p.player_id
+             WHERE p.nic = :nic
+             ORDER BY tp.team_id DESC
+             LIMIT 1",
+            ['nic' => $nic]
+        );
+
+        return (int) ($rows[0]->team_id ?? 0);
+    }
+
+    private function mapItem($row)
+    {
+        $statusLabel = $this->normalizeStatusLabel($row->status ?? 'Available');
+        return [
+            'item_id' => (int) ($row->item_id ?? 0),
+            'item_name' => trim((string) ($row->item_name ?? '')),
+            'category' => trim((string) ($row->category ?? 'General')),
+            'total_count' => (int) ($row->total_count ?? 0),
+            'available_count' => (int) ($row->available_count ?? 0),
+            'status' => $statusLabel,
+            'status_key' => $this->statusKey($statusLabel),
+            'last_updated' => (string) ($row->last_updated ?? ''),
+        ];
+    }
     private function buildInitialsAvatarUrl($displayName)
     {
         $name = trim((string) $displayName);
@@ -136,86 +218,182 @@ class CaptainInventory extends Controller
     public function index()
     {
         $this->ensureCaptainAccess();
+        $teamId = $this->getCaptainTeamId();
 
         $inventoryModel = new InventoryModel();
+        $inventoryModel->seedDummyItemsIfEmpty($teamId, (string) ($_SESSION['nic'] ?? $_SESSION['user_nic'] ?? ''));
 
-        $items = $inventoryModel->getAllItems();
+        $items = $inventoryModel->getAllItems($teamId);
+        $mappedItems = [];
+        foreach ($items as $item) {
+            $mappedItems[] = $this->mapItem($item);
+        }
 
-        $stats = $inventoryModel->getStats();
+        $stats = $inventoryModel->getStats($teamId);
         $uiData = $this->buildCaptainUiData();
         $notices = $this->getCaptainNotices();
 
         $data = [
-            'total' => $stats->total,
-            'in_use' => $stats->in_use,
-            'available' => $stats->available,
-            'damaged' => $stats->damaged,
-            'inventory' => $items,
+            'total' => (int) ($stats->total ?? 0),
+            'in_use' => (int) ($stats->in_use ?? 0),
+            'available' => (int) ($stats->available ?? 0),
+            'damaged' => (int) ($stats->damaged ?? 0),
+            'inventory' => $mappedItems,
             'captain_name' => $uiData['captain_name'],
             'captain_image' => $uiData['captain_image'],
             'notices' => $notices,
+            'team_id' => $teamId,
         ];
 
         $this->view('captain/CaptainInventory', $data);
     }
+
     public function store()
     {
         $this->ensureCaptainAccess();
+        $teamId = $this->getCaptainTeamId();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->respond(['status' => 'error', 'message' => 'Invalid request method']);
+        }
+
+        $input = $this->jsonInput();
+        if (empty($input)) {
+            $input = $_POST;
+        }
+
+        if (trim((string) ($input['item_name'] ?? '')) === '') {
+            $this->respond(['status' => 'error', 'message' => 'Item name is required']);
+        }
 
         $model = new InventoryModel();
 
         $data = [
-            'item_name' => $_POST['item_name'],
-            'category' => $_POST['category'],
-            'total_count' => $_POST['quantity'],
-            'available_count' => $_POST['quantity'],
-            'status' => $_POST['status'],
-            'updated_by' => $_SESSION['user_nic'] ?? null
+            'item_name' => trim((string) ($input['item_name'] ?? '')),
+            'category' => trim((string) ($input['category'] ?? 'General')),
+            'total_count' => max(0, (int) ($input['quantity'] ?? 0)),
+            'available_count' => max(0, (int) ($input['quantity'] ?? 0)),
+            'status' => $this->normalizeStatusLabel($input['status'] ?? 'Available'),
+            'updated_by' => (string) ($_SESSION['nic'] ?? ''),
         ];
 
-        $model->addItem($data);
+        $model->addItem($data, $teamId);
 
-        echo json_encode(["status" => "success"]);
+        $this->respond(['status' => 'success']);
     }
-public function update()
-{
-    $this->ensureCaptainAccess();
 
-    $model = new InventoryModel();
+    public function update()
+    {
+        $this->ensureCaptainAccess();
+        $teamId = $this->getCaptainTeamId();
 
-    $data = [
-        'item_id' => $_POST['item_id'],
-        'item_name' => $_POST['item_name'],
-        'category' => $_POST['category'],
-        'total_count' => $_POST['quantity'],
-        'available_count' => $_POST['quantity'],
-        'status' => $_POST['status']
-    ];
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->respond(['status' => 'error', 'message' => 'Invalid request method']);
+        }
 
-    $model->updateItem($data);
+        $input = $this->jsonInput();
+        if (empty($input)) {
+            $input = $_POST;
+        }
 
-    echo json_encode(["status" => "success"]);
-}
-public function delete()
-{
-    $this->ensureCaptainAccess();
+        $itemId = (int) ($input['item_id'] ?? 0);
+        if ($itemId <= 0) {
+            $this->respond(['status' => 'error', 'message' => 'Item ID is required']);
+        }
 
-    $model = new InventoryModel();
+        $model = new InventoryModel();
+        $existing = $model->getItemById($itemId, $teamId);
+        if ($existing === null) {
+            $this->respond(['status' => 'error', 'message' => 'Item not found']);
+        }
 
-    $id = $_POST['item_id'];
+        $quantity = max(0, (int) ($input['quantity'] ?? $existing->total_count ?? 0));
+        $data = [
+            'item_id' => $itemId,
+            'item_name' => trim((string) ($input['item_name'] ?? $existing->item_name ?? '')),
+            'category' => trim((string) ($input['category'] ?? $existing->category ?? 'General')),
+            'total_count' => $quantity,
+            'available_count' => $quantity,
+            'status' => $this->normalizeStatusLabel($input['status'] ?? ($existing->status ?? 'Available')),
+            'updated_by' => (string) ($_SESSION['nic'] ?? ''),
+        ];
 
-    $model->deleteItem($id);
+        $model->updateItem($data, $teamId);
 
-    echo json_encode(["status" => "success"]);
-}
-public function getChartData()
-{
-    $this->ensureCaptainAccess();
+        $this->respond(['status' => 'success']);
+    }
 
-    $model = new InventoryModel();
+    public function delete()
+    {
+        $this->ensureCaptainAccess();
+        $teamId = $this->getCaptainTeamId();
 
-    $data = $model->getCategoryStats();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->respond(['status' => 'error', 'message' => 'Invalid request method']);
+        }
 
-    echo json_encode($data);
-}
+        $input = $this->jsonInput();
+        if (empty($input)) {
+            $input = $_POST;
+        }
+
+        $id = (int) ($input['item_id'] ?? 0);
+        if ($id <= 0) {
+            $this->respond(['status' => 'error', 'message' => 'Item ID is required']);
+        }
+
+        $model = new InventoryModel();
+        $existing = $model->getItemById($id, $teamId);
+        if ($existing === null) {
+            $this->respond(['status' => 'error', 'message' => 'Item not found']);
+        }
+
+        $model->deleteItem($id, $teamId);
+        $this->respond(['status' => 'success']);
+    }
+
+    public function getChartData()
+    {
+        $this->ensureCaptainAccess();
+        $teamId = $this->getCaptainTeamId();
+
+        $model = new InventoryModel();
+        $data = $model->getCategoryStats($teamId);
+
+        $this->respond($data);
+    }
+
+    public function snapshot()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            $this->respond(['status' => 'error', 'message' => 'Invalid request method']);
+        }
+
+        $this->ensureCaptainAccess();
+        $teamId = $this->getCaptainTeamId();
+
+        $model = new InventoryModel();
+        $model->seedDummyItemsIfEmpty($teamId, (string) ($_SESSION['nic'] ?? $_SESSION['user_nic'] ?? ''));
+        $snapshot = $model->getSnapshot($teamId);
+        $items = [];
+        foreach ($snapshot['items'] as $row) {
+            $items[] = $this->mapItem($row);
+        }
+
+        $stats = $snapshot['stats'];
+        $this->respond([
+            'status' => 'success',
+            'data' => [
+                'items' => $items,
+                'stats' => [
+                    'total' => (int) ($stats->total ?? 0),
+                    'in_use' => (int) ($stats->in_use ?? 0),
+                    'available' => (int) ($stats->available ?? 0),
+                    'damaged' => (int) ($stats->damaged ?? 0),
+                ],
+                'category_stats' => $snapshot['category_stats'],
+                'team_id' => $teamId,
+            ],
+        ]);
+    }
 }

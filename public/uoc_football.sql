@@ -47,10 +47,18 @@ CREATE TABLE IF NOT EXISTS teams (
 CREATE TABLE IF NOT EXISTS inventory_items (
     item_id INT(32) PRIMARY KEY AUTO_INCREMENT,
     item_name VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL DEFAULT 'General',
     total_count INT(32) NOT NULL,
     available_count INT(32) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'Available',
+    location VARCHAR(100) DEFAULT '',
+    description TEXT,
+    unit VARCHAR(20) NOT NULL DEFAULT 'pcs',
+    icon VARCHAR(100) NOT NULL DEFAULT 'inventory_2',
+    team_id INT(32),
     last_updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by VARCHAR(16) NOT NULL,
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (updated_by) REFERENCES users(nic) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 

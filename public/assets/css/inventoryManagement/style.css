@@ -336,14 +336,14 @@ body::before {
     color: #166534;
 }
 
-.status-low {
+.status-in_use {
     background: #fee2e2;
-    color: #b91c1c;
+    color: #c2410c;
 }
 
-.status-reserved {
-    background: #dbeafe;
-    color: #1d4ed8;
+.status-damaged {
+    background: #fecaca;
+    color: #b91c1c;
 }
 
 .row-actions {

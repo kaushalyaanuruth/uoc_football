@@ -62,14 +62,14 @@
             <div class="stat-card">
                 <h3>Total Items</h3>
                 <div class="stat-value">
-                    <span><?= $data['total'] ?></span>
+                    <span id="captainTotalItems"><?= $data['total'] ?></span>
                     <div class="stat-icon purple"></div>
                 </div>
             </div>
             <div class="stat-card warning">
                 <h3>Items In Use</h3>
                 <div class="stat-value">
-                    <span><?= $data['in_use'] ?></span>
+                    <span id="captainInUseItems"><?= $data['in_use'] ?></span>
                     <div class="stat-icon orange"></div>
                 </div>
             </div>
@@ -79,7 +79,7 @@
                 <div class="stat-value">
 
                     <span>
-                        <?= $data['available'] ?></span>
+                        <span id="captainAvailableItems"><?= $data['available'] ?></span></span>
                     <div class="stat-icon green"></div>
 
                 </div>
@@ -90,7 +90,7 @@
                 <div class="stat-value">
 
                     <span>
-                        <?= $data['damaged'] ?> </span>
+                        <span id="captainDamagedItems"><?= $data['damaged'] ?></span> </span>
                     <div class="stat-icon red"></div>
 
                 </div>
@@ -119,10 +119,11 @@
                 </h2>
                 <select id="categoryFilter">
                     <option value="all">All Categories</option>
-                    <option value="kits">Kits</option>
-                    <option value="balls">Balls</option>
-                    <option value="equipment">Equipment</option>
-                    <option value="accessories">Accessories</option>
+                    <option value="General">General</option>
+                    <option value="Training">Training</option>
+                    <option value="Match">Match</option>
+                    <option value="Fitness">Fitness</option>
+                    <option value="Recovery">Recovery</option>
                 </select>
 
             </div>
@@ -141,16 +142,16 @@
 
                 <tbody>
                     <?php foreach ($data['inventory'] as $item): ?>
-                        <tr data-id="<?= $item->item_id ?>">
-                            <td><?= $item->item_name ?></td>
-                            <td><?= $item->category ?></td>
-                            <td><?= $item->total_count ?></td>
+                        <tr data-id="<?= (int) ($item['item_id'] ?? 0) ?>">
+                            <td><?= htmlspecialchars((string) ($item['item_name'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars((string) ($item['category'] ?? 'General')) ?></td>
+                            <td><?= (int) ($item['total_count'] ?? 0) ?></td>
                             <td>
-                                <span class="status <?= strtolower(str_replace(' ', '', $item->status)) ?>">
-                                    <?= $item->status ?>
+                                <span class="status <?= htmlspecialchars(strtolower(str_replace(' ', '', (string) ($item['status'] ?? 'Available')))) ?>">
+                                    <?= htmlspecialchars((string) ($item['status'] ?? 'Available')) ?>
                                 </span>
                             </td>
-                            <td><?= $item->last_updated ?></td>
+                            <td><?= htmlspecialchars((string) ($item['last_updated'] ?? '')) ?></td>
                             <td class="actions">
                                 <button class="btn-edit">Edit</button>
                                 <button class="btn-delete">Delete</button>
@@ -223,6 +224,11 @@
     </main>
 
     <script>
+        window.CAPTAIN_INVENTORY_CONFIG = {
+            root: '<?= ROOT ?>',
+            pollMs: 15000
+        };
+
         const captainBell = document.getElementById('captainNotificationBell');
         const captainOverlay = document.getElementById('captainNotificationOverlay');
 

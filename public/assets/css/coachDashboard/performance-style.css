@@ -73,12 +73,12 @@ body::before {
 }
 
 .nav-link:hover {
-    background: rgba(124, 58, 237, 0.1);
-    color: #7c3aed;
+    background: rgba(52, 1, 52, 0.08);
+    color: #340134;
 }
 
 .nav-link.active {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    background: #340134;
     color: white;
     font-weight: 600;
 }
@@ -148,7 +148,7 @@ body::before {
 .filter-group label {
     font-size: 14px;
     font-weight: 600;
-    color: #4a0059b6;
+    color: #4b5563;
 }
 
 .filter-select,
@@ -166,13 +166,13 @@ body::before {
 
 .filter-select:focus,
 .filter-input:focus {
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    border-color: #340134;
+    box-shadow: 0 0 0 3px rgba(52, 1, 52, 0.1);
 }
 
 .filter-select:hover,
 .filter-input:hover {
-    border-color: #a855f7;
+    border-color: #340134;
 }
 
 /* Match Result Summary */
@@ -268,7 +268,7 @@ body::before {
 }
 
 .stat-card.purple .stat-icon {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    background: linear-gradient(135deg, #340134 0%, #4a1150 100%);
 }
 
 .stat-card.indigo .stat-icon {
@@ -321,7 +321,7 @@ body::before {
 .card-header h2 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #4a0059b6;
+    color: #4b5563;
 }
 
 .chart-container {
@@ -361,8 +361,8 @@ body::before {
 }
 
 .player-select:focus {
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    border-color: #340134;
+    box-shadow: 0 0 0 3px rgba(52, 1, 52, 0.1);
 }
 
 .comparison-metrics {
@@ -375,14 +375,14 @@ body::before {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #FAF5FF;
+    background: #f6f4f8;
     padding: 16px;
     border-radius: 12px;
     transition: all 0.3s ease;
 }
 
 .metric-item:hover {
-    background: #e3deff;
+    background: #ebe6f3;
     transform: translateY(-2px);
 }
 
@@ -437,7 +437,7 @@ body::before {
 }
 
 .performance-table thead {
-    background: #FAF5FF;
+    background: #f6f4f8;
 }
 
 .performance-table th {
@@ -445,7 +445,7 @@ body::before {
     text-align: left;
     font-size: 14px;
     font-weight: 600;
-    color: #4a0059b6;
+    color: #4b5563;
     border-bottom: 2px solid #E5E5EF;
 }
 
@@ -454,7 +454,7 @@ body::before {
 }
 
 .performance-table tbody tr:hover {
-    background: #FAF5FF;
+    background: #f6f4f8;
 }
 
 .performance-table td {
@@ -476,6 +476,20 @@ body::before {
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+.player-avatar-fallback {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f6f4f8;
+    color: #340134;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 /* Notes Section */
@@ -509,8 +523,8 @@ body::before {
 }
 
 .notes-textarea:focus {
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    border-color: #340134;
+    box-shadow: 0 0 0 3px rgba(52, 1, 52, 0.1);
 }
 
 .notes-textarea::placeholder {
@@ -518,7 +532,7 @@ body::before {
 }
 
 .save-btn {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    background: #340134;
     color: white;
     border: none;
     padding: 10px 24px;
@@ -530,7 +544,7 @@ body::before {
 }
 
 .save-btn:hover {
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 4px 12px rgba(52, 1, 52, 0.35);
     transform: translateY(-2px);
 }
 

@@ -10,6 +10,33 @@
     $cssVersion = file_exists($cssFile) ? filemtime($cssFile) : time();
     $commonFile = __DIR__ . '/../../../public/assets/css/playerCommon.css';
     $commonVersion = file_exists($commonFile) ? filemtime($commonFile) : time();
+    $trendLabels = $data['trends']['labels'] ?? [];
+    $trendDatasets = $data['trends']['datasets'] ?? [];
+    $testResults = $data['test_results'] ?? [];
+    $matchHistory = $data['match_history'] ?? [];
+    $buildTrendPath = function ($values) {
+        $points = is_array($values) ? array_values($values) : [];
+        if (empty($points)) {
+            return 'M50,180 L550,180';
+        }
+
+        $count = count($points);
+        if ($count === 1) {
+            $x = 50;
+            $y = 180 - (max(0, min(100, (float) $points[0])) * 1.4);
+            return 'M' . $x . ',' . round($y, 2) . ' L550,' . round($y, 2);
+        }
+
+        $path = '';
+        for ($i = 0; $i < $count; $i++) {
+            $x = 50 + (500 * $i / ($count - 1));
+            $value = max(0, min(100, (float) $points[$i]));
+            $y = 180 - ($value * 1.4);
+            $path .= ($i === 0 ? 'M' : ' L') . round($x, 2) . ',' . round($y, 2);
+        }
+
+        return $path;
+    };
     ?>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/analyze.css?v=<?php echo $cssVersion; ?>">
@@ -79,19 +106,25 @@
 
                     <div class="chart-shell">
                         <svg class="trend-svg" viewBox="0 0 600 200" aria-label="Performance trend chart">
-                            <path d="M50,150 L150,140 L250,120 L350,110 L450,90 L550,80" fill="none" stroke="#a29bfe" stroke-width="4" stroke-linecap="round"></path>
-                            <path d="M50,165 L150,160 L250,145 L350,135 L450,120 L550,110" fill="none" stroke="#00b894" stroke-width="4" stroke-linecap="round"></path>
-                            <path d="M50,175 L150,170 L250,160 L350,150 L450,135 L550,125" fill="none" stroke="#fdcb6e" stroke-width="4" stroke-linecap="round"></path>
+                            <?php foreach ($trendDatasets as $set): ?>
+                                <path
+                                    d="<?php echo htmlspecialchars($buildTrendPath($set['data'] ?? [])); ?>"
+                                    fill="none"
+                                    stroke="<?php echo htmlspecialchars($set['color'] ?? '#a29bfe'); ?>"
+                                    stroke-width="4"
+                                    stroke-linecap="round"
+                                ></path>
+                            <?php endforeach; ?>
                         </svg>
 
                         <div class="chart-labels">
-                            <?php foreach ($data['trends']['labels'] as $label): ?>
+                            <?php foreach ($trendLabels as $label): ?>
                                 <span><?php echo $label; ?></span>
                             <?php endforeach; ?>
                         </div>
 
                         <div class="chart-legend">
-                            <?php foreach ($data['trends']['datasets'] as $set): ?>
+                            <?php foreach ($trendDatasets as $set): ?>
                                 <span class="legend-item">
                                     <span class="legend-dot" style="background: <?php echo $set['color']; ?>;"></span>
                                     <?php echo $set['label']; ?>
@@ -136,6 +169,76 @@
                             <p><?php echo $stat['label']; ?></p>
                         </article>
                     <?php endforeach; ?>
+                </div>
+            </section>
+
+            <section class="section-card personal-history-card">
+                <h2 class="section-title">My Recent Test Results</h2>
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Test Type</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($testResults)): ?>
+                                <?php foreach ($testResults as $row): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars((string) ($row->date ?? '')); ?></td>
+                                        <td><?php echo htmlspecialchars((string) ($row->test_type ?? '')); ?></td>
+                                        <td><?php echo htmlspecialchars((string) ($row->score ?? '')); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="history-empty">No personal test results found yet.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section-card personal-history-card">
+                <h2 class="section-title">My Match Performances</h2>
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Opponent</th>
+                                <th>Result</th>
+                                <th>Min</th>
+                                <th>G</th>
+                                <th>A</th>
+                                <th>Passes</th>
+                                <th>Defense</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($matchHistory)): ?>
+                                <?php foreach ($matchHistory as $row): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars((string) ($row->date ?? '')); ?></td>
+                                        <td><?php echo htmlspecialchars((string) ($row->opponent_team ?? '')); ?></td>
+                                        <td><?php echo htmlspecialchars((string) ($row->result ?? '')); ?></td>
+                                        <td><?php echo (int) ($row->minutes_played ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->goals_scored ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->assists ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->completed_passes ?? 0); ?></td>
+                                        <td><?php echo (int) ($row->defensive_actions ?? 0); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="8" class="history-empty">No personal match performance rows found yet.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </main>

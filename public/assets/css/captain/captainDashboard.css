@@ -369,7 +369,8 @@ body::before {
     transition: all 0.3s;
     display: flex;
     align-items: center;
-    
+    text-decoration: none;
+    color: #374151;
     gap: 1rem;
 }
 
@@ -379,7 +380,27 @@ body::before {
 }
 
 .link-icon {
-    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #ede9fe;
+    color: #4a1150;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.link-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.link-item:hover .link-icon {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .profile-modal {

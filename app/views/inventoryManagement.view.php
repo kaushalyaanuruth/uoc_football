@@ -102,8 +102,8 @@ function inventoryIconSymbol($icon, $itemName = '')
                 <select id="statusFilter" class="type-filter" aria-label="Filter by status">
                     <option value="all">All Status</option>
                     <option value="available">Available</option>
-                    <option value="low">Low Stock</option>
-                    <option value="reserved">Reserved</option>
+                    <option value="in_use">In Use</option>
+                    <option value="damaged">Damaged</option>
                 </select>
             </div>
         </section>
@@ -135,7 +135,7 @@ function inventoryIconSymbol($icon, $itemName = '')
                             </div>
                             <span class="item-category"><?php echo htmlspecialchars($item['category'], ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="item-stock"><?php echo (int) $item['quantity']; ?> <?php echo htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8'); ?></span>
-                            <span class="status-badge status-<?php echo htmlspecialchars($item['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo ucfirst($item['status']); ?></span>
+                            <span class="status-badge status-<?php echo htmlspecialchars($item['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($item['status_label'] ?? ucfirst($item['status']), ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="item-location"><?php echo htmlspecialchars($item['location'], ENT_QUOTES, 'UTF-8'); ?></span>
                             <div class="row-actions">
                                 <button type="button" class="icon-btn edit-btn" data-id="<?php echo (int) $item['id']; ?>" aria-label="Edit item">
@@ -177,8 +177,8 @@ function inventoryIconSymbol($icon, $itemName = '')
                         <label class="input-label" for="itemStatus">Status</label>
                         <select class="form-input" id="itemStatus" name="status" required>
                             <option value="available">Available</option>
-                            <option value="low">Low Stock</option>
-                            <option value="reserved">Reserved</option>
+                            <option value="in_use">In Use</option>
+                            <option value="damaged">Damaged</option>
                         </select>
                     </div>
                 </div>
@@ -223,7 +223,8 @@ function inventoryIconSymbol($icon, $itemName = '')
 
     <script>
         window.INVENTORY_MANAGEMENT_CONFIG = {
-            root: "<?php echo ROOT; ?>"
+            root: "<?php echo ROOT; ?>",
+            pollMs: 15000
         };
     </script>
     <script src="<?php echo ROOT; ?>/assets/js/inventoryManagement/script.js"></script>

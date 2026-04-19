@@ -43,6 +43,7 @@
             <a href="<?= ROOT ?>/CaptainAnalyze">Analyze</a>
             <a href="<?= ROOT ?>/CaptainAttendance">Attendance</a> <a href="<?= ROOT ?>/CaptainInventory">Inventory</a>
             <a href="<?= ROOT ?>/CaptainFinance">Finance</a>
+            <a href="<?= ROOT ?>/CaptainMealPlan">Meal Plan</a>
         </nav>
         <div class="nav-right">
             <a class="player-logout-btn" href="<?= ROOT ?>/login/logout">Logout</a>
@@ -121,14 +122,30 @@
                     <h3>🔗 Quick Links</h3>
 
                     <a href="<?= ROOT ?>/CaptainMealPlan" class="link-item">
-                        <!-- <div class="link-item" > -->
-                        <span class="link-icon">🍽️</span>
+                        <span class="link-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" role="img" focusable="false">
+                                <path d="M3 5.5a1 1 0 0 1 1-1h16a1 1 0 0 1 .98 1.2l-1.6 8A2 2 0 0 1 17.42 15H6.58a2 2 0 0 1-1.96-1.3l-1.6-8A1 1 0 0 1 3 5.5Zm2.22 1 1.33 6.67a.5.5 0 0 0 .49.33h10.92a.5.5 0 0 0 .49-.33L19.78 6.5H5.22ZM9 18a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm9 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                            </svg>
+                        </span>
                         <span>Meal Plan</span>
                     </a>
 
                     <a href="<?= ROOT ?>/CaptainAnalyze" class="link-item">
-                        <span class="link-icon">📊</span>
+                        <span class="link-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" role="img" focusable="false">
+                                <path d="M4 20a1 1 0 0 1-1-1V5a1 1 0 1 1 2 0v13h15a1 1 0 1 1 0 2H4Zm4-4a1 1 0 0 1-1-1v-4a1 1 0 1 1 2 0v4a1 1 0 0 1-1 1Zm4 0a1 1 0 0 1-1-1V8a1 1 0 1 1 2 0v7a1 1 0 0 1-1 1Zm4 0a1 1 0 0 1-1-1v-2a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1Z"/>
+                            </svg>
+                        </span>
                         <span>Performance Stats</span>
+                    </a>
+
+                    <a href="<?= ROOT ?>/CaptainSchedule" class="link-item">
+                        <span class="link-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" role="img" focusable="false">
+                                <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.2A2.8 2.8 0 0 1 22 6.8v12.4A2.8 2.8 0 0 1 19.2 22H4.8A2.8 2.8 0 0 1 2 19.2V6.8A2.8 2.8 0 0 1 4.8 4H6V3a1 1 0 0 1 1-1Zm13 8H4v9.2c0 .44.36.8.8.8h14.4c.44 0 .8-.36.8-.8V10ZM4.8 6A.8.8 0 0 0 4 6.8V8h16V6.8a.8.8 0 0 0-.8-.8H4.8Z"/>
+                            </svg>
+                        </span>
+                        <span>Schedule</span>
                     </a>
                 </div>
 

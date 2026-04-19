@@ -53,34 +53,34 @@ class TeamResult extends Controller
     public function index()
     {
         $this->requireAuth();
-        
+
+        $team_id = $this->getPresentTeamId();
+        error_log("DEBUG: teamResult index - Team ID: $team_id");
+
+        $testResults = [];
         try {
-            $team_id = $this->getPresentTeamId();
-            error_log("DEBUG: teamResult index - Team ID: $team_id");
-            
             $testResults = $this->testResultModel->getByTeamId($team_id);
-            error_log("DEBUG: Test Results Count: " . count($testResults));
-            if (!empty($testResults)) {
-                error_log("DEBUG: First result - ID: " . $testResults[0]->result_id . ", Type: " . $testResults[0]->test_type);
-            }
             $testResults = is_array($testResults) ? $testResults : [];
-            
-            // Fetch match results
-            $matchResults = $this->matchResultModel->getByTeamId($team_id);
-            error_log("DEBUG: Match Results Count: " . count($matchResults));
-            $matchResults = is_array($matchResults) ? $matchResults : [];
-            
-            $data = [
-                'testResults' => $testResults,
-                'matchResults' => $matchResults
-            ];
+            error_log("DEBUG: Test Results Count: " . count($testResults));
         } catch (Exception $e) {
-            error_log("Error fetching team results: " . $e->getMessage());
-            $data = [
-                'testResults' => [],
-                'matchResults' => []
-            ];
+            error_log("Error fetching test results: " . $e->getMessage());
+            $testResults = [];
         }
+
+        $matchResults = [];
+        try {
+            $matchResults = $this->matchResultModel->getByTeamId($team_id);
+            $matchResults = is_array($matchResults) ? $matchResults : [];
+            error_log("DEBUG: Match Results Count: " . count($matchResults));
+        } catch (Exception $e) {
+            error_log("Error fetching match results: " . $e->getMessage());
+            $matchResults = [];
+        }
+
+        $data = [
+            'testResults' => $testResults,
+            'matchResults' => $matchResults
+        ];
         
         $this->view('teamResult', $data);
     }
