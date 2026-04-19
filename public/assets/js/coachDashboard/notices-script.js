@@ -206,6 +206,7 @@ function openNoticeModalForCreate() {
     const form = document.getElementById('coachNoticeForm');
     const title = document.getElementById('coachNoticeTitle');
     const content = document.getElementById('coachNoticeContent');
+    const locationInput = document.getElementById('coachNoticeLocation');
     const idInput = document.getElementById('coachNoticeId');
     const modalTitle = document.getElementById('coachNoticeModalTitle');
     const submitBtn = document.getElementById('submitCoachNotice');
@@ -232,6 +233,10 @@ function openNoticeModalForCreate() {
 
     if (content) {
         content.value = '';
+    }
+
+    if (locationInput) {
+        locationInput.value = '';
     }
 
     toggleNoticeModal(true);
@@ -273,16 +278,18 @@ async function submitNoticeForm(event) {
     const form = event.currentTarget;
     const titleInput = document.getElementById('coachNoticeTitle');
     const contentInput = document.getElementById('coachNoticeContent');
+    const locationInput = document.getElementById('coachNoticeLocation');
     const submitBtn = document.getElementById('submitCoachNotice');
 
     const title = (titleInput ? titleInput.value : '').trim();
     const content = (contentInput ? contentInput.value : '').trim();
+    const location = (locationInput ? locationInput.value : '').trim();
     const noticeIdInput = document.getElementById('coachNoticeId');
     const noticeId = Number(noticeIdInput ? noticeIdInput.value : 0);
     const isEditMode = noticeId > 0;
 
-    if (!title || !content) {
-        alert('Title and content are required.');
+    if (!title || !content || (!isEditMode && !location)) {
+        alert('Title and content are required. Location is required for new notices.');
         return;
     }
 
@@ -308,7 +315,7 @@ async function submitNoticeForm(event) {
             },
             body: JSON.stringify(isEditMode
                 ? { notice_id: noticeId, title, content }
-                : { title, content })
+                : { title, content, location })
         });
 
         const text = await response.text();

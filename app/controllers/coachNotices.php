@@ -24,6 +24,7 @@ class coachNotices extends CoachBaseController {
                 'id' => (int) ($row->notice_id ?? 0),
                 'title' => $row->title ?? 'Notice',
                 'content' => $row->content ?? '',
+                'location' => $row->location ?? '',
                 'author' => $row->created_by ?? 'Admin',
                 'date' => !empty($row->created_at) ? date('M d, Y h:i A', strtotime($row->created_at)) : ''
             ];
@@ -48,9 +49,10 @@ class coachNotices extends CoachBaseController {
 
         $title = trim((string) ($payload['title'] ?? ''));
         $content = trim((string) ($payload['content'] ?? ''));
+        $location = trim((string) ($payload['location'] ?? ''));
 
-        if ($title === '' || $content === '') {
-            $this->respondJson(['success' => false, 'message' => 'Title and content are required']);
+        if ($title === '' || $content === '' || $location === '') {
+            $this->respondJson(['success' => false, 'message' => 'Title, content and location are required']);
         }
 
         try {
@@ -64,7 +66,7 @@ class coachNotices extends CoachBaseController {
             }
 
             $noticeModel = $this->model('NoticeModel');
-            $noticeModel->createNotice($title, $content, $createdBy, 'present_team');
+            $noticeModel->createNotice($title, $content, $createdBy, 'present_team', $location);
 
             $this->respondJson(['success' => true, 'message' => 'Notice added successfully']);
         } catch (Throwable $e) {

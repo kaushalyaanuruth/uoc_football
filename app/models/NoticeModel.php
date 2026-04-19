@@ -18,6 +18,7 @@ class NoticeModel
                 notice_id INT AUTO_INCREMENT PRIMARY KEY,
                 title VARCHAR(255) NOT NULL,
                 content TEXT NOT NULL,
+                location VARCHAR(255) NULL,
                 target_group VARCHAR(50) NOT NULL DEFAULT 'present_team',
                 created_by VARCHAR(100) NOT NULL DEFAULT 'Admin',
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -35,7 +36,7 @@ class NoticeModel
         $limit = max(1, (int)$limit);
 
         return $this->query(
-            "SELECT notice_id, title, content, target_group, created_by, created_at
+                        "SELECT notice_id, title, content, location, target_group, created_by, created_at
              FROM {$this->table}
              WHERE is_active = 1
                AND (target_group = 'all' OR target_group = :target_group OR target_group = 'present_team')
@@ -52,7 +53,7 @@ class NoticeModel
         $limit = max(1, (int)$limit);
 
         return $this->query(
-            "SELECT notice_id, title, content, target_group, created_by, created_at
+            "SELECT notice_id, title, content, location, target_group, created_by, created_at
              FROM {$this->table}
              WHERE is_active = 1
              ORDER BY created_at DESC
@@ -60,16 +61,17 @@ class NoticeModel
         );
     }
 
-    public function createNotice($title, $content, $createdBy = 'Admin', $targetGroup = 'present_team')
+    public function createNotice($title, $content, $createdBy = 'Admin', $targetGroup = 'present_team', $location = null)
     {
         $this->ensureTable();
 
         return $this->query(
-            "INSERT INTO {$this->table} (title, content, created_by, target_group)
-             VALUES (:title, :content, :created_by, :target_group)",
+            "INSERT INTO {$this->table} (title, content, location, created_by, target_group)
+             VALUES (:title, :content, :location, :created_by, :target_group)",
             [
                 'title' => $title,
                 'content' => $content,
+                'location' => $location,
                 'created_by' => $createdBy,
                 'target_group' => $targetGroup
             ]
@@ -81,7 +83,7 @@ class NoticeModel
         $this->ensureTable();
 
         $rows = $this->query(
-            "SELECT notice_id, title, content, target_group, created_by, created_at
+                        "SELECT notice_id, title, content, location, target_group, created_by, created_at
              FROM {$this->table}
              WHERE notice_id = :notice_id
                AND is_active = 1

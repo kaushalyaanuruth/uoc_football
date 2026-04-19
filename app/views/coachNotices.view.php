@@ -93,6 +93,7 @@
                                 <span><?php echo htmlspecialchars($notice['date'] ?? ''); ?></span>
                             </div>
                         </div>
+                        <p class="notice-description"><?php echo htmlspecialchars($notice['location'] ?? ''); ?></p>
                         <p class="notice-description"><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
                         <div class="notice-actions">
                             <button type="button" class="notice-action-btn notice-edit-btn">Edit</button>
@@ -122,6 +123,9 @@
 
                 <label for="coachNoticeContent">Content</label>
                 <textarea id="coachNoticeContent" name="content" rows="5" required></textarea>
+
+                <label for="coachNoticeLocation">Location</label>
+                <input id="coachNoticeLocation" name="location" type="text" maxlength="255">
 
                 <div class="notice-modal-actions">
                     <button type="button" id="cancelCoachNotice" class="notice-modal-cancel">Cancel</button>
