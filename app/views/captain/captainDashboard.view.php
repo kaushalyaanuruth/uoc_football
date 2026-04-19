@@ -119,8 +119,16 @@
                             <p><?php echo htmlspecialchars($notice['content'] ?? ''); ?></p>
                             <?php if (!empty($notice['id'])): ?>
                                 <div style="display:flex; gap:8px; margin-top:8px;">
-                                    <button type="button" class="captain-notice-edit" style="height:30px; border:none; background:#4A1150; color:#fff; border-radius:8px; padding:0 10px; cursor:pointer;">Edit</button>
-                                    <button type="button" class="captain-notice-delete" style="height:30px; border:none; background:#b91c1c; color:#fff; border-radius:8px; padding:0 10px; cursor:pointer;">Delete</button>
+                                    <button type="button" class="captain-notice-edit" title="Edit notice" aria-label="Edit notice" style="height:32px; width:32px; border:none; background:#4A1150; color:#fff; border-radius:8px; padding:0; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="currentColor">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm2.92 2.33H5v-.92l9.06-9.06.92.92L5.92 19.58ZM20.71 7.04a1 1 0 0 0 0-1.41L18.37 3.3a1 1 0 0 0-1.41 0l-1.13 1.13 3.75 3.75 1.13-1.14Z"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="captain-notice-delete" title="Delete notice" aria-label="Delete notice" style="height:32px; width:32px; border:none; background:#b91c1c; color:#fff; border-radius:8px; padding:0; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="currentColor">
+                                            <path d="M9 3a1 1 0 0 0-1 1v1H5a1 1 0 1 0 0 2h1v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7h1a1 1 0 1 0 0-2h-3V4a1 1 0 0 0-1-1H9Zm1 2V5h4V5h-4Zm-2 2h8v12H8V7Zm2 2a1 1 0 0 0-1 1v6a1 1 0 1 0 2 0v-6a1 1 0 0 0-1-1Zm4 0a1 1 0 0 0-1 1v6a1 1 0 1 0 2 0v-6a1 1 0 0 0-1-1Z"/>
+                                        </svg>
+                                    </button>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -234,6 +242,18 @@
                         <label for="profilePhone">Phone Number</label>
                         <input type="text" id="profilePhone" data-editable="true" name="phone_number" value="<?php echo htmlspecialchars($data['captain_profile']['phone_number'] ?? ''); ?>" readonly>
                     </div>
+                    <div>
+                        <label for="profileCurrentPassword">Current Password</label>
+                        <input type="password" id="profileCurrentPassword" name="current_password" data-password-field="true" disabled>
+                    </div>
+                    <div>
+                        <label for="profileNewPassword">New Password</label>
+                        <input type="password" id="profileNewPassword" name="new_password" data-password-field="true" minlength="6" disabled>
+                    </div>
+                    <div>
+                        <label for="profileConfirmPassword">Confirm Password</label>
+                        <input type="password" id="profileConfirmPassword" name="confirm_password" data-password-field="true" minlength="6" disabled>
+                    </div>
                 </div>
 
                 <div class="profile-modal-actions">
@@ -256,6 +276,7 @@
         const saveProfileChanges = document.getElementById('saveProfileChanges');
         const captainProfileForm = document.getElementById('captainProfileForm');
         const editableInputs = captainProfileForm.querySelectorAll('[data-editable="true"]');
+        const passwordInputs = captainProfileForm.querySelectorAll('[data-password-field="true"]');
         const profileImageInput = document.getElementById('profileImageInput');
         const profileImageLabel = document.getElementById('profileImageLabel');
         const profilePreviewImage = document.getElementById('profilePreviewImage');
@@ -303,12 +324,22 @@
             document.getElementById('profilePhone').value = initialProfileState.phone_number;
             profilePreviewImage.src = initialProfileState.image;
             profileImageInput.value = '';
+            passwordInputs.forEach((input) => {
+                input.value = '';
+            });
         }
 
         function setProfileEditMode(enabled) {
             isProfileEditMode = enabled;
             editableInputs.forEach((input) => {
                 input.readOnly = !enabled;
+            });
+
+            passwordInputs.forEach((input) => {
+                input.disabled = !enabled;
+                if (!enabled) {
+                    input.value = '';
+                }
             });
 
             profileImageInput.disabled = !enabled;
@@ -482,6 +513,33 @@
 
             if (!isProfileEditMode) {
                 return;
+            }
+
+            const currentPassword = document.getElementById('profileCurrentPassword').value;
+            const newPassword = document.getElementById('profileNewPassword').value;
+            const confirmPassword = document.getElementById('profileConfirmPassword').value;
+            const wantsPasswordChange = currentPassword.trim() !== '' || newPassword.trim() !== '' || confirmPassword.trim() !== '';
+
+            if (wantsPasswordChange) {
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    alert('Current password, new password and confirm password are required to change password.');
+                    return;
+                }
+
+                if (newPassword.length < 6) {
+                    alert('New password must be at least 6 characters.');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    alert('New password and confirm password do not match.');
+                    return;
+                }
+
+                if (newPassword === '123456') {
+                    alert('Please choose a password different from the default password.');
+                    return;
+                }
             }
 
             const formData = new FormData(captainProfileForm);

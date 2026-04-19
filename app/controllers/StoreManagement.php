@@ -4,7 +4,34 @@ class StoreManagement extends Controller {
     private $storeModel;
 
     public function __construct() {
-        $this->storeModel = $this->model('StoreManagementModel');
+        $this->storeModel = $this->model('StoreEcommerceModel');
+    }
+
+    private function collectVariantsFromPost(): array
+    {
+        $sizes = $_POST['variant_size'] ?? [];
+        $prices = $_POST['variant_price'] ?? [];
+        $stocks = $_POST['variant_stock'] ?? [];
+
+        $variants = [];
+        $max = max(count((array) $sizes), count((array) $prices), count((array) $stocks));
+        for ($i = 0; $i < $max; $i++) {
+            $size = strtoupper(trim((string) ($sizes[$i] ?? '')));
+            $price = (float) ($prices[$i] ?? 0);
+            $stock = (int) ($stocks[$i] ?? 0);
+
+            if ($size === '' && $price <= 0 && $stock <= 0) {
+                continue;
+            }
+
+            $variants[] = [
+                'size' => $size,
+                'price' => $price,
+                'stock_qty' => $stock,
+            ];
+        }
+
+        return $variants;
     }
 
     /**
@@ -83,11 +110,13 @@ class StoreManagement extends Controller {
     public function index() {
         $this->requireAuth();
 
-        $items = $this->storeModel->getAll();
+        $items = $this->storeModel->getAdminProductsWithVariants();
+        $orders = $this->storeModel->getAdminOrdersWithItems();
         $categories = ['Jersey', 'Merchandise', 'Equipment', 'Accessories', 'Other'];
 
         $this->view('storeManagement', [
             'items' => $items,
+            'orders' => $orders,
             'categories' => $categories
         ]);
     }
@@ -106,35 +135,35 @@ class StoreManagement extends Controller {
 
         try {
             $data = [
-                'item_name' => trim($_POST['item_name'] ?? ''),
+                'product_name' => trim($_POST['item_name'] ?? ''),
                 'description' => trim($_POST['description'] ?? ''),
                 'category' => trim($_POST['category'] ?? ''),
-                'price' => (float)($_POST['price'] ?? 0),
-                'quantity' => (int)($_POST['quantity'] ?? 0),
-                'status' => $_POST['status'] ?? 'Available',
-                'item_image' => ''
+                'is_active' => ($_POST['status'] ?? 'Available') === 'Sold Out' ? 0 : 1,
+                'product_image' => ''
             ];
 
+            $variants = $this->collectVariantsFromPost();
+
             // Validate required fields
-            if (empty($data['item_name'])) {
+            if (empty($data['product_name'])) {
                 $this->respondJson(['success' => false, 'message' => 'Item name is required']);
             }
             if (empty($data['category'])) {
                 $this->respondJson(['success' => false, 'message' => 'Category is required']);
             }
-            if ($data['price'] <= 0) {
-                $this->respondJson(['success' => false, 'message' => 'Price must be greater than 0']);
+            if (empty($variants)) {
+                $this->respondJson(['success' => false, 'message' => 'At least one size/price/stock variant is required']);
             }
 
             // Handle image upload
             if (isset($_FILES['item_image']) && $_FILES['item_image']['error'] === UPLOAD_ERR_OK) {
                 $uploadedPath = $this->handleImageUpload($_FILES['item_image'], 'store');
                 if ($uploadedPath) {
-                    $data['item_image'] = $uploadedPath;
+                    $data['product_image'] = $uploadedPath;
                 }
             }
 
-            $result = $this->storeModel->create($data);
+            $result = $this->storeModel->createProductWithVariants($data, $variants);
             
             if (!$result) {
                 $this->respondJson(['success' => false, 'message' => 'Failed to add item to database']);
@@ -171,7 +200,7 @@ class StoreManagement extends Controller {
                 $this->respondJson(['success' => false, 'item' => null, 'message' => 'Item ID is required']);
             }
 
-            $item = $this->storeModel->getById($item_id);
+            $item = $this->storeModel->getProductByIdWithVariants($item_id);
 
             if (!$item) {
                 $this->respondJson(['success' => false, 'item' => null, 'message' => 'Item not found']);
@@ -210,34 +239,35 @@ class StoreManagement extends Controller {
             }
 
             $data = [
-                'item_name' => trim($_POST['item_name'] ?? ''),
+                'product_name' => trim($_POST['item_name'] ?? ''),
                 'description' => trim($_POST['description'] ?? ''),
                 'category' => trim($_POST['category'] ?? ''),
-                'price' => (float)($_POST['price'] ?? 0),
-                'quantity' => (int)($_POST['quantity'] ?? 0),
-                'status' => $_POST['status'] ?? 'Available'
+                'is_active' => ($_POST['status'] ?? 'Available') === 'Sold Out' ? 0 : 1,
+                'product_image' => ''
             ];
 
+            $variants = $this->collectVariantsFromPost();
+
             // Validate required fields
-            if (empty($data['item_name'])) {
+            if (empty($data['product_name'])) {
                 $this->respondJson(['success' => false, 'message' => 'Item name is required']);
             }
             if (empty($data['category'])) {
                 $this->respondJson(['success' => false, 'message' => 'Category is required']);
             }
-            if ($data['price'] <= 0) {
-                $this->respondJson(['success' => false, 'message' => 'Price must be greater than 0']);
+            if (empty($variants)) {
+                $this->respondJson(['success' => false, 'message' => 'At least one size/price/stock variant is required']);
             }
 
             // Handle image upload
             if (isset($_FILES['item_image']) && $_FILES['item_image']['error'] === UPLOAD_ERR_OK) {
                 $uploadedPath = $this->handleImageUpload($_FILES['item_image'], 'store');
                 if ($uploadedPath) {
-                    $data['item_image'] = $uploadedPath;
+                    $data['product_image'] = $uploadedPath;
                 }
             }
 
-            $result = $this->storeModel->update($item_id, $data);
+            $result = $this->storeModel->updateProductWithVariants($item_id, $data, $variants);
             
             if (!$result) {
                 $this->respondJson(['success' => false, 'message' => 'Failed to update item']);
@@ -274,15 +304,20 @@ class StoreManagement extends Controller {
                 $this->respondJson(['success' => false, 'message' => 'Item ID is required']);
             }
 
-            $result = $this->storeModel->delete($item_id);
+            $result = $this->storeModel->deleteProduct($item_id);
             
             if (!$result) {
                 $this->respondJson(['success' => false, 'message' => 'Failed to delete item']);
             }
 
+            $deleteMode = is_array($result) ? ($result['mode'] ?? 'deleted') : 'deleted';
+            $message = $deleteMode === 'archived'
+                ? 'Item has past orders, so it was archived instead of permanently deleted.'
+                : 'Store item deleted successfully';
+
             $this->respondJson([
                 'success' => true,
-                'message' => 'Store item deleted successfully'
+                'message' => $message
             ]);
         } catch (Exception $e) {
             error_log("Delete item error: " . $e->getMessage());
@@ -317,7 +352,24 @@ class StoreManagement extends Controller {
                 $this->respondJson(['success' => false, 'message' => 'Invalid status']);
             }
 
-            $result = $this->storeModel->updateStatus($item_id, $status);
+            $product = $this->storeModel->getProductByIdWithVariants($item_id);
+            if (!$product) {
+                $this->respondJson(['success' => false, 'message' => 'Item not found']);
+            }
+
+            $result = $this->storeModel->updateProductWithVariants($item_id, [
+                'product_name' => $product->product_name,
+                'description' => $product->description,
+                'category' => $product->category,
+                'product_image' => '',
+                'is_active' => $status === 'Available' ? 1 : 0,
+            ], array_map(function ($variant) {
+                return [
+                    'size' => (string) ($variant->size ?? ''),
+                    'price' => (float) ($variant->price ?? 0),
+                    'stock_qty' => (int) ($variant->stock_qty ?? 0),
+                ];
+            }, $product->variants ?? []));
             
             if (!$result) {
                 $this->respondJson(['success' => false, 'message' => 'Failed to update item status']);

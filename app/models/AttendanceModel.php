@@ -258,4 +258,50 @@ class AttendanceModel
             'values' => $values,
         ];
     }
+
+    public function getPlayerAttendanceHistoryByTeam($team_id, $player_id, $limit = 250)
+    {
+        $safeLimit = max(1, (int) $limit);
+
+        if ($this->eventTypeColumnExists()) {
+            $query = "
+            SELECT
+                e.date,
+                COALESCE(e.event_type, 'Practice') AS session_type,
+                COALESCE(a.status, 'Absent') AS status,
+                COALESCE(e.location, 'Ground') AS location
+            FROM team_players tp
+            JOIN players p ON p.player_id = tp.player_id
+            LEFT JOIN attendance a ON a.player_id = p.player_id
+            LEFT JOIN events e ON e.event_id = a.event_id
+            WHERE tp.team_id = :team_id
+              AND p.player_id = :player_id
+              AND e.event_id IS NOT NULL
+            ORDER BY e.date DESC, e.event_id DESC
+            LIMIT {$safeLimit}
+            ";
+        } else {
+            $query = "
+            SELECT
+                e.date,
+                'Practice' AS session_type,
+                COALESCE(a.status, 'Absent') AS status,
+                COALESCE(e.location, 'Ground') AS location
+            FROM team_players tp
+            JOIN players p ON p.player_id = tp.player_id
+            LEFT JOIN attendance a ON a.player_id = p.player_id
+            LEFT JOIN events e ON e.event_id = a.event_id
+            WHERE tp.team_id = :team_id
+              AND p.player_id = :player_id
+              AND e.event_id IS NOT NULL
+            ORDER BY e.date DESC, e.event_id DESC
+            LIMIT {$safeLimit}
+            ";
+        }
+
+        return $this->query($query, [
+            'team_id' => $team_id,
+            'player_id' => $player_id,
+        ]) ?: [];
+    }
 }

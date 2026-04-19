@@ -292,7 +292,7 @@
                                         : '';
                                     $initial = strtoupper(substr($name !== '' ? $name : 'P', 0, 1));
                                     ?>
-                                    <tr>
+                                    <tr class="breakdown-row" data-player-id="<?php echo (int) ($row->player_id ?? 0); ?>">
                                         <td>
                                             <div class="player-cell">
                                                 <?php if ($avatar !== ''): ?>
@@ -322,6 +322,17 @@
             </div>
         </div>
 
+        <div class="player-match-detail-section" id="playerMatchDetailSection" style="display:none;">
+            <div class="player-match-detail-card">
+                <div class="card-header">
+                    <h2 id="playerMatchDetailTitle">Player Match Stats</h2>
+                </div>
+                <div class="player-match-meta" id="playerMatchMeta">Select a player from Detailed Match Breakdown.</div>
+                <div class="player-match-grid" id="playerMatchGrid"></div>
+                <div class="player-match-notes" id="playerMatchNotes" style="display:none;"></div>
+            </div>
+        </div>
+
         <!-- Coach Notes Section -->
         <div class="notes-section">
             <div class="notes-card">
@@ -330,7 +341,7 @@
                     <button class="save-btn">Save Notes</button>
                 </div>
                 <div class="notes-content">
-                    <textarea class="notes-textarea" placeholder="Add your notes, strategy improvements, or quick feedback..."></textarea>
+                    <textarea class="notes-textarea" placeholder="Add your notes, strategy improvements, or quick feedback..."><?php echo htmlspecialchars((string) ($data['coach_note'] ?? '')); ?></textarea>
                 </div>
             </div>
         </div>
@@ -351,6 +362,8 @@
             'comparisonRows' => $comparisonRows,
             'selected_match_id' => $selectedMatchId,
             'selected_player_id' => $selectedPlayerId,
+            'saveNotesUrl' => ROOT . '/coachPerformance/saveNotes',
+            'playerMatchStatUrl' => ROOT . '/coachPerformance/playerMatchStat',
         ]); ?>;
     </script>
     <script>

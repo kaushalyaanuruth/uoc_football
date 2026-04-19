@@ -46,6 +46,7 @@ class LandingPage extends Controller {
         $teamModel = $this->model('TeamModel');
         $playerModel = $this->model('PlayerModel');
         $coachModel = $this->model('CoachModel');
+        $storeModel = $this->model('StoreEcommerceModel');
         
         // Fetch latest news
         $latestNews = $newsModel->getAll();
@@ -114,13 +115,23 @@ class LandingPage extends Controller {
             'total_wins' => 18, // Default value - would need match result tracking
             'tournament_wins' => count($eventModel->query("SELECT * FROM events WHERE event_type = 'tournament'") ?? []) ?: 5
         ];
+
+        $featuredMerchandise = [];
+        if ($storeModel) {
+            try {
+                $featuredMerchandise = $storeModel->getFeaturedProducts(4);
+            } catch (Throwable $e) {
+                $featuredMerchandise = [];
+            }
+        }
         
         $data = [
             'latestNews' => $latestNews,
             'upcomingEvents' => $upcomingEvents,
             'latestGalleryImages' => $latestGalleryImages,
             'landingTeamCards' => $landingTeamCards,
-            'teamStats' => $teamStats
+            'teamStats' => $teamStats,
+            'featuredMerchandise' => $featuredMerchandise,
         ];
         
         $this->view('landingPage', $data);

@@ -117,6 +117,21 @@ body {
     transform: translateY(0);
 }
 
+.gallery-fallback-icon {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+}
+
+.gallery-fallback-icon .material-symbols-outlined {
+    font-size: 52px;
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 48;
+}
+
 .overlay-content h3 {
     color: white;
     font-size: 1.3rem;

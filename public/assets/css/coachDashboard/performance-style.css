@@ -457,6 +457,14 @@ body::before {
     background: #f6f4f8;
 }
 
+.performance-table tbody tr.breakdown-row {
+    cursor: pointer;
+}
+
+.performance-table tbody tr.breakdown-row.active-row {
+    background: #ece7f3;
+}
+
 .performance-table td {
     padding: 16px;
     font-size: 14px;
@@ -550,6 +558,59 @@ body::before {
 
 .save-btn:active {
     transform: translateY(0);
+}
+
+.player-match-detail-section {
+    margin-bottom: 30px;
+}
+
+.player-match-detail-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    border: 2px solid #E5E5EF;
+}
+
+.player-match-meta {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 16px;
+}
+
+.player-match-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+}
+
+.player-match-item {
+    background: #f6f4f8;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.player-match-item-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.player-match-item-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #310037;
+}
+
+.player-match-notes {
+    margin-top: 14px;
+    background: #faf5ff;
+    border: 1px solid #e9d5ff;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
 }
 
 /* Responsive Design */

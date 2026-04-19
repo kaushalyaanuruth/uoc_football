@@ -19,6 +19,7 @@
             '.profile-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:10px 20px 6px;}',
             '.profile-form-grid label{display:block;font-size:.8rem;font-weight:600;color:#4b5563;margin-bottom:5px;}',
             '.profile-form-grid input{width:100%;height:40px;border:1px solid #d1d5db;border-radius:8px;padding:0 10px;font-size:.9rem;}',
+            '.profile-form-grid .password-field{letter-spacing:.1px;}',
             '.profile-readonly .profile-form-grid input[readonly]{background:#f9fafb;color:#6b7280;}',
             '.profile-modal-actions{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px 20px;}',
             '.profile-modal-actions .btn-primary,.profile-modal-actions .btn-secondary{height:36px;padding:0 14px;border-radius:8px;border:0;cursor:pointer;font-size:.88rem;font-weight:600;display:inline-flex;align-items:center;justify-content:center;line-height:1;}',
@@ -52,6 +53,9 @@
             '      <div><label for="sharedHeaderNic">NIC</label><input type="text" id="sharedHeaderNic" readonly></div>',
             '      <div><label for="sharedHeaderEmail">Email Address</label><input type="email" id="sharedHeaderEmail" name="email" data-editable="true" readonly></div>',
             '      <div><label for="sharedHeaderPhone">Phone Number</label><input type="text" id="sharedHeaderPhone" name="phone_number" data-editable="true" readonly></div>',
+            '      <div><label for="sharedHeaderCurrentPassword">Current Password</label><input type="password" id="sharedHeaderCurrentPassword" class="password-field" name="current_password" data-password-field="true" disabled></div>',
+            '      <div><label for="sharedHeaderNewPassword">New Password</label><input type="password" id="sharedHeaderNewPassword" class="password-field" name="new_password" data-password-field="true" minlength="6" disabled></div>',
+            '      <div><label for="sharedHeaderConfirmPassword">Confirm Password</label><input type="password" id="sharedHeaderConfirmPassword" class="password-field" name="confirm_password" data-password-field="true" minlength="6" disabled></div>',
             '    </div>',
             '    <div class="profile-modal-actions">',
             '      <button type="button" class="btn-secondary" id="sharedHeaderCancelProfile">Close</button>',
@@ -93,6 +97,7 @@
         var modal = createModal();
         var form = document.getElementById('sharedHeaderProfileForm');
         var editableInputs = form.querySelectorAll('[data-editable="true"]');
+        var passwordInputs = form.querySelectorAll('[data-password-field="true"]');
         var imageInput = document.getElementById('sharedHeaderProfileImageInput');
         var imageLabel = document.getElementById('sharedHeaderProfileImageLabel');
         var previewImage = document.getElementById('sharedHeaderProfilePreview');
@@ -115,11 +120,99 @@
         };
         var editMode = false;
 
+        function isValidPhone(value) {
+            return /^\d{10}$/.test(String(value || '').trim());
+        }
+
+        function isValidNic(value) {
+            return /^\d{12}$/.test(String(value || '').trim());
+        }
+
+        function validateProfileInput() {
+            var phoneInput = document.getElementById('sharedHeaderPhone');
+            var nicInput = document.getElementById('sharedHeaderNic');
+            var currentPasswordInput = document.getElementById('sharedHeaderCurrentPassword');
+            var newPasswordInput = document.getElementById('sharedHeaderNewPassword');
+            var confirmPasswordInput = document.getElementById('sharedHeaderConfirmPassword');
+
+            var phoneValue = phoneInput ? phoneInput.value : '';
+            if (String(phoneValue).trim() !== '' && !isValidPhone(phoneValue)) {
+                alert('Phone number must contain exactly 10 digits and letters are not allowed.');
+                if (phoneInput) {
+                    phoneInput.focus();
+                }
+                return false;
+            }
+
+            if (nicInput && !nicInput.readOnly) {
+                var nicValue = nicInput.value;
+                if (String(nicValue).trim() !== '' && !isValidNic(nicValue)) {
+                    alert('NIC must contain exactly 12 digits and letters are not allowed.');
+                    nicInput.focus();
+                    return false;
+                }
+            }
+
+            var wantsPasswordChange = String(currentPasswordInput ? currentPasswordInput.value : '').trim() !== ''
+                || String(newPasswordInput ? newPasswordInput.value : '').trim() !== ''
+                || String(confirmPasswordInput ? confirmPasswordInput.value : '').trim() !== '';
+
+            if (wantsPasswordChange) {
+                if (!currentPasswordInput.value || !newPasswordInput.value || !confirmPasswordInput.value) {
+                    alert('Current password, new password and confirm password are required to change password.');
+                    (currentPasswordInput || newPasswordInput || confirmPasswordInput).focus();
+                    return false;
+                }
+
+                if (newPasswordInput.value.length < 6) {
+                    alert('New password must be at least 6 characters.');
+                    newPasswordInput.focus();
+                    return false;
+                }
+
+                if (newPasswordInput.value !== confirmPasswordInput.value) {
+                    alert('New password and confirm password do not match.');
+                    confirmPasswordInput.focus();
+                    return false;
+                }
+
+                if (newPasswordInput.value === '123456') {
+                    alert('Please choose a password different from the default password.');
+                    newPasswordInput.focus();
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         function setEditMode(enabled) {
             editMode = enabled;
             editableInputs.forEach(function (input) {
                 input.readOnly = !enabled;
             });
+
+            passwordInputs.forEach(function (input) {
+                input.disabled = !enabled;
+                if (!enabled) {
+                    input.value = '';
+                }
+            });
+
+            var phoneInput = document.getElementById('sharedHeaderPhone');
+            if (phoneInput) {
+                phoneInput.setAttribute('maxlength', '10');
+                phoneInput.setAttribute('inputmode', 'numeric');
+                phoneInput.setAttribute('pattern', '\\d{10}');
+            }
+
+            var nicInput = document.getElementById('sharedHeaderNic');
+            if (nicInput) {
+                nicInput.setAttribute('maxlength', '12');
+                nicInput.setAttribute('inputmode', 'numeric');
+                nicInput.setAttribute('pattern', '\\d{12}');
+            }
+
             imageInput.disabled = !enabled;
             imageLabel.classList.toggle('profile-image-btn-disabled', !enabled);
             startEditButton.style.display = enabled ? 'none' : 'inline-flex';
@@ -174,6 +267,9 @@
                 image_url: initial.image
             });
             imageInput.value = '';
+            passwordInputs.forEach(function (input) {
+                input.value = '';
+            });
         }
 
         function closeModal() {
@@ -257,6 +353,10 @@
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
             if (!editMode) {
+                return;
+            }
+
+            if (!validateProfileInput()) {
                 return;
             }
 

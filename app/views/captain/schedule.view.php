@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/schedule.css?v=<?php echo $cssVersion; ?>">
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/playerCommon.css?v=<?php echo $commonVersion; ?>">
 </head>
-<body>
+<body class="captain-page">
     <div class="dashboard-container">
         <header class="player-header">
             <div class="logo-section">

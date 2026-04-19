@@ -27,6 +27,12 @@
                     </div>
                 <?php endif; ?>
 
+                <?php if (!empty($data['success'])): ?>
+                    <div class="success-message" style="background-color: #ecfdf3; border: 1px solid #86efac; color: #166534; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; font-weight: 500; text-align: center;">
+                         <?php echo htmlspecialchars($data['success']); ?>
+                    </div>
+                <?php endif; ?>
+
                 <div class="input-group">
                     <input type="text" id="indexNumber" name="username" placeholder="Username" required>
                 </div>
@@ -36,7 +42,7 @@
                 </div>
 
                 <div class="forgot-password">
-                    <a href="#" id="forgotPasswordLink">Forgot password?</a>
+                    <a href="<?php echo ROOT; ?>/ForgotPassword" id="forgotPasswordLink">Forgot password?</a>
                 </div>
                 <button type="submit" class="login-btn">Login</button>
             </form>

@@ -95,6 +95,11 @@
     color: white;
 }
 
+.gallery-placeholder-icon {
+    font-size: 72px;
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 48;
+}
+
 .gallery-overlay {
     position: absolute;
     bottom: 0;

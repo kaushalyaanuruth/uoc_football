@@ -444,9 +444,17 @@ class PlayerDashboard extends Controller
             $idNumber = trim((string)($_POST['id_number'] ?? ''));
             $email = trim((string)($_POST['email'] ?? ''));
             $phoneNumber = trim((string)($_POST['phone_number'] ?? ''));
+            $currentPassword = (string) ($_POST['current_password'] ?? '');
+            $newPassword = (string) ($_POST['new_password'] ?? '');
+            $confirmPassword = (string) ($_POST['confirm_password'] ?? '');
 
             if ($firstName === '' || $idNumber === '') {
                 echo json_encode(['success' => false, 'message' => 'First name and ID number are required']);
+                exit();
+            }
+
+            if ($phoneNumber !== '' && !preg_match('/^\d{10}$/', $phoneNumber)) {
+                echo json_encode(['success' => false, 'message' => 'Phone number must contain exactly 10 digits']);
                 exit();
             }
 
@@ -464,6 +472,34 @@ class PlayerDashboard extends Controller
             if (!empty($duplicateUserRows)) {
                 echo json_encode(['success' => false, 'message' => 'This ID number is already in use']);
                 exit();
+            }
+
+            $wantsPasswordChange = $currentPassword !== '' || $newPassword !== '' || $confirmPassword !== '';
+            if ($wantsPasswordChange) {
+                if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
+                    echo json_encode(['success' => false, 'message' => 'Current password, new password and confirm password are required']);
+                    exit();
+                }
+
+                if (!$userModel->verifyCurrentPasswordByNic($currentNic, $currentPassword)) {
+                    echo json_encode(['success' => false, 'message' => 'Current password is incorrect']);
+                    exit();
+                }
+
+                if (strlen($newPassword) < 6) {
+                    echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters']);
+                    exit();
+                }
+
+                if ($newPassword !== $confirmPassword) {
+                    echo json_encode(['success' => false, 'message' => 'New password and confirm password do not match']);
+                    exit();
+                }
+
+                if ($newPassword === '123456') {
+                    echo json_encode(['success' => false, 'message' => 'Please choose a password different from the default password']);
+                    exit();
+                }
             }
 
             $newImagePath = null;
@@ -500,6 +536,10 @@ class PlayerDashboard extends Controller
                 'email' => $email,
                 'phone_number' => $phoneNumber
             ];
+
+            if ($wantsPasswordChange) {
+                $updateFields['password'] = password_hash($newPassword, PASSWORD_BCRYPT);
+            }
 
             if (!empty($newImagePath)) {
                 $updateFields['image'] = $newImagePath;

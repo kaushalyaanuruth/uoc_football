@@ -1,3 +1,5 @@
+@import url('../tokens.css');
+
 .header {
     display: flex;
     justify-content: space-between;
@@ -13,7 +15,7 @@
 .back-btn {
     margin-top: 2rem;
     background: transparent;
-    border: 1px solid #703777;
+    border: 1px solid var(--admin-brand);
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -26,7 +28,7 @@
     border-radius: 14px;
     font-size: 13px;
     font-weight: 600;
-    color: #703777;
+    color: var(--admin-brand);
     text-decoration: none;
     width: fit-content;
 }
@@ -34,7 +36,7 @@
 .back-btn:hover {
     transform: translateX(-1px);
     box-shadow: 0 4px 12px rgba(76, 14, 84, 0.1);
-    background-color: #703777;
+    background-color: var(--admin-brand-strong);
     color: whitesmoke;
 } 
 .header-logo {
@@ -55,20 +57,20 @@
     padding-left: 24px;
     padding-right: 24px;
     height: 40px;
-    color: #310037;
+    color: var(--color-text-primary);
     border: none;
     border-radius: 14px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 1px solid #E5E5EF;
+    border: 1px solid var(--color-border);
     text-decoration: none;
 }
 
 .logout-btn:hover {
     transform: translateY(-2px);
-    background: #340134;
+    background: var(--admin-brand-strong);
     box-shadow: 0 4px 12px rgba(74, 2, 59, 0.3);
     color: white;
     border: none;
@@ -101,14 +103,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f9fafb;
+    background: var(--color-surface-soft);
     border-radius: 50%;
     transition: all 0.3s ease;
     text-decoration: none;
 }
 
 .notification-icon:hover {
-    background: #f3e8ff;
+    background: var(--admin-brand-soft);
 }
 
 .notification-icon .material-symbols-outlined {
@@ -121,7 +123,7 @@
     height: 48px;
     border-radius: 50%;
     overflow: hidden;
-    background: #f3e8ff;
+    background: var(--admin-brand-soft);
     cursor: pointer;
     border: 2px solid rgba(124, 58, 237, 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease;

@@ -13,6 +13,7 @@ $category = $data['category'] ?? null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery - UOC Football</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/gallery/styles.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/gallery/header/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/gallery/footer/style.css">
@@ -49,15 +50,15 @@ $category = $data['category'] ?? null;
                 <?php
                 if (!empty($images)) {
                     foreach ($images as $image):
-                        // Get category emoji
-                        $categoryEmojis = [
-                            'matches' => '⚽',
-                            'training' => '🏃',
-                            'team' => '👥',
-                            'events' => '🎉',
-                            'other' => '📸'
+                        // Map categories to Material Symbols icon names.
+                        $categoryIcons = [
+                            'matches' => 'sports_soccer',
+                            'training' => 'fitness_center',
+                            'team' => 'groups',
+                            'events' => 'celebration',
+                            'other' => 'image'
                         ];
-                        $emoji = $categoryEmojis[$image->category] ?? '📸';
+                        $iconName = $categoryIcons[$image->category] ?? 'image';
                 ?>
                 <!-- Gallery Item -->
                 <div class="gallery-item" data-category="<?php echo htmlspecialchars($image->category); ?>">
@@ -79,12 +80,12 @@ $category = $data['category'] ?? null;
                             <img src="<?php echo ROOT; ?>/<?php echo htmlspecialchars($imagePath); ?>" 
                                  alt="<?php echo htmlspecialchars($image->description ?? 'Gallery Image'); ?>"
                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div style="width:100%; height:200px; display:none; align-items:center; justify-content:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 48px;">
-                                <?php echo $emoji; ?>
+                            <div class="gallery-fallback-icon" style="display:none;">
+                                <span class="material-symbols-outlined" aria-hidden="true"><?php echo htmlspecialchars($iconName); ?></span>
                             </div>
                         <?php else: ?>
-                            <div style="width:100%; height:200px; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 48px;">
-                                <?php echo $emoji; ?>
+                            <div class="gallery-fallback-icon">
+                                <span class="material-symbols-outlined" aria-hidden="true"><?php echo htmlspecialchars($iconName); ?></span>
                             </div>
                         <?php endif; ?>
                         <div class="gallery-overlay">

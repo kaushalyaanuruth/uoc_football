@@ -56,6 +56,9 @@ $items = $data['items'] ?? [];
         </section>
 
         <section class="store-container">
+            <div class="store-toolbar">
+                <button type="button" class="store-cart-btn" id="openCartBtn">Cart (<span id="cartCount">0</span>)</button>
+            </div>
             <?php if (empty($items)): ?>
                 <div class="store-empty">
                     <h3>Store items are coming soon</h3>
@@ -65,29 +68,45 @@ $items = $data['items'] ?? [];
                 <div class="store-grid" id="storeGrid">
                     <?php foreach ($items as $item): ?>
                         <?php
-                        $status = trim((string) ($item->status ?? 'Available'));
-                        $isSoldOut = strcasecmp($status, 'Sold Out') === 0;
-                        $image = trim((string) ($item->item_image ?? ''));
+                        $isSoldOut = ((int) ($item->is_active ?? 0) !== 1) || ((int) ($item->total_stock ?? 0) <= 0);
+                        $image = trim((string) ($item->product_image ?? ''));
                         $imageUrl = $image !== '' ? (ROOT . '/' . ltrim(str_replace('\\', '/', $image), '/')) : '';
+                        $variants = $item->variants ?? [];
                         ?>
-                        <article class="store-card">
+                        <article class="store-card" data-product-id="<?php echo (int) ($item->product_id ?? 0); ?>" data-product-name="<?php echo htmlspecialchars((string) ($item->product_name ?? 'Item')); ?>">
                             <div class="store-image">
                                 <?php if ($imageUrl !== ''): ?>
-                                    <img src="<?php echo htmlspecialchars($imageUrl); ?>" alt="<?php echo htmlspecialchars((string) ($item->item_name ?? 'Store item')); ?>">
+                                    <img src="<?php echo htmlspecialchars($imageUrl); ?>" alt="<?php echo htmlspecialchars((string) ($item->product_name ?? 'Store item')); ?>">
                                 <?php else: ?>
                                     <span class="store-image-fallback">Store</span>
                                 <?php endif; ?>
                             </div>
                             <div class="store-body">
                                 <div class="store-head">
-                                    <h3 class="store-name"><?php echo htmlspecialchars((string) ($item->item_name ?? 'Item')); ?></h3>
-                                    <span class="store-category"><?php echo htmlspecialchars((string) ($item->category ?? 'Other')); ?></span>
+                                    <h3 class="store-name"><?php echo htmlspecialchars((string) ($item->product_name ?? 'Item')); ?></h3>
+                                    <span class="store-category"><?php echo htmlspecialchars((string) ($item->category ?? 'Merchandise')); ?></span>
                                 </div>
-                                <div class="store-price">Rs. <?php echo number_format((float) ($item->price ?? 0), 2); ?></div>
+                                <div class="store-price">From Rs. <?php echo number_format((float) ($item->min_price ?? 0), 2); ?></div>
                                 <div class="store-stock <?php echo $isSoldOut ? 'sold' : ''; ?>">
-                                    <?php echo $isSoldOut ? 'Sold Out' : ('In stock: ' . (int) ($item->quantity ?? 0)); ?>
+                                    <?php echo $isSoldOut ? 'Sold Out' : ('In stock: ' . (int) ($item->total_stock ?? 0)); ?>
                                 </div>
                                 <p class="store-description"><?php echo htmlspecialchars((string) ($item->description ?? 'Official UOC Football merchandise.')); ?></p>
+                                <div class="store-buy-box">
+                                    <label class="store-field-label">Size</label>
+                                    <select class="store-variant-select" <?php echo $isSoldOut ? 'disabled' : ''; ?>>
+                                        <?php foreach ($variants as $variant): ?>
+                                            <?php if ((int) ($variant->stock_qty ?? 0) <= 0) { continue; } ?>
+                                            <option value="<?php echo (int) ($variant->variant_id ?? 0); ?>" data-price="<?php echo (float) ($variant->price ?? 0); ?>" data-size="<?php echo htmlspecialchars((string) ($variant->size ?? '')); ?>">
+                                                <?php echo htmlspecialchars((string) ($variant->size ?? 'One Size')); ?> - Rs. <?php echo number_format((float) ($variant->price ?? 0), 2); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+
+                                    <label class="store-field-label">Quantity</label>
+                                    <input type="number" class="store-qty-input" min="1" value="1" <?php echo $isSoldOut ? 'disabled' : ''; ?>>
+
+                                    <button type="button" class="store-add-btn" <?php echo $isSoldOut ? 'disabled' : ''; ?>>Add to Cart</button>
+                                </div>
                             </div>
                         </article>
                     <?php endforeach; ?>
@@ -95,6 +114,37 @@ $items = $data['items'] ?? [];
             <?php endif; ?>
         </section>
     </main>
+
+    <aside class="store-cart-drawer" id="storeCartDrawer" aria-hidden="true">
+        <div class="store-cart-head">
+            <h3>Your Cart</h3>
+            <button type="button" id="closeCartBtn">&times;</button>
+        </div>
+        <div class="store-cart-items" id="cartItems"></div>
+        <div class="store-cart-footer">
+            <div class="store-cart-total">Total: Rs. <span id="cartTotal">0.00</span></div>
+            <button type="button" class="store-checkout-btn" id="openCheckoutBtn">Checkout</button>
+        </div>
+    </aside>
+    <div class="store-overlay" id="storeOverlay" hidden></div>
+
+    <div class="store-checkout-modal" id="checkoutModal" hidden>
+        <form class="store-checkout-form" id="checkoutForm">
+            <h3>Checkout Details</h3>
+            <label>Name</label>
+            <input type="text" name="buyer_name" required>
+            <label>Phone</label>
+            <input type="text" name="buyer_phone" required>
+            <label>Email</label>
+            <input type="email" name="buyer_email" required>
+            <label>Address</label>
+            <textarea name="buyer_address" rows="3" required></textarea>
+            <div class="store-checkout-actions">
+                <button type="button" id="cancelCheckoutBtn">Cancel</button>
+                <button type="submit">Place Order</button>
+            </div>
+        </form>
+    </div>
 
     <footer class="footer">
         <div class="footer-row">
@@ -125,6 +175,11 @@ $items = $data['items'] ?? [];
     </footer>
 
     <script src="<?php echo ROOT; ?>/assets/js/landingPage/header/script.js"></script>
+    <script>
+        window.STORE_CONFIG = {
+            checkoutUrl: '<?php echo ROOT; ?>/store/checkout'
+        };
+    </script>
     <script src="<?php echo ROOT; ?>/assets/js/landingPage/store/script.js"></script>
 </body>
 </html>

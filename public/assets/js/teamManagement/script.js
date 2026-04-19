@@ -2,6 +2,28 @@
 let playersArray = [];
 let coachesArray = [];
 
+function isValidNicNumber(value) {
+    return /^\d{12}$/.test(String(value || '').trim());
+}
+
+function isValidPhoneNumber(value) {
+    return /^\d{10}$/.test(String(value || '').trim());
+}
+
+function ensureNicAndPhoneValid(nic, phone, labelPrefix) {
+    if (!isValidNicNumber(nic)) {
+        alert(`${labelPrefix} NIC must contain exactly 12 digits and letters are not allowed.`);
+        return false;
+    }
+
+    if (!isValidPhoneNumber(phone)) {
+        alert(`${labelPrefix} phone number must contain exactly 10 digits and letters are not allowed.`);
+        return false;
+    }
+
+    return true;
+}
+
 function openAddTeamModal(){
     document.querySelector('#addTeamModal').classList.add('active');
 }
@@ -75,6 +97,10 @@ function addPlayerToForm(e) {
     
     if (!firstName || !lastName || !nic || !email || !phoneNumber || !position || !role) {
         alert('Please fill in all required fields');
+        return;
+    }
+
+    if (!ensureNicAndPhoneValid(nic, phoneNumber, 'Player')) {
         return;
     }
 
@@ -217,6 +243,10 @@ function addCoachToForm(e) {
     
     if (!firstName || !lastName || !nic || !email || !phoneNumber || !license) {
         alert('Please fill in all required fields');
+        return;
+    }
+
+    if (!ensureNicAndPhoneValid(nic, phoneNumber, 'Coach')) {
         return;
     }
     
@@ -676,6 +706,12 @@ function closeEditCoachModal() {
 
 function submitEditPlayerForm(e) {
     e.preventDefault();
+
+    const editPlayerNic = document.getElementById('editPlayer_nic').value;
+    const editPlayerPhone = document.getElementById('editPlayer_phone_number').value;
+    if (!ensureNicAndPhoneValid(editPlayerNic, editPlayerPhone, 'Player')) {
+        return;
+    }
     
     const playerId = document.getElementById('editPlayerId').value;
     const formData = new FormData();
@@ -722,6 +758,12 @@ function submitEditPlayerForm(e) {
 
 function submitEditCoachForm(e) {
     e.preventDefault();
+
+    const editCoachNic = document.getElementById('editCoach_nic').value;
+    const editCoachPhone = document.getElementById('editCoach_phone_number').value;
+    if (!ensureNicAndPhoneValid(editCoachNic, editCoachPhone, 'Coach')) {
+        return;
+    }
     
     const coachId = document.getElementById('editCoachId').value;
     const formData = new FormData();

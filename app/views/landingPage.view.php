@@ -6,6 +6,7 @@ $upcomingEvents = $data['upcomingEvents'] ?? [];
 // Get latest gallery images from controller data
 $latestGalleryImages = $data['latestGalleryImages'] ?? [];
 $landingTeamCards = $data['landingTeamCards'] ?? [];
+$featuredMerchandise = $data['featuredMerchandise'] ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -16,6 +17,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
     <title>University of Colombo Football</title>
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/header/style.css">
     <link rel="stylesheet" href="<?php echo ROOT; ?>/assets/css/landingPage/hero/style.css">
@@ -86,6 +88,45 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
                         </svg>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div class="section-connector"></div>
+
+    <div class="news" id="store-highlight" style="padding-top: 20px;">
+        <div class="news-container">
+            <div class="news-header">
+                <h2 class="section-title">Featured Merchandise</h2>
+                <a href="<?php echo ROOT; ?>/store" class="view-all-news-btn">Visit Store</a>
+            </div>
+            <div class="news-grid">
+                <?php if (!empty($featuredMerchandise)): ?>
+                    <?php foreach ($featuredMerchandise as $merch): ?>
+                        <?php
+                        $merchImage = trim((string) ($merch->product_image ?? ''));
+                        $merchImageUrl = $merchImage !== '' ? (ROOT . '/' . ltrim(str_replace('\\', '/', $merchImage), '/')) : '';
+                        ?>
+                        <div class="news-card" style="border: 1px solid #ece7f3;">
+                            <div class="news-image">
+                                <?php if ($merchImageUrl !== ''): ?>
+                                    <img src="<?php echo htmlspecialchars($merchImageUrl); ?>" alt="<?php echo htmlspecialchars((string) ($merch->product_name ?? 'Merchandise')); ?>">
+                                <?php else: ?>
+                                    <div class="merch-placeholder">
+                                        <span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="news-content">
+                                <h3><?php echo htmlspecialchars((string) ($merch->product_name ?? 'Merchandise')); ?></h3>
+                                <p class="news-date">From Rs. <?php echo number_format((float) ($merch->min_price ?? 0), 2); ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <p>No merchandise listed yet. Visit store for updates.</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -205,19 +246,18 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
         <div class="events-scroll" id="eventsScroll">
             <?php
             if (!empty($upcomingEvents)) {
-                // Define emoji mapping for different event types
-                $eventEmojis = [
-                    'match' => '⚽',
-                    'tournament' => '🏆',
-                    'training' => '🏃',
-                    'meeting' => '🎯',
-                    'social' => '🎉',
-                    'other' => '📅'
+                // Map event types to Material Symbols icon names.
+                $eventIcons = [
+                    'match' => 'sports_soccer',
+                    'tournament' => 'emoji_events',
+                    'training' => 'fitness_center',
+                    'meeting' => 'groups',
+                    'social' => 'celebration',
+                    'other' => 'calendar_month'
                 ];
 
                 foreach ($upcomingEvents as $event):
-                    // Get emoji based on event type, default to 📅
-                    $emoji = $eventEmojis[strtolower($event->event_type ?? 'match')] ?? '📅';
+                    $iconName = $eventIcons[strtolower($event->event_type ?? 'match')] ?? 'calendar_month';
 
                     $eventImageUrl = '';
                     if (!empty($event->image)) {
@@ -253,7 +293,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
                         <?php if (!empty($eventImageUrl)): ?>
                             <img src="<?php echo htmlspecialchars($eventImageUrl); ?>" alt="<?php echo htmlspecialchars($event->title ?? 'Event'); ?>">
                         <?php else: ?>
-                            <?php echo $emoji; ?>
+                            <span class="material-symbols-outlined event-image-icon" aria-hidden="true"><?php echo htmlspecialchars($iconName); ?></span>
                         <?php endif; ?>
                     </div>
                     <div class="event-details">
@@ -261,7 +301,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
                         <div class="event-date"><?php echo $formattedDate; ?></div>
                         <div class="event-type"><?php echo htmlspecialchars(ucfirst($eventType)); ?></div>
                         <?php if (!empty($event->location)): ?>
-                            <div class="event-location">📍 <?php echo htmlspecialchars($event->location); ?></div>
+                            <div class="event-location"><span class="material-symbols-outlined" aria-hidden="true">location_on</span><?php echo htmlspecialchars($event->location); ?></div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -284,7 +324,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
             <div class="testimonials-grid">
                 <div class="testimonial-card">
                     <div class="testimonial-stars">
-                        ★★★★★
+                        
                     </div>
                     <p class="testimonial-text">"Being part of this team has been transformative. The discipline and focus we bring to every match is unmatched. I'm proud to represent University of Colombo."</p>
                     <div class="testimonial-author">
@@ -304,7 +344,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
                 
                 <div class="testimonial-card">
                     <div class="testimonial-stars">
-                        ★★★★★
+                        
                     </div>
                     <p class="testimonial-text">"The consistency shown by our squad throughout the season has been remarkable. Every player brings their best to training and matches. This is what makes champions."</p>
                     <div class="testimonial-author">
@@ -324,7 +364,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
                 
                 <div class="testimonial-card">
                     <div class="testimonial-stars">
-                        ★★★★★
+                        
                     </div>
                     <p class="testimonial-text">"The camaraderie and brotherhood within the team is special. We push each other daily to be better, both on and off the pitch. That's our foundation."</p>
                     <div class="testimonial-author">
@@ -374,16 +414,16 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
                 <?php
                 if (!empty($latestGalleryImages)) {
                     foreach ($latestGalleryImages as $image):
-                        // Get category emoji
-                        $categoryEmojis = [
-                            'matches' => '⚽',
-                            'training' => '🏃',
-                            'team' => '👥',
-                            'events' => '🎉',
-                            'other' => '📸',
-                            'practice' => '🏋️'
+                        // Map categories to Material Symbols icon names.
+                        $categoryIcons = [
+                            'matches' => 'sports_soccer',
+                            'training' => 'fitness_center',
+                            'team' => 'groups',
+                            'events' => 'celebration',
+                            'other' => 'image',
+                            'practice' => 'exercise'
                         ];
-                        $emoji = $categoryEmojis[strtolower($image->category ?? 'other')] ?? '📸';
+                        $iconName = $categoryIcons[strtolower($image->category ?? 'other')] ?? 'image';
                 ?>
                 <div class="gallery-item">
                     <div class="gallery-image-wrapper">
@@ -391,7 +431,7 @@ $landingTeamCards = $data['landingTeamCards'] ?? [];
                             <img src="<?php echo ROOT; ?>/<?php echo htmlspecialchars($image->filepath); ?>" alt="<?php echo htmlspecialchars($image->description ?? 'Gallery Image'); ?>" class="gallery-image" data-lightbox>
                         <?php else: ?>
                             <div class="gallery-placeholder">
-                                <?php echo $emoji; ?>
+                                <span class="material-symbols-outlined gallery-placeholder-icon" aria-hidden="true"><?php echo htmlspecialchars($iconName); ?></span>
                             </div>
                         <?php endif; ?>
                         <div class="gallery-overlay">

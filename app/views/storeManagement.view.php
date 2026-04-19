@@ -1,7 +1,9 @@
 <?php
 // Store Management View
 $items = $items ?? [];
+$orders = $orders ?? [];
 $categories = $categories ?? [];
+$adminImage = (string) ($_SESSION['admin_profile_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +23,7 @@ $categories = $categories ?? [];
     <div class="container">
         <div class="header">
             <div class="left-section">
-                <a href="<?php echo ROOT; ?>/admin">
+                <a href="<?php echo ROOT; ?>/adminDashboard">
                     <img class="header-logo" src="<?php echo ROOT; ?>/assets/images/adminDashboard/header/uoclogo.png" alt="UOC Football Logo">
                 </a>
             </div>
@@ -30,19 +32,16 @@ $categories = $categories ?? [];
                     <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
                 </a>
                 <a href="<?php echo ROOT; ?>/adminDashboard?openProfile=1" class="user-profile" title="Admin Profile" aria-label="Admin Profile">
-                    <img class="avatar" src="<?php echo htmlspecialchars($_SESSION['admin_profile_image'] ?? (ROOT . '/assets/images/adminDashboard/header/avatar.jpg')); ?>" alt="Admin Avatar">
+                    <img class="avatar" src="<?php echo htmlspecialchars($adminImage); ?>" alt="Admin Avatar">
                 </a>
                 <a href="<?php echo ROOT; ?>/logout" class="logout-btn">Logout</a>
             </div>
         </div>
 
-        <a href="<?php echo ROOT; ?>/admin" class="back-btn">&lt; Back</a>
+        <a href="<?php echo ROOT; ?>/adminDashboard" class="back-btn">&lt; Back</a>
 
         <div class="title-container">
             <h1 class="section-title">Store Management</h1>
-            <button class="add-item-btn" type="button" onclick="openAddItemModal()">
-                <span class="material-symbols-outlined plus-icon">add</span>Add Item
-            </button>
         </div>
 
         <?php if (empty($items)): ?>
@@ -65,8 +64,8 @@ $categories = $categories ?? [];
                 <?php foreach ($items as $item): ?>
                     <div class="store-item-card">
                         <div class="store-card-image">
-                            <?php if (!empty($item->item_image)): ?>
-                                <img src="<?php echo ROOT; ?>/<?php echo htmlspecialchars($item->item_image); ?>" alt="<?php echo htmlspecialchars($item->item_name); ?>">
+                            <?php if (!empty($item->product_image)): ?>
+                                <img src="<?php echo ROOT; ?>/<?php echo htmlspecialchars($item->product_image); ?>" alt="<?php echo htmlspecialchars($item->product_name); ?>">
                             <?php else: ?>
                                 <div class="store-card-placeholder">
                                     <span class="material-symbols-outlined">shopping_bag</span>
@@ -75,23 +74,30 @@ $categories = $categories ?? [];
                         </div>
                         <div class="store-card-body">
                             <div class="store-card-header">
-                                <h3 class="store-card-title"><?php echo htmlspecialchars($item->item_name); ?></h3>
-                                <span class="category-badge"><?php echo htmlspecialchars($item->category); ?></span>
+                                <h3 class="store-card-title"><?php echo htmlspecialchars($item->product_name); ?></h3>
+                                <span class="category-badge"><?php echo htmlspecialchars($item->category ?? 'Merchandise'); ?></span>
                             </div>
-                            <div class="store-card-price">Rs. <?php echo number_format($item->price, 2); ?></div>
+                            <div class="store-card-price">From Rs. <?php echo number_format((float) ($item->min_price ?? 0), 2); ?></div>
                             <div class="store-card-info">
-                                <span><strong>Stock:</strong> <?php echo htmlspecialchars($item->quantity); ?> units</span>
+                                <span><strong>Total Stock:</strong> <?php echo (int) ($item->total_stock ?? 0); ?> units</span>
+                            </div>
+                            <div class="store-card-info" style="display:block; margin-top:6px;">
+                                <?php foreach (($item->variants ?? []) as $variant): ?>
+                                    <span style="display:inline-block; margin:2px 6px 2px 0; padding:4px 8px; background:#f3f4f6; border-radius:999px; font-size:12px;">
+                                        <?php echo htmlspecialchars((string) ($variant->size ?? '')); ?>: Rs. <?php echo number_format((float) ($variant->price ?? 0), 2); ?> (<?php echo (int) ($variant->stock_qty ?? 0); ?>)
+                                    </span>
+                                <?php endforeach; ?>
                             </div>
                             <div>
-                                <span class="status-badge <?php echo $item->status === 'Available' ? 'status-available' : 'status-soldout'; ?>">
-                                    <?php echo htmlspecialchars($item->status); ?>
+                                <span class="status-badge <?php echo ((int) ($item->is_active ?? 0) === 1) ? 'status-available' : 'status-soldout'; ?>">
+                                    <?php echo ((int) ($item->is_active ?? 0) === 1) ? 'Available' : 'Sold Out'; ?>
                                 </span>
                             </div>
                             <div class="store-card-actions">
-                                <button class="icon-btn edit-btn" onclick="editItem(<?php echo (int) $item->item_id; ?>)">
+                                <button class="icon-btn edit-btn" onclick="editItem(<?php echo (int) $item->product_id; ?>)">
                                     <span class="material-symbols-outlined">edit</span>Edit
                                 </button>
-                                <button class="icon-btn delete-btn" onclick="deleteItem(<?php echo (int) $item->item_id; ?>)">
+                                <button class="icon-btn delete-btn" onclick="deleteItem(<?php echo (int) $item->product_id; ?>)">
                                     <span class="material-symbols-outlined">delete</span>
                                 </button>
                             </div>
@@ -100,6 +106,90 @@ $categories = $categories ?? [];
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+
+        <div class="orders-section">
+            <div class="title-container orders-title-wrap">
+                <h2 class="section-title orders-title">Recent Orders</h2>
+            </div>
+
+            <?php if (empty($orders)): ?>
+                <div class="empty-state orders-empty-state">
+                    <div class="empty-state-icon">
+                        <span class="material-symbols-outlined" style="font-size: 64px; color: #d1d5db;">receipt_long</span>
+                    </div>
+                    <h3>No Orders Yet</h3>
+                    <p>Placed orders will appear here with buyer details and items.</p>
+                </div>
+            <?php else: ?>
+                <div class="orders-grid">
+                    <?php foreach ($orders as $order): ?>
+                        <div class="order-card">
+                            <div class="order-card-head">
+                                <h3><?php echo htmlspecialchars((string) ($order->order_number ?? 'Order')); ?></h3>
+                                <span class="order-status status-<?php echo strtolower((string) ($order->status ?? 'Pending')); ?>">
+                                    <?php echo htmlspecialchars((string) ($order->status ?? 'Pending')); ?>
+                                </span>
+                            </div>
+
+                            <div class="order-summary-row">
+                                <span class="order-summary-chip">
+                                    <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+                                    <?php echo !empty($order->created_at) ? date('Y-m-d h:i A', strtotime((string) $order->created_at)) : '-'; ?>
+                                </span>
+                                <span class="order-summary-chip order-summary-total">
+                                    <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+                                    Rs. <?php echo number_format((float) ($order->total ?? 0), 2); ?>
+                                </span>
+                            </div>
+
+                            <div class="order-meta-grid">
+                                <div class="order-meta-cell">
+                                    <p class="order-meta-label">Buyer</p>
+                                    <p class="order-meta-value"><?php echo htmlspecialchars((string) ($order->buyer_name ?? '-')); ?></p>
+                                </div>
+                                <div class="order-meta-cell">
+                                    <p class="order-meta-label">Phone</p>
+                                    <p class="order-meta-value"><?php echo htmlspecialchars((string) ($order->buyer_phone ?? '-')); ?></p>
+                                </div>
+                                <div class="order-meta-cell order-meta-cell-wide">
+                                    <p class="order-meta-label">Email</p>
+                                    <p class="order-meta-value"><?php echo htmlspecialchars((string) ($order->buyer_email ?? '-')); ?></p>
+                                </div>
+                                <div class="order-meta-cell order-meta-cell-wide">
+                                    <p class="order-meta-label">Address</p>
+                                    <p class="order-meta-value"><?php echo htmlspecialchars((string) ($order->buyer_address ?? '-')); ?></p>
+                                </div>
+                            </div>
+
+                            <div class="order-items-list">
+                                <div class="order-items-head">
+                                    <p class="order-items-title">Items</p>
+                                    <p class="order-items-count"><?php echo count((array) ($order->items ?? [])); ?> line(s)</p>
+                                </div>
+                                <div class="order-item-header-row">
+                                    <span>Product</span>
+                                    <span>Size</span>
+                                    <span>Qty</span>
+                                    <span>Total</span>
+                                </div>
+                                <?php if (!empty($order->items)): ?>
+                                    <?php foreach (($order->items ?? []) as $orderItem): ?>
+                                        <div class="order-item-row">
+                                            <span class="order-item-product"><?php echo htmlspecialchars((string) ($orderItem->product_name ?? 'Item')); ?></span>
+                                            <span><?php echo htmlspecialchars((string) ($orderItem->size ?? '-')); ?></span>
+                                            <span><?php echo (int) ($orderItem->quantity ?? 0); ?></span>
+                                            <span class="order-item-total">Rs. <?php echo number_format((float) ($orderItem->line_total ?? 0), 2); ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p class="order-items-empty">No order items available.</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
 
     <!-- Add Item Modal -->
@@ -128,13 +218,17 @@ $categories = $categories ?? [];
                 </div>
 
                 <div class="form-group">
-                    <label class="input-label" for="itemPrice">Price (Rs.) *</label>
-                    <input type="number" id="itemPrice" name="price" class="form-input" required placeholder="0.00" step="0.01" min="0">
-                </div>
-
-                <div class="form-group">
-                    <label class="input-label" for="itemQuantity">Quantity *</label>
-                    <input type="number" id="itemQuantity" name="quantity" class="form-input" required placeholder="0" min="0">
+                    <label class="input-label">Size Variants (Price + Stock) *</label>
+                    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:8px; font-size:12px; color:#6b7280;">
+                        <span>Size</span><span>Price (Rs.)</span><span>Stock</span>
+                    </div>
+                    <?php foreach (['S','M','L','XL'] as $size): ?>
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:8px;">
+                            <input type="text" name="variant_size[]" class="form-input" value="<?php echo $size; ?>" readonly>
+                            <input type="number" name="variant_price[]" class="form-input" step="0.01" min="0" placeholder="0.00">
+                            <input type="number" name="variant_stock[]" class="form-input" min="0" placeholder="0">
+                        </div>
+                    <?php endforeach; ?>
                 </div>
 
                 <div class="form-group">
@@ -183,13 +277,17 @@ $categories = $categories ?? [];
                 </div>
 
                 <div class="form-group">
-                    <label class="input-label" for="editItemPrice">Price (Rs.) *</label>
-                    <input type="number" id="editItemPrice" name="price" class="form-input" required step="0.01" min="0">
-                </div>
-
-                <div class="form-group">
-                    <label class="input-label" for="editItemQuantity">Quantity *</label>
-                    <input type="number" id="editItemQuantity" name="quantity" class="form-input" required min="0">
+                    <label class="input-label">Size Variants (Price + Stock) *</label>
+                    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:8px; font-size:12px; color:#6b7280;">
+                        <span>Size</span><span>Price (Rs.)</span><span>Stock</span>
+                    </div>
+                    <?php foreach (['S','M','L','XL'] as $size): ?>
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:8px;">
+                            <input type="text" name="variant_size[]" class="form-input edit-variant-size" value="<?php echo $size; ?>" readonly>
+                            <input type="number" name="variant_price[]" class="form-input edit-variant-price" data-size="<?php echo $size; ?>" step="0.01" min="0" placeholder="0.00">
+                            <input type="number" name="variant_stock[]" class="form-input edit-variant-stock" data-size="<?php echo $size; ?>" min="0" placeholder="0">
+                        </div>
+                    <?php endforeach; ?>
                 </div>
 
                 <div class="form-group">

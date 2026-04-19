@@ -50,9 +50,3 @@ function showError(message) {
 loginForm.addEventListener('submit', function(e) {
     if (!validateForm()) e.preventDefault();
 });
-
-// Forgot password link
-document.getElementById('forgotPasswordLink').addEventListener('click', e => {
-    e.preventDefault();
-    alert('Forgot password functionality would be implemented here.');
-});

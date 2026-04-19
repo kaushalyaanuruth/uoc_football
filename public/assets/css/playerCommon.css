@@ -1,11 +1,13 @@
+@import url('./tokens.css');
+
 :root {
-    --portal-primary: #7c3aed;
-    --portal-primary-dark: #5b21b6;
-    --portal-text: #310037;
-    --portal-text-soft: #6b7280;
-    --portal-border: #e5e5ef;
-    --portal-surface: #ffffff;
-    --portal-shadow: 0 8px 22px rgba(49, 0, 55, 0.08);
+    --portal-primary: var(--color-primary);
+    --portal-primary-dark: var(--color-primary-dark);
+    --portal-text: var(--color-text-primary);
+    --portal-text-soft: var(--color-text-muted);
+    --portal-border: var(--color-border);
+    --portal-surface: var(--color-surface);
+    --portal-shadow: var(--shadow-soft);
 }
 
 * {
@@ -236,6 +238,68 @@ body::before {
 
 .notification-overlay[hidden] {
     display: none !important;
+}
+
+/* Captain pages that still use playerCommon should match captain navbar sizing */
+body.captain-page .dashboard-container,
+body.captain-page .analyze-container {
+    max-width: 1800px;
+    padding: 20px 32px 36px;
+}
+
+body.captain-page .player-header,
+body.captain-page .analyze-header,
+body.captain-page .dashboard-container > header {
+    gap: 16px;
+    margin-top: 6px;
+    padding: 0 0 16px;
+    border-bottom: 1px solid var(--portal-border);
+    margin-bottom: 24px;
+}
+
+body.captain-page .logo-section img {
+    height: 55px;
+}
+
+body.captain-page .nav-links {
+    gap: 32px;
+    padding: 8px 64px;
+    margin-left: 0;
+}
+
+body.captain-page .nav-links a {
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+body.captain-page .user-section {
+    gap: 16px;
+}
+
+body.captain-page .player-logout-btn {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+body.captain-page .notification-icon,
+body.captain-page .user-profile {
+    width: 55px;
+    height: 55px;
+}
+
+/* Coach events page should align navbar top spacing with coach dashboard pages */
+body.coach-page .dashboard-container {
+    padding-top: 0;
+}
+
+body.coach-page .player-header,
+body.coach-page .dashboard-container > header {
+    margin-top: 8px;
 }
 
 @media (max-width: 900px) {

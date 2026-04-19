@@ -58,6 +58,16 @@ class teamManagement extends Controller {
         return 'Player';
     }
 
+    private function isValidNic($nic)
+    {
+        return preg_match('/^\d{12}$/', trim((string) $nic)) === 1;
+    }
+
+    private function isValidPhoneNumber($phoneNumber)
+    {
+        return preg_match('/^\d{10}$/', trim((string) $phoneNumber)) === 1;
+    }
+
     private function getLeadershipRoleConflictMessage($teamId, $role, $excludePlayerId = null)
     {
         $normalizedRole = $this->normalizeLeadershipRole($role);
@@ -208,6 +218,16 @@ class teamManagement extends Controller {
                         continue;
                     }
 
+                    if (!$this->isValidNic($playerData['nic'] ?? '')) {
+                        echo json_encode(['success' => false, 'message' => 'Player NIC must contain exactly 12 digits']);
+                        exit;
+                    }
+
+                    if (!$this->isValidPhoneNumber($playerData['phone_number'] ?? '')) {
+                        echo json_encode(['success' => false, 'message' => 'Player phone number must contain exactly 10 digits']);
+                        exit;
+                    }
+
                     $normalizedRole = $this->normalizeLeadershipRole($playerData['role'] ?? '');
                     if (isset($leadershipCounts[$normalizedRole])) {
                         $leadershipCounts[$normalizedRole]++;
@@ -283,6 +303,16 @@ class teamManagement extends Controller {
                 foreach ($_POST['coaches'] as $coachJson) {
                     $coachData = json_decode($coachJson, true);
                     if ($coachData) {
+                        if (!$this->isValidNic($coachData['nic'] ?? '')) {
+                            echo json_encode(['success' => false, 'message' => 'Coach NIC must contain exactly 12 digits']);
+                            exit;
+                        }
+
+                        if (!$this->isValidPhoneNumber($coachData['phone_number'] ?? '')) {
+                            echo json_encode(['success' => false, 'message' => 'Coach phone number must contain exactly 10 digits']);
+                            exit;
+                        }
+
                         // Extract user data
                         $userData = [
                             'first_name' => $coachData['first_name'],
@@ -461,6 +491,16 @@ class teamManagement extends Controller {
                 echo json_encode(['success' => false, 'message' => 'NIC, First Name, and Last Name are required']);
                 exit;
             }
+
+            if (!$this->isValidNic($userData['nic'])) {
+                echo json_encode(['success' => false, 'message' => 'NIC must contain exactly 12 digits']);
+                exit;
+            }
+
+            if (!$this->isValidPhoneNumber($userData['phone_number'])) {
+                echo json_encode(['success' => false, 'message' => 'Phone number must contain exactly 10 digits']);
+                exit;
+            }
             
             // Check if player already exists
             $existingPlayer = $this->playerModel->query("SELECT player_id FROM players WHERE nic = :nic", ['nic' => $userData['nic']]);
@@ -612,6 +652,16 @@ class teamManagement extends Controller {
             // Validate required fields
             if (empty($userData['nic']) || empty($userData['first_name']) || empty($userData['last_name'])) {
                 echo json_encode(['success' => false, 'message' => 'NIC, First Name, and Last Name are required']);
+                exit;
+            }
+
+            if (!$this->isValidNic($userData['nic'])) {
+                echo json_encode(['success' => false, 'message' => 'NIC must contain exactly 12 digits']);
+                exit;
+            }
+
+            if (!$this->isValidPhoneNumber($userData['phone_number'])) {
+                echo json_encode(['success' => false, 'message' => 'Phone number must contain exactly 10 digits']);
                 exit;
             }
             
@@ -766,6 +816,16 @@ class teamManagement extends Controller {
             // Update user data if present
             $userNic = $_POST['nic'] ?? null;
             if ($userNic) {
+                if (!$this->isValidNic($userNic)) {
+                    echo json_encode(['success' => false, 'message' => 'NIC must contain exactly 12 digits']);
+                    exit;
+                }
+
+                if (!$this->isValidPhoneNumber($_POST['phone_number'] ?? '')) {
+                    echo json_encode(['success' => false, 'message' => 'Phone number must contain exactly 10 digits']);
+                    exit;
+                }
+
                 $userData = [
                     'first_name' => $_POST['first_name'] ?? '',
                     'last_name' => $_POST['last_name'] ?? '',
@@ -817,6 +877,16 @@ class teamManagement extends Controller {
             // Update user data if present
             $userNic = $_POST['nic'] ?? null;
             if ($userNic) {
+                if (!$this->isValidNic($userNic)) {
+                    echo json_encode(['success' => false, 'message' => 'NIC must contain exactly 12 digits']);
+                    exit;
+                }
+
+                if (!$this->isValidPhoneNumber($_POST['phone_number'] ?? '')) {
+                    echo json_encode(['success' => false, 'message' => 'Phone number must contain exactly 10 digits']);
+                    exit;
+                }
+
                 $userData = [
                     'first_name' => $_POST['first_name'] ?? '',
                     'last_name' => $_POST['last_name'] ?? '',

@@ -70,6 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const today = new Date().toISOString().split("T")[0];
+        if (dateInput.value > today) {
+            alert("Future dates are not allowed for attendance.");
+            dateInput.value = today;
+            return;
+        }
+
         const payload = {
             date: dateInput.value,
             type: typeSelect.value,
@@ -235,13 +242,23 @@ document.addEventListener("DOMContentLoaded", () => {
 const typeSelect = document.getElementById("eventType");
 const dateInput = document.getElementById("attendanceDate");
 const applyFiltersBtn = document.getElementById("applyFilters");
+if (dateInput) {
+    dateInput.max = new Date().toISOString().split("T")[0];
+}
 
 function reloadPage() {
     const date = dateInput.value;
     const type = typeSelect.value;
+    const today = new Date().toISOString().split("T")[0];
 
     if (!date) {
         alert("Please select a date first.");
+        return;
+    }
+
+    if (date > today) {
+        alert("Future dates are not allowed for attendance.");
+        dateInput.value = today;
         return;
     }
 

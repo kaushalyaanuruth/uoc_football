@@ -161,7 +161,7 @@
 
             <div class="filter-group">
                 <label>Attendance Date</label>
-                <input type="date" class="filter-input" id="dateFilter" value="<?php echo htmlspecialchars($data['selected_date'] ?? date('Y-m-d')); ?>">
+                <input type="date" class="filter-input" id="dateFilter" value="<?php echo htmlspecialchars($data['selected_date'] ?? date('Y-m-d')); ?>" max="<?php echo date('Y-m-d'); ?>">
             </div>
         </div>
 
@@ -240,6 +240,32 @@
                     </div>
                 </div>
             </div>
+
+            <div class="player-history card" id="playerHistoryCard" style="display:none;">
+                <div class="card-header">
+                    <h2 class="card-title" id="playerHistoryTitle">Attendance History</h2>
+                </div>
+                <div class="card-body">
+                    <div id="playerHistoryStatus" style="font-size:14px; color:#6b7280; margin-bottom:10px;"></div>
+                    <div class="table-wrapper">
+                        <table class="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Session</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="playerHistoryBody">
+                                <tr>
+                                    <td colspan="4" style="text-align:center; color:#6b7280;">Select a player to view full attendance history.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Charts Grid -->
@@ -298,6 +324,7 @@
     <script>
         window.COACH_ATTENDANCE_CONFIG = {
             baseUrl: "<?php echo ROOT; ?>/coachAttendance",
+            historyUrl: "<?php echo ROOT; ?>/coachAttendance/playerHistory",
             selectedDate: "<?php echo htmlspecialchars($data['selected_date'] ?? date('Y-m-d')); ?>",
             selectedType: "<?php echo htmlspecialchars($data['selected_type'] ?? 'Practice'); ?>",
             trendLabels: <?php echo json_encode($data['trend_labels'] ?? ['No Data']); ?>,

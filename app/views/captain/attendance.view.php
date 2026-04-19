@@ -63,7 +63,7 @@
                     <option <?= $data['selected_type'] == 'Training' ? 'selected' : '' ?>>Training</option>
                     <option <?= $data['selected_type'] == 'Fitness' ? 'selected' : '' ?>>Fitness</option>
                 </select>
-                <input type="date" id="attendanceDate" value="<?= htmlspecialchars($data['selected_date']) ?>" aria-label="Select attendance date">
+                <input type="date" id="attendanceDate" value="<?= htmlspecialchars($data['selected_date']) ?>" max="<?= date('Y-m-d') ?>" aria-label="Select attendance date">
                 <select>
                     <option>All Teams</option>
                     <!-- <option value="">Team A</option>

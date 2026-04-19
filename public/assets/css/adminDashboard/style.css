@@ -1,16 +1,18 @@
 
+@import url('../tokens.css');
+
 /* Admin dashboard design tokens */
 :root {
     --admin-brand: #4a1150;
-    --admin-brand-strong: #340134;
-    --admin-brand-soft: #f3e8ff;
-    --admin-bg-soft: #f9fafb;
-    --admin-surface: #ffffff;
-    --admin-border: #e5e7ef;
-    --admin-border-soft: #ecebff;
-    --admin-text: #1f2937;
-    --admin-text-muted: #6b7280;
-    --admin-danger: #dc2626;
+    --admin-brand-strong: var(--color-primary-strong);
+    --admin-brand-soft: var(--color-primary-soft);
+    --admin-bg-soft: var(--color-surface-soft);
+    --admin-surface: var(--color-surface);
+    --admin-border: var(--color-border);
+    --admin-border-soft: var(--color-border-soft);
+    --admin-text: var(--color-text-body);
+    --admin-text-muted: var(--color-text-muted);
+    --admin-danger: var(--color-danger);
 }
 
 /* Header parity */

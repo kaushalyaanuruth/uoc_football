@@ -11,6 +11,8 @@
     ?>
     <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/CaptainFinance.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 </head>
 
 <body>
@@ -67,6 +69,10 @@
             $incomeChangeLabel = ($incomeChange >= 0 ? '+' : '') . number_format($incomeChange, 1) . '% from last month';
             $expenseChangeLabel = ($expenseChange >= 0 ? '+' : '') . number_format($expenseChange, 1) . '% from last month';
             $growthLabel = ($monthlyGrowth >= 0 ? '+' : '') . number_format($monthlyGrowth, 1) . '%';
+            $savingsRate = ((float) ($stats['income'] ?? 0)) > 0
+                ? (((float) ($stats['income'] ?? 0) - (float) ($stats['expense'] ?? 0)) / (float) ($stats['income'] ?? 0)) * 100
+                : 0;
+            $savingsRateLabel = number_format($savingsRate, 1) . '% savings rate';
         ?>
 
         <!-- ================= Header ================= -->
@@ -77,7 +83,7 @@
             </div>
             <div class="header-actions">
                 
-                <button class="btn-export" id="exportReport">Export Report</button>
+                <button class="btn-export" id="exportReport">Download PDF Report</button>
             </div>
         </div>
 
@@ -85,16 +91,13 @@
         <section class="stats">
             <div class="card stat-income">
                 <div class="stat-content">
-
                     <div>
                         <div class="stat-title">Total Income</div>
                         <div class="stat-value">
                             LKR <?= number_format($stats['income'], 2) ?>
                         </div>
-                        <small><?= htmlspecialchars($incomeChangeLabel) ?></small>
-                    </div>
-                    <div class="stat-icon income">
-                        LKR
+                        <small class="stat-note"><?= htmlspecialchars($incomeChangeLabel) ?></small>
+                        <div class="stat-chip">Inflow</div>
                     </div>
                 </div>
             </div>
@@ -106,9 +109,8 @@
                         <div class="stat-value">
                             LKR <?= number_format($stats['expense'], 2) ?>
                         </div>
-                        <small><?= htmlspecialchars($expenseChangeLabel) ?></small>
-                    </div>
-                    <div class="stat-icon expense">
+                        <small class="stat-note"><?= htmlspecialchars($expenseChangeLabel) ?></small>
+                        <div class="stat-chip">Outflow</div>
                     </div>
                 </div>
             </div>
@@ -122,10 +124,8 @@
                             LKR
                             <?= number_format($stats['balance'], 2) ?>
                         </div>
-                        <small><?= htmlspecialchars($metrics['balance_message'] ?? 'No finance data available yet.') ?></small>
-                    </div>
-                    <div class="stat-icon balance">
-
+                        <small class="stat-note"><?= htmlspecialchars($metrics['balance_message'] ?? 'No finance data available yet.') ?></small>
+                        <div class="stat-chip"><?= htmlspecialchars($savingsRateLabel) ?></div>
                     </div>
                 </div>
             </div>

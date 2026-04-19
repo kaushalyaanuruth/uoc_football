@@ -13,6 +13,10 @@ class login extends Controller {
                 ? 'Invalid username or password. Please try again.' 
                 : 'An error occurred. Please try again.';
         }
+
+        if (isset($_GET['reset']) && $_GET['reset'] === 'success') {
+            $data['success'] = 'Password reset successful. Please log in with your new password.';
+        }
         
         $this->view('login', $data);
     }

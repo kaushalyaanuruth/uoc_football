@@ -244,9 +244,20 @@ class adminDashboard extends Controller {
             $nic = trim((string) ($_POST['nic'] ?? ''));
             $email = trim((string) ($_POST['email'] ?? ''));
             $phoneNumber = trim((string) ($_POST['phone_number'] ?? ''));
+            $currentPassword = (string) ($_POST['current_password'] ?? '');
+            $newPassword = (string) ($_POST['new_password'] ?? '');
+            $confirmPassword = (string) ($_POST['confirm_password'] ?? '');
 
             if ($firstName === '' || $idNumber === '' || $nic === '') {
                 $this->jsonResponse(['success' => false, 'message' => 'First name, ID number and NIC are required']);
+            }
+
+            if (!preg_match('/^\d{12}$/', $nic)) {
+                $this->jsonResponse(['success' => false, 'message' => 'NIC must contain exactly 12 digits']);
+            }
+
+            if ($phoneNumber !== '' && !preg_match('/^\d{10}$/', $phoneNumber)) {
+                $this->jsonResponse(['success' => false, 'message' => 'Phone number must contain exactly 10 digits']);
             }
 
             $userModel = $this->model('User');
@@ -288,6 +299,29 @@ class adminDashboard extends Controller {
                 $this->jsonResponse(['success' => false, 'message' => 'This NIC is already in use']);
             }
 
+            $wantsPasswordChange = $currentPassword !== '' || $newPassword !== '' || $confirmPassword !== '';
+            if ($wantsPasswordChange) {
+                if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
+                    $this->jsonResponse(['success' => false, 'message' => 'Current password, new password and confirm password are required']);
+                }
+
+                if (!$userModel->verifyCurrentPasswordByNic($targetNic, $currentPassword)) {
+                    $this->jsonResponse(['success' => false, 'message' => 'Current password is incorrect']);
+                }
+
+                if (strlen($newPassword) < 6) {
+                    $this->jsonResponse(['success' => false, 'message' => 'Password must be at least 6 characters']);
+                }
+
+                if ($newPassword !== $confirmPassword) {
+                    $this->jsonResponse(['success' => false, 'message' => 'New password and confirm password do not match']);
+                }
+
+                if ($newPassword === '123456') {
+                    $this->jsonResponse(['success' => false, 'message' => 'Please choose a password different from the default password']);
+                }
+            }
+
             $newImagePath = null;
             if (isset($_FILES['image']) && (int) $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 $uploadDir = ROOT_PATH . '/public/uploads/admins/';
@@ -321,6 +355,10 @@ class adminDashboard extends Controller {
                 'email' => $email,
                 'phone_number' => $phoneNumber
             ];
+
+            if ($wantsPasswordChange) {
+                $updateFields['password'] = password_hash($newPassword, PASSWORD_BCRYPT);
+            }
 
             if (!empty($newImagePath)) {
                 $updateFields['image'] = $newImagePath;

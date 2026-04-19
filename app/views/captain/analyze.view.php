@@ -44,7 +44,7 @@
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/analyze.css?v=<?php echo $cssVersion; ?>">
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/playerCommon.css?v=<?php echo $commonVersion; ?>">
 </head>
-<body class="analyze-page">
+<body class="analyze-page captain-page">
     <div class="analyze-container">
         <header class="player-header analyze-header">
             <div class="logo-section">

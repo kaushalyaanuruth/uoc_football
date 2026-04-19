@@ -40,6 +40,9 @@
             '      <div><label for="adminHeaderNic">NIC</label><input id="adminHeaderNic" readonly></div>',
             '      <div><label for="adminHeaderEmail">Email Address</label><input id="adminHeaderEmail" name="email" data-editable="true" readonly></div>',
             '      <div><label for="adminHeaderPhone">Phone Number</label><input id="adminHeaderPhone" name="phone_number" data-editable="true" readonly></div>',
+            '      <div><label for="adminHeaderCurrentPassword">Current Password</label><input id="adminHeaderCurrentPassword" type="password" name="current_password" data-password-field="true" disabled></div>',
+            '      <div><label for="adminHeaderNewPassword">New Password</label><input id="adminHeaderNewPassword" type="password" name="new_password" data-password-field="true" minlength="6" disabled></div>',
+            '      <div><label for="adminHeaderConfirmPassword">Confirm Password</label><input id="adminHeaderConfirmPassword" type="password" name="confirm_password" data-password-field="true" minlength="6" disabled></div>',
             '    </div>',
             '    <div class="profile-modal-actions">',
             '      <button type="button" class="btn-secondary" data-action="cancel-edit">Close</button>',
@@ -70,6 +73,7 @@
         var profileModal = createProfileModal();
         var profileForm = profileModal.querySelector('.admin-header-profile-form');
         var editableInputs = profileForm.querySelectorAll('[data-editable="true"]');
+        var passwordInputs = profileForm.querySelectorAll('[data-password-field="true"]');
         var imageInput = profileModal.querySelector('#adminHeaderProfileImageInput');
         var imageLabel = profileModal.querySelector('#adminHeaderProfileImageLabel');
         var previewImage = profileModal.querySelector('#adminHeaderPreviewImage');
@@ -122,12 +126,21 @@
                 image_url: initialProfileState.image
             });
             imageInput.value = '';
+            passwordInputs.forEach(function (input) {
+                input.value = '';
+            });
         }
 
         function setProfileEditMode(enabled) {
             isEditMode = enabled;
             editableInputs.forEach(function (input) {
                 input.readOnly = !enabled;
+            });
+            passwordInputs.forEach(function (input) {
+                input.disabled = !enabled;
+                if (!enabled) {
+                    input.value = '';
+                }
             });
             imageInput.disabled = !enabled;
             imageLabel.classList.toggle('profile-image-btn-disabled', !enabled);
@@ -249,6 +262,33 @@
             event.preventDefault();
             if (!isEditMode) {
                 return;
+            }
+
+            var currentPassword = profileModal.querySelector('#adminHeaderCurrentPassword').value;
+            var newPassword = profileModal.querySelector('#adminHeaderNewPassword').value;
+            var confirmPassword = profileModal.querySelector('#adminHeaderConfirmPassword').value;
+            var wantsPasswordChange = currentPassword.trim() !== '' || newPassword.trim() !== '' || confirmPassword.trim() !== '';
+
+            if (wantsPasswordChange) {
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    alert('Current password, new password and confirm password are required to change password.');
+                    return;
+                }
+
+                if (newPassword.length < 6) {
+                    alert('New password must be at least 6 characters.');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    alert('New password and confirm password do not match.');
+                    return;
+                }
+
+                if (newPassword === '123456') {
+                    alert('Please choose a password different from the default password.');
+                    return;
+                }
             }
 
             var formData = new FormData(profileForm);

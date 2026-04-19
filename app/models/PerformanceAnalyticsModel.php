@@ -41,6 +41,87 @@ class PerformanceAnalyticsModel
         return $exists;
     }
 
+    private function createCoachNotesTableIfNeeded()
+    {
+        $this->safeQuery(
+            "CREATE TABLE IF NOT EXISTS coach_performance_notes (
+                note_id INT AUTO_INCREMENT PRIMARY KEY,
+                coach_nic VARCHAR(20) NOT NULL,
+                team_id INT NULL,
+                note_text TEXT NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uniq_coach_team_note (coach_nic, team_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+        );
+    }
+
+    public function getCoachPerformanceNote($coachNic, $teamId)
+    {
+        $this->createCoachNotesTableIfNeeded();
+
+        $params = ['coach_nic' => (string) $coachNic];
+        $teamClause = 'team_id IS NULL';
+        if ((int) $teamId > 0) {
+            $teamClause = 'team_id = :team_id';
+            $params['team_id'] = (int) $teamId;
+        }
+
+        $rows = $this->safeQuery(
+            "SELECT note_text
+             FROM coach_performance_notes
+             WHERE coach_nic = :coach_nic AND {$teamClause}
+             LIMIT 1",
+            $params
+        );
+
+        if (empty($rows)) {
+            return '';
+        }
+
+        return (string) ($rows[0]->note_text ?? '');
+    }
+
+    public function saveCoachPerformanceNote($coachNic, $teamId, $noteText)
+    {
+        $this->createCoachNotesTableIfNeeded();
+
+        $coachNic = (string) $coachNic;
+        $teamId = (int) $teamId;
+        $noteText = (string) $noteText;
+
+        if ($coachNic === '') {
+            return false;
+        }
+
+        if ($teamId > 0) {
+            $this->safeQuery(
+                "INSERT INTO coach_performance_notes (coach_nic, team_id, note_text)
+                 VALUES (:coach_nic, :team_id, :note_text)
+                 ON DUPLICATE KEY UPDATE note_text = :note_text2",
+                [
+                    'coach_nic' => $coachNic,
+                    'team_id' => $teamId,
+                    'note_text' => $noteText,
+                    'note_text2' => $noteText,
+                ]
+            );
+        } else {
+            $this->safeQuery(
+                "INSERT INTO coach_performance_notes (coach_nic, team_id, note_text)
+                 VALUES (:coach_nic, NULL, :note_text)
+                 ON DUPLICATE KEY UPDATE note_text = :note_text2",
+                [
+                    'coach_nic' => $coachNic,
+                    'note_text' => $noteText,
+                    'note_text2' => $noteText,
+                ]
+            );
+        }
+
+        return true;
+    }
+
     public function resolveCoachTeamIdByNic($nic)
     {
         $rows = $this->safeQuery(
@@ -248,6 +329,70 @@ class PerformanceAnalyticsModel
             'selected_match_id' => $matchId,
             'selected_player_id' => $playerId,
         ];
+    }
+
+    public function getCoachPlayerMatchStatCard($teamId, $playerId, $matchId = 0)
+    {
+        $teamId = (int) $teamId;
+        $playerId = (int) $playerId;
+        $matchId = (int) $matchId;
+
+        if ($teamId <= 0 || $playerId <= 0) {
+            return null;
+        }
+
+        $hasMatchResults = $this->tableExists('match_results');
+        $hasPlayerStats = $this->tableExists('player_match_stats');
+        if (!$hasMatchResults || !$hasPlayerStats) {
+            return null;
+        }
+
+        $params = [
+            'team_id' => $teamId,
+            'player_id' => $playerId,
+        ];
+
+        $matchClause = '';
+        if ($matchId > 0) {
+            $matchClause = ' AND pms.match_id = :match_id';
+            $params['match_id'] = $matchId;
+        }
+
+        $rows = $this->safeQuery(
+            "SELECT
+                p.player_id,
+                CONCAT(COALESCE(u.first_name, 'Player'), ' ', COALESCE(u.last_name, '')) AS player_name,
+                u.image AS player_image,
+                mr.result_id AS match_id,
+                mr.opponent_team,
+                mr.date AS match_date,
+                COALESCE(mr.result, 'N/A') AS match_result,
+                COALESCE(pms.minutes_played, 0) AS minutes_played,
+                COALESCE(pms.goals_scored, 0) AS goals_scored,
+                COALESCE(pms.assists, 0) AS assists,
+                COALESCE(pms.completed_passes, 0) AS completed_passes,
+                COALESCE(pms.shots_on_target, 0) AS shots_on_target,
+                COALESCE(pms.shots_off_target, 0) AS shots_off_target,
+                COALESCE(pms.tackles_won, 0) AS tackles_won,
+                COALESCE(pms.interceptions, 0) AS interceptions,
+                COALESCE(pms.fouls_committed, 0) AS fouls_committed,
+                COALESCE(pms.notes, '') AS notes
+             FROM player_match_stats pms
+             JOIN match_results mr ON mr.result_id = pms.match_id
+             JOIN players p ON p.player_id = pms.player_id
+             LEFT JOIN users u ON u.nic = p.nic
+             WHERE mr.team_id = :team_id
+               AND pms.player_id = :player_id" . $matchClause . "
+             ORDER BY mr.date DESC, mr.result_id DESC
+             LIMIT 1",
+            $params
+        );
+
+        if (empty($rows)) {
+            return null;
+        }
+
+        return $rows[0];
     }
 
     public function getAnalyzePayload($playerId, $teamId)

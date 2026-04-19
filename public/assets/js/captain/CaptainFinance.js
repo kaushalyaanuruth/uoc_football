@@ -398,47 +398,74 @@ function renderFinanceChart(data, type) {
     loadFinanceChart();
 
 });
-document.getElementById("exportReport").addEventListener("click", () => {
 
-    const table = document.querySelector(".finance-table");
-    let csv = [];
-
-    // Table headers (skip Actions)
-    const headers = [];
-    table.querySelectorAll("th").forEach((th, index) => {
-        if (index < 5) {
-            headers.push(`"${th.innerText.trim()}"`);
-        }
-    });
-    csv.push(headers.join(","));
-
-    // Table rows
-    table.querySelectorAll("tr").forEach((row, index) => {
-        if (index === 0 || row.style.display === "none") return;
-
-        let rowData = [];
-        for (let i = 0; i < 5; i++) {
-            rowData.push(`"${row.cells[i].innerText.trim()}"`);
-        }
-        csv.push(rowData.join(","));
-    });
-
-    const csvBlob = new Blob([csv.join("\n")], { type: "text/csv" });
-    const link = document.createElement("a");
-
-    const today = new Date().toISOString().split("T")[0];
-    link.download = `finance-report-${today}.csv`;
-    link.href = URL.createObjectURL(csvBlob);
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-});
-
-const exportPdfBtn = document.getElementById("exportPDF");
-if (exportPdfBtn) {
-    exportPdfBtn.addEventListener("click", () => {
-        window.print();
-    });
+function parseCurrencyValue(valueText) {
+    const numeric = String(valueText || "").replace(/[^\d.-]/g, "");
+    const parsed = parseFloat(numeric);
+    return Number.isFinite(parsed) ? parsed : 0;
 }
+
+document.getElementById("exportReport")?.addEventListener("click", () => {
+    const jsPdfLib = window.jspdf;
+    if (!jsPdfLib || !jsPdfLib.jsPDF) {
+        alert("PDF library is not loaded. Please refresh and try again.");
+        return;
+    }
+
+    const { jsPDF } = jsPdfLib;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+    const today = new Date();
+    const todayIso = today.toISOString().split("T")[0];
+    const generatedAt = today.toLocaleString();
+
+    const incomeText = document.querySelector(".stat-income .stat-value")?.innerText || "LKR 0.00";
+    const expenseText = document.querySelector(".stat-expense .stat-value")?.innerText || "LKR 0.00";
+    const balanceText = document.querySelector(".stat-balance .stat-value")?.innerText || "LKR 0.00";
+
+    const summaryRows = [
+        ["Total Income", `LKR ${parseCurrencyValue(incomeText).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ["Total Expenses", `LKR ${parseCurrencyValue(expenseText).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ["Current Balance", `LKR ${parseCurrencyValue(balanceText).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]
+    ];
+
+    const bodyRows = [];
+    document.querySelectorAll(".finance-table tr").forEach((row, index) => {
+        if (index === 0 || row.style.display === "none") return;
+        bodyRows.push([
+            row.cells[0]?.innerText.trim() || "",
+            row.cells[1]?.innerText.trim() || "",
+            row.cells[2]?.innerText.trim() || "",
+            row.cells[3]?.innerText.trim() || "",
+            row.cells[4]?.innerText.trim() || ""
+        ]);
+    });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Captain Finance Report", 40, 48);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Generated: ${generatedAt}`, 40, 66);
+
+    doc.autoTable({
+        startY: 82,
+        head: [["Summary", "Amount"]],
+        body: summaryRows,
+        theme: "grid",
+        headStyles: { fillColor: [74, 17, 80] },
+        styles: { fontSize: 10 }
+    });
+
+    doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 14,
+        head: [["Type", "Category", "Amount", "Date", "Description"]],
+        body: bodyRows.length ? bodyRows : [["-", "-", "-", "-", "No transactions available"]],
+        theme: "striped",
+        headStyles: { fillColor: [74, 17, 80] },
+        styles: { fontSize: 9, cellPadding: 6 }
+    });
+
+    doc.save(`finance-report-${todayIso}.pdf`);
+});

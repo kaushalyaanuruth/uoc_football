@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();
     initializePlayerComparison();
     initializeNotes();
+    initializeDetailedMatchBreakdown();
 });
 
 // Filter functionality
@@ -143,26 +144,158 @@ function initializeNotes() {
     const notesTextarea = document.querySelector('.notes-textarea');
 
     if (saveBtn && notesTextarea) {
-        saveBtn.addEventListener('click', function() {
-            const notes = notesTextarea.value;
-            if (notes.trim() === '') {
-                alert('Please enter some notes before saving.');
-                return;
-            }
-            
-            // Here you would typically save to database via AJAX
-            console.log('Saving notes:', notes);
-            
-            // Show success feedback
+        saveBtn.addEventListener('click', async function() {
+            const notes = notesTextarea.value.trim();
+            const config = window.COACH_PERFORMANCE_DATA || {};
+            const saveUrl = config.saveNotesUrl || '/coachPerformance/saveNotes';
+
             const originalText = this.textContent;
-            this.textContent = 'Saved!';
-            this.style.background = 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
-            
+
+            this.disabled = true;
+            this.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(saveUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ note: notes })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result || !result.success) {
+                    throw new Error((result && result.message) ? result.message : 'Failed to save notes');
+                }
+
+                this.textContent = 'Saved!';
+                this.style.background = 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
+            } catch (error) {
+                alert(error.message || 'Failed to save notes.');
+                this.textContent = 'Save Failed';
+                this.style.background = 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)';
+            }
+
             setTimeout(() => {
                 this.textContent = originalText;
-                this.style.background = 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)';
-            }, 2000);
+                this.style.background = '#340134';
+                this.disabled = false;
+            }, 1600);
         });
+    }
+}
+
+function initializeDetailedMatchBreakdown() {
+    const rows = document.querySelectorAll('.breakdown-row[data-player-id]');
+    if (!rows.length) {
+        return;
+    }
+
+    rows.forEach((row) => {
+        row.addEventListener('click', () => {
+            const playerId = Number(row.dataset.playerId || 0);
+            if (!playerId) {
+                return;
+            }
+
+            rows.forEach((r) => r.classList.remove('active-row'));
+            row.classList.add('active-row');
+            fetchAndRenderPlayerMatchStat(playerId);
+        });
+    });
+}
+
+function formatMatchDate(dateText) {
+    if (!dateText) {
+        return 'N/A';
+    }
+
+    const date = new Date(dateText);
+    if (Number.isNaN(date.getTime())) {
+        return dateText;
+    }
+
+    return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit'
+    });
+}
+
+function renderPlayerMatchCard(stat) {
+    const section = document.getElementById('playerMatchDetailSection');
+    const title = document.getElementById('playerMatchDetailTitle');
+    const meta = document.getElementById('playerMatchMeta');
+    const grid = document.getElementById('playerMatchGrid');
+    const notes = document.getElementById('playerMatchNotes');
+
+    if (!section || !title || !meta || !grid || !notes) {
+        return;
+    }
+
+    section.style.display = '';
+    title.textContent = (stat.player_name || 'Player') + ' - Match Detail';
+    meta.textContent = (stat.opponent_team || 'Opponent') + ' | ' + formatMatchDate(stat.match_date) + ' | Result: ' + (stat.match_result || 'N/A');
+
+    const shotsTotal = Number(stat.shots_on_target || 0) + Number(stat.shots_off_target || 0);
+    const items = [
+        ['Minutes Played', stat.minutes_played || 0],
+        ['Goals', stat.goals_scored || 0],
+        ['Assists', stat.assists || 0],
+        ['Completed Passes', stat.completed_passes || 0],
+        ['Shots on Target', stat.shots_on_target || 0],
+        ['Shots off Target', stat.shots_off_target || 0],
+        ['Total Shots', shotsTotal],
+        ['Tackles Won', stat.tackles_won || 0],
+        ['Interceptions', stat.interceptions || 0],
+        ['Fouls Committed', stat.fouls_committed || 0]
+    ];
+
+    grid.innerHTML = items.map(([label, value]) => {
+        return '<div class="player-match-item">' +
+            '<div class="player-match-item-label">' + label + '</div>' +
+            '<div class="player-match-item-value">' + String(value) + '</div>' +
+            '</div>';
+    }).join('');
+
+    const text = String(stat.notes || '').trim();
+    if (text !== '') {
+        notes.style.display = '';
+        notes.textContent = 'Coach/Match Notes: ' + text;
+    } else {
+        notes.style.display = 'none';
+        notes.textContent = '';
+    }
+}
+
+async function fetchAndRenderPlayerMatchStat(playerId) {
+    const config = window.COACH_PERFORMANCE_DATA || {};
+    const endpoint = config.playerMatchStatUrl || '/coachPerformance/playerMatchStat';
+    const selectedMatchId = Number(config.selected_match_id || 0);
+
+    const params = new URLSearchParams();
+    params.set('player_id', String(playerId));
+    if (selectedMatchId > 0) {
+        params.set('match_id', String(selectedMatchId));
+    }
+
+    try {
+        const response = await fetch(endpoint + '?' + params.toString(), {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result || !result.success || !result.stat) {
+            throw new Error((result && result.message) ? result.message : 'No detailed match stats found for this player.');
+        }
+
+        renderPlayerMatchCard(result.stat);
+    } catch (error) {
+        alert(error.message || 'Failed to load match details for this player.');
     }
 }
 

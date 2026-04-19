@@ -1,0 +1,42 @@
+:root {
+    --color-primary: #7c3aed;
+    --color-primary-dark: #5b21b6;
+    --color-primary-strong: #340134;
+    --color-primary-soft: #f3e8ff;
+
+    --color-text-primary: #310037;
+    --color-text-body: #1f2937;
+    --color-text-muted: #6b7280;
+
+    --color-surface: #ffffff;
+    --color-surface-soft: #f9fafb;
+    --color-border: #e5e7eb;
+    --color-border-soft: #ecebff;
+
+    --color-success: #16a34a;
+    --color-warning: #f59e0b;
+    --color-danger: #dc2626;
+
+    --shadow-soft: 0 8px 22px rgba(49, 0, 55, 0.08);
+    --shadow-pop: 0 14px 28px rgba(49, 0, 55, 0.15);
+
+    /* Legacy compatibility aliases */
+    --portal-primary: var(--color-primary);
+    --portal-primary-dark: var(--color-primary-dark);
+    --portal-text: var(--color-text-primary);
+    --portal-text-soft: var(--color-text-muted);
+    --portal-border: var(--color-border);
+    --portal-surface: var(--color-surface);
+    --portal-shadow: var(--shadow-soft);
+
+    --admin-brand: #4a1150;
+    --admin-brand-strong: var(--color-primary-strong);
+    --admin-brand-soft: var(--color-primary-soft);
+    --admin-bg-soft: var(--color-surface-soft);
+    --admin-surface: var(--color-surface);
+    --admin-border: var(--color-border);
+    --admin-border-soft: var(--color-border-soft);
+    --admin-text: var(--color-text-body);
+    --admin-text-muted: var(--color-text-muted);
+    --admin-danger: var(--color-danger);
+}

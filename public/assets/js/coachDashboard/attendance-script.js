@@ -115,13 +115,113 @@ function applyPlayerFilter() {
     });
 
     updateStatsFromTable();
+    updatePlayerHistoryPanel();
+}
+
+function formatHistoryDate(value) {
+    if (!value) {
+        return 'N/A';
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+
+    return parsed.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit'
+    });
+}
+
+function renderPlayerHistoryRows(rows) {
+    const historyBody = document.getElementById('playerHistoryBody');
+    if (!historyBody) {
+        return;
+    }
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#6b7280;">No attendance history found for this player.</td></tr>';
+        return;
+    }
+
+    const html = rows.map((row) => {
+        const status = String(row.status || 'Absent');
+        return '<tr>' +
+            '<td>' + formatHistoryDate(row.date || '') + '</td>' +
+            '<td>' + String(row.session_type || 'Practice') + '</td>' +
+            '<td>' + String(row.location || 'Ground') + '</td>' +
+            '<td><span class="status-badge ' + normalizeStatusClass(status) + '">' + status + '</span></td>' +
+            '</tr>';
+    }).join('');
+
+    historyBody.innerHTML = html;
+}
+
+async function updatePlayerHistoryPanel() {
+    const playerFilter = document.getElementById('playerFilter');
+    const historyCard = document.getElementById('playerHistoryCard');
+    const historyTitle = document.getElementById('playerHistoryTitle');
+    const historyStatus = document.getElementById('playerHistoryStatus');
+    const selected = playerFilter ? playerFilter.value : 'all';
+
+    if (!historyCard || !historyTitle || !historyStatus) {
+        return;
+    }
+
+    if (!selected || selected === 'all') {
+        historyCard.style.display = 'none';
+        renderPlayerHistoryRows([]);
+        return;
+    }
+
+    const selectedOption = playerFilter.options[playerFilter.selectedIndex];
+    const selectedName = selectedOption ? selectedOption.textContent.trim() : 'Player';
+
+    historyCard.style.display = '';
+    historyTitle.textContent = selectedName + ' - Full Attendance History';
+    historyStatus.textContent = 'Loading history...';
+
+    try {
+        const url = String(CONFIG.historyUrl || (String(CONFIG.baseUrl || '/coachAttendance') + '/playerHistory')) + '?player_id=' + encodeURIComponent(selected);
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result || !result.success) {
+            throw new Error((result && result.message) ? result.message : 'Failed to load attendance history');
+        }
+
+        const history = Array.isArray(result.history) ? result.history : [];
+        historyStatus.textContent = history.length > 0
+            ? ('Total sessions found: ' + history.length)
+            : 'No attendance sessions found.';
+        renderPlayerHistoryRows(history);
+    } catch (error) {
+        historyStatus.textContent = error.message || 'Failed to load attendance history.';
+        renderPlayerHistoryRows([]);
+    }
 }
 
 function buildUrlWithFilters() {
     const dateInput = document.getElementById('dateFilter');
     const typeSelect = document.getElementById('seasonFilter');
+    const today = new Date().toISOString().split('T')[0];
+    let selectedDate = (dateInput && dateInput.value) || CONFIG.selectedDate || '';
+    if (selectedDate > today) {
+        selectedDate = today;
+        if (dateInput) {
+            dateInput.value = today;
+        }
+    }
+
     const params = new URLSearchParams({
-        date: (dateInput && dateInput.value) || CONFIG.selectedDate || '',
+        date: selectedDate,
         type: (typeSelect && typeSelect.value) || CONFIG.selectedType || 'Practice'
     });
 
@@ -174,6 +274,15 @@ async function saveAttendance() {
         type: (typeSelect && typeSelect.value) || CONFIG.selectedType,
         rows: changedData
     };
+
+    const today = new Date().toISOString().split('T')[0];
+    if (payload.date > today) {
+        alert('Future dates are not allowed for attendance.');
+        if (dateInput) {
+            dateInput.value = today;
+        }
+        return;
+    }
 
     try {
         const response = await fetch(String(CONFIG.baseUrl || '/coachAttendance') + '/update', {
@@ -385,6 +494,11 @@ function createAttendanceDistributionChart() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    const dateInput = document.getElementById('dateFilter');
+    if (dateInput) {
+        dateInput.max = new Date().toISOString().split('T')[0];
+    }
+
     initializeRowStatusActions();
     bindFilterReload();
     applyPlayerFilter();

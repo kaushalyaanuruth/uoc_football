@@ -2,6 +2,22 @@
 
 class CaptainAttendance extends Controller
 {
+    private function normalizeAttendanceDate($date)
+    {
+        $value = (string) $date;
+        $today = date('Y-m-d');
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) || strtotime($value) === false) {
+            return $today;
+        }
+
+        if ($value > $today) {
+            return $today;
+        }
+
+        return $value;
+    }
+
     private function resolveCaptainTeamId($nic)
     {
         $playerModel = $this->model('PlayerModel');
@@ -163,10 +179,7 @@ class CaptainAttendance extends Controller
         $teamId = $this->resolveCaptainTeamId((string) ($_SESSION['nic'] ?? ''));
 
         // ✅ Get selected date (from URL)
-        $date = $_GET['date'] ?? date('Y-m-d');
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $date) || strtotime($date) === false) {
-            $date = date('Y-m-d');
-        }
+        $date = $this->normalizeAttendanceDate($_GET['date'] ?? date('Y-m-d'));
         $type = $_GET['type'] ?? 'Practice';
 
         // ✅ Get or create event
@@ -216,10 +229,7 @@ class CaptainAttendance extends Controller
         $rows = is_array($payload) && isset($payload[0]) ? $payload : ($payload['rows'] ?? []);
 
         // Preferred format: selected date/type is sent with rows so marking always targets selected session.
-        $selectedDate = $payload['date'] ?? ($_GET['date'] ?? date('Y-m-d'));
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $selectedDate) || strtotime($selectedDate) === false) {
-            $selectedDate = date('Y-m-d');
-        }
+        $selectedDate = $this->normalizeAttendanceDate($payload['date'] ?? ($_GET['date'] ?? date('Y-m-d')));
 
         $selectedType = $payload['type'] ?? ($_GET['type'] ?? 'Practice');
         $event = $attendanceModel->getOrCreateEvent($selectedDate, $selectedType);
@@ -267,7 +277,7 @@ class CaptainAttendance extends Controller
         $attendanceModel = new AttendanceModel();
         $teamId = $this->resolveCaptainTeamId((string) ($_SESSION['nic'] ?? ''));
 
-        $date = $_GET['date'] ?? date('Y-m-d');
+        $date = $this->normalizeAttendanceDate($_GET['date'] ?? date('Y-m-d'));
         $type = $_GET['type'] ?? 'Practice';
         $event = $attendanceModel->getOrCreateEvent($date, $type);
 

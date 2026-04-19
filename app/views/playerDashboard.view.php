@@ -205,6 +205,18 @@
                             <label for="profilePhone">Phone Number</label>
                             <input type="text" id="profilePhone" data-editable="true" name="phone_number" value="<?php echo htmlspecialchars($data['player_profile']['phone_number'] ?? ''); ?>" readonly>
                         </div>
+                        <div>
+                            <label for="profileCurrentPassword">Current Password</label>
+                            <input type="password" id="profileCurrentPassword" name="current_password" data-password-field="true" disabled>
+                        </div>
+                        <div>
+                            <label for="profileNewPassword">New Password</label>
+                            <input type="password" id="profileNewPassword" name="new_password" data-password-field="true" minlength="6" disabled>
+                        </div>
+                        <div>
+                            <label for="profileConfirmPassword">Confirm Password</label>
+                            <input type="password" id="profileConfirmPassword" name="confirm_password" data-password-field="true" minlength="6" disabled>
+                        </div>
                     </div>
 
                     <div class="profile-modal-actions">
@@ -227,6 +239,7 @@
             const saveProfileChanges = document.getElementById('saveProfileChanges');
             const playerProfileForm = document.getElementById('playerProfileForm');
             const editableInputs = playerProfileForm.querySelectorAll('[data-editable="true"]');
+            const passwordInputs = playerProfileForm.querySelectorAll('[data-password-field="true"]');
             const profileImageInput = document.getElementById('profileImageInput');
             const profileImageLabel = document.getElementById('profileImageLabel');
             const profilePreviewImage = document.getElementById('profilePreviewImage');
@@ -261,6 +274,9 @@
                 document.getElementById('profilePhone').value = initialProfileState.phone_number;
                 profilePreviewImage.src = initialProfileState.image;
                 profileImageInput.value = '';
+                passwordInputs.forEach((input) => {
+                    input.value = '';
+                });
             }
 
             function setProfileEditMode(enabled) {
@@ -268,6 +284,13 @@
 
                 editableInputs.forEach((input) => {
                     input.readOnly = !enabled;
+                });
+
+                passwordInputs.forEach((input) => {
+                    input.disabled = !enabled;
+                    if (!enabled) {
+                        input.value = '';
+                    }
                 });
 
                 profileImageInput.disabled = !enabled;
@@ -342,6 +365,33 @@
 
                 if (!isProfileEditMode) {
                     return;
+                }
+
+                const currentPassword = document.getElementById('profileCurrentPassword').value;
+                const newPassword = document.getElementById('profileNewPassword').value;
+                const confirmPassword = document.getElementById('profileConfirmPassword').value;
+                const wantsPasswordChange = currentPassword.trim() !== '' || newPassword.trim() !== '' || confirmPassword.trim() !== '';
+
+                if (wantsPasswordChange) {
+                    if (!currentPassword || !newPassword || !confirmPassword) {
+                        alert('Current password, new password and confirm password are required to change password.');
+                        return;
+                    }
+
+                    if (newPassword.length < 6) {
+                        alert('New password must be at least 6 characters.');
+                        return;
+                    }
+
+                    if (newPassword !== confirmPassword) {
+                        alert('New password and confirm password do not match.');
+                        return;
+                    }
+
+                    if (newPassword === '123456') {
+                        alert('Please choose a password different from the default password.');
+                        return;
+                    }
                 }
 
                 const formData = new FormData(playerProfileForm);

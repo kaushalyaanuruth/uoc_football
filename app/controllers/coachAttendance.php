@@ -51,8 +51,13 @@ class coachAttendance extends CoachBaseController {
     private function normalizeDate($date)
     {
         $value = (string) $date;
+        $today = date('Y-m-d');
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) || strtotime($value) === false) {
-            return date('Y-m-d');
+            return $today;
+        }
+
+        if ($value > $today) {
+            return $today;
         }
 
         return $value;
@@ -245,5 +250,51 @@ class coachAttendance extends CoachBaseController {
 
         fclose($output);
         exit();
+    }
+
+    public function playerHistory()
+    {
+        $this->ensureCoachAccess();
+
+        try {
+            $playerId = (int) ($_GET['player_id'] ?? 0);
+            if ($playerId <= 0) {
+                $this->responseJson(['success' => false, 'message' => 'Invalid player id'], 400);
+            }
+
+            $attendanceModel = new AttendanceModel();
+            $teamContext = $this->resolveCoachTeamContext();
+            $teamId = $teamContext['team_id'];
+            if (!$teamId) {
+                $this->responseJson(['success' => false, 'message' => 'Coach team not found'], 400);
+            }
+
+            $teamPlayerIds = array_flip($attendanceModel->getTeamPlayerIds($teamId));
+            if (!isset($teamPlayerIds[$playerId])) {
+                $this->responseJson(['success' => false, 'message' => 'Player does not belong to coach team'], 403);
+            }
+
+            $historyRows = $attendanceModel->getPlayerAttendanceHistoryByTeam($teamId, $playerId, 250);
+            $history = [];
+            foreach ($historyRows as $row) {
+                $history[] = [
+                    'date' => (string) ($row->date ?? ''),
+                    'session_type' => (string) ($row->session_type ?? 'Practice'),
+                    'status' => (string) ($row->status ?? 'Absent'),
+                    'location' => (string) ($row->location ?? 'Ground'),
+                ];
+            }
+
+            $this->responseJson([
+                'success' => true,
+                'player_id' => $playerId,
+                'history' => $history,
+            ]);
+        } catch (Throwable $e) {
+            $this->responseJson([
+                'success' => false,
+                'message' => 'Failed to load player attendance history: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

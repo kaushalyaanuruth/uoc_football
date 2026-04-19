@@ -94,6 +94,85 @@ class User
         ]);
     }
 
+    public function getUserByEmail($email)
+    {
+        $query = "SELECT * FROM $this->table WHERE email = :email LIMIT 1";
+        return $this->query($query, [
+            'email' => trim((string) $email)
+        ]);
+    }
+
+    public function verifyCurrentPasswordByNic($nic, $currentPassword)
+    {
+        $rows = $this->query(
+            "SELECT password FROM $this->table WHERE nic = :nic LIMIT 1",
+            ['nic' => $nic]
+        );
+
+        if (empty($rows) || !isset($rows[0]->password)) {
+            return false;
+        }
+
+        return $this->verifyPasswordCompat((string) $currentPassword, (string) $rows[0]->password);
+    }
+
+    public function updatePasswordByNic($nic, $newPassword)
+    {
+        return $this->updateByNic($nic, [
+            'password' => password_hash((string) $newPassword, PASSWORD_BCRYPT)
+        ]);
+    }
+
+    public function clearPasswordResetTokensByNic($nic)
+    {
+        $this->query(
+            "UPDATE password_reset_tokens
+             SET used_at = NOW()
+             WHERE nic = :nic AND used_at IS NULL",
+            ['nic' => $nic]
+        );
+    }
+
+    public function createPasswordResetToken($nic, $tokenHash, $expiresAt)
+    {
+        $this->clearPasswordResetTokensByNic($nic);
+
+        $this->query(
+            "INSERT INTO password_reset_tokens (nic, token_hash, expires_at)
+             VALUES (:nic, :token_hash, :expires_at)",
+            [
+                'nic' => $nic,
+                'token_hash' => $tokenHash,
+                'expires_at' => $expiresAt
+            ]
+        );
+    }
+
+    public function findValidPasswordResetToken($tokenHash)
+    {
+        $rows = $this->query(
+            "SELECT token_id, nic, expires_at
+             FROM password_reset_tokens
+             WHERE token_hash = :token_hash
+               AND used_at IS NULL
+               AND expires_at >= NOW()
+             LIMIT 1",
+            ['token_hash' => $tokenHash]
+        );
+
+        return !empty($rows) ? $rows[0] : null;
+    }
+
+    public function markPasswordResetTokenUsed($tokenId)
+    {
+        $this->query(
+            "UPDATE password_reset_tokens
+             SET used_at = NOW()
+             WHERE token_id = :token_id",
+            ['token_id' => (int) $tokenId]
+        );
+    }
+
     // Check if username already exists
     public function usernameExists($username)
     {
