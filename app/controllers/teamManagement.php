@@ -16,12 +16,42 @@ class teamManagement extends Controller {
         $this->tournamentModel = $this->model('TournamentModel');
         $this->achievementModel = $this->model('AchievementModel');
         $this->userModel = $this->model('User');
+
+        $this->ensureTeamMetaTables();
+    }
+
+    private function ensureTeamMetaTables()
+    {
+        try {
+            $this->teamModel->query("CREATE TABLE IF NOT EXISTS tournaments (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                team_id INT NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_tournaments_team_id (team_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+            $this->teamModel->query("CREATE TABLE IF NOT EXISTS achievements (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                team_id INT NOT NULL,
+                achievement VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_achievements_team_id (team_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        } catch (Exception $e) {
+            error_log("Failed ensuring team meta tables: " . $e->getMessage());
+        }
     }
 
     private function tableExists($tableName)
     {
         try {
-            $rows = $this->teamModel->query("SHOW TABLES LIKE :table_name", ['table_name' => $tableName]);
+            $safeTableName = preg_replace('/[^a-zA-Z0-9_]/', '', (string) $tableName);
+            if ($safeTableName === '') {
+                return false;
+            }
+
+            $rows = $this->teamModel->query("SHOW TABLES LIKE '{$safeTableName}'");
             return !empty($rows);
         } catch (Exception $e) {
             error_log("Table check failed for {$tableName}: " . $e->getMessage());

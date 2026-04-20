@@ -183,7 +183,8 @@ class captainDashboard extends Controller {
             'title' => 'No match scheduled',
             'location' => 'Ground',
             'date_time' => 'TBA',
-            'days_until' => 0
+            'days_until' => 0,
+            'timestamp_ms' => null
         ];
 
         foreach ($upcomingEvents as $eventRow) {
@@ -206,6 +207,17 @@ class captainDashboard extends Controller {
                 $timeText = $matchTime ? date('g:i A', $matchTime) : 'TBA';
 
                 $daysUntil = 0;
+                $matchTimestampMs = null;
+                $dateRaw = trim((string) ($eventRow->date ?? ''));
+                $timeRaw = trim((string) ($eventRow->event_time ?? ''));
+
+                if ($dateRaw !== '') {
+                    $combined = strtotime($dateRaw . ' ' . ($timeRaw !== '' ? $timeRaw : '00:00:00'));
+                    if ($combined !== false) {
+                        $matchTimestampMs = ((int) $combined) * 1000;
+                    }
+                }
+
                 if ($matchDate) {
                     $today = strtotime(date('Y-m-d'));
                     $daysUntil = max(0, (int) floor(($matchDate - $today) / 86400));
@@ -215,7 +227,8 @@ class captainDashboard extends Controller {
                     'title' => !empty($eventRow->title) ? (string) $eventRow->title : 'UOC Football Match',
                     'location' => !empty($eventRow->location) ? (string) $eventRow->location : 'Ground',
                     'date_time' => $dateText . ' - ' . $timeText,
-                    'days_until' => $daysUntil
+                    'days_until' => $daysUntil,
+                    'timestamp_ms' => $matchTimestampMs
                 ];
             }
 

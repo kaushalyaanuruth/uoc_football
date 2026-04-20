@@ -70,6 +70,10 @@
                             <span>Tournament: <?php echo htmlspecialchars(implode(', ', array_column($team->tournaments, 'name')) ?? 'Not assigned'); ?></span>
                         </div>
                         <div class="detail-item">
+                            <span class="detail-icon"><img src="<?php echo ROOT; ?>/assets/images/teamManagement/tropy.svg" alt="achievement"></span>
+                            <span>Achievements: <?php echo !empty($team->achievements) ? htmlspecialchars(implode(', ', array_column($team->achievements, 'achievement'))) : 'Not assigned'; ?></span>
+                        </div>
+                        <div class="detail-item">
                             <span class="detail-icon"><img src="<?php echo ROOT; ?>/assets/images/teamManagement/coach.png" alt="coach"></span>
                             <span>Coach: <?php echo htmlspecialchars($team->coach_names?? 'Not assigned'); ?></span>
                         </div>
@@ -136,7 +140,7 @@
                 <div class="form-section-wrapper">
                     <div class="form-section-header-main">
                         <span>Tournaments</span>
-                        <button class="add-more-btn" type="button" onclick="addInputField('tournaments-container', 'tournaments[]', 'Add tournament')">+</button>
+                        <button class="add-more-btn" type="button" onclick="addInputField('tournaments-container', 'name[]', 'Add tournament')">+</button>
                     </div>
                     <div class="section-content" id="tournaments-container">
                         <div class="input-item">
@@ -149,7 +153,7 @@
                 <div class="form-section-wrapper">
                     <div class="form-section-header-main">
                         <span>Achievements</span>
-                        <button class="add-more-btn" type="button" onclick="addInputField('achievements-container', 'achievements[]', 'Add achievement')">+</button>
+                        <button class="add-more-btn" type="button" onclick="addInputField('achievements-container', 'achievement[]', 'Add achievement')">+</button>
                     </div>
                     <div class="section-content" id="achievements-container">
                         <div class="input-item">

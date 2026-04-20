@@ -219,6 +219,7 @@ class PlayerDashboard extends Controller
 
         $slugCountdown = 0;
         $nextMatchCountdownTitle = 'No upcoming match';
+        $nextMatchTimestampMs = null;
         if (!empty($upcomingEvents)) {
             $eventDate = !empty($upcomingEvents[0]->date) ? strtotime($upcomingEvents[0]->date) : false;
             if ($eventDate) {
@@ -301,9 +302,11 @@ class PlayerDashboard extends Controller
             $dayDiff = (int) $todayMidnight->diff($closestMatchAt)->format('%r%a');
             $slugCountdown = max(0, $dayDiff);
             $nextMatchCountdownTitle = $closestMatchTitle;
+            $nextMatchTimestampMs = ((int) $closestMatchAt->format('U')) * 1000;
         } else {
             $slugCountdown = 0;
             $nextMatchCountdownTitle = 'No upcoming match';
+            $nextMatchTimestampMs = null;
         }
 
         $testSummary = [
@@ -410,6 +413,7 @@ class PlayerDashboard extends Controller
             'next_event' => $nextEvent,
             'slug_countdown' => $slugCountdown,
             'next_match_countdown_title' => $nextMatchCountdownTitle,
+            'next_match_timestamp_ms' => $nextMatchTimestampMs,
             'notices' => $notices,
             'meal_plan' => $mealPlan,
             'meal_plan_by_day' => $mealPlanByDay,

@@ -21,6 +21,7 @@
     ];
     $daysUntilMatch = (int) ($nextMatch['days_until'] ?? 0);
     $countdownLabel = $daysUntilMatch === 1 ? 'Day' : 'Days';
+    $nextMatchTimestamp = $nextMatch['timestamp_ms'] ?? null;
     ?>
     <link rel="stylesheet" href="<?= ROOT ?>/assets/css/captain/captainDashboard.css">
 </head>
@@ -70,7 +71,7 @@
                         <?= htmlspecialchars($data['captain_position'] ?? 'Player') ?> • <?= htmlspecialchars($data['captain_role'] ?? 'Captain') ?>
                     </p>
                     <p class="welcome-date">
-                        <?= date('l, jS F Y') ?>
+                        <span id="captainWelcomeDate"><?= date('l, jS F Y') ?></span>
                     </p>
                 </div>
             </div>
@@ -98,8 +99,8 @@
 
                 <div class="card countdown">
                     <h3>⏱ Days Until Next Match</h3>
-                    <div class="countdown-number"><?php echo $daysUntilMatch; ?></div>
-                    <div class="countdown-text"><?php echo $countdownLabel; ?></div>
+                    <div class="countdown-number" id="captainCountdownNumber" data-match-timestamp="<?php echo htmlspecialchars((string) ($nextMatchTimestamp ?? '')); ?>"><?php echo $daysUntilMatch; ?></div>
+                    <div class="countdown-text" id="captainCountdownLabel"><?php echo $countdownLabel; ?></div>
                     <p class="countdown-subtitle"><?php echo htmlspecialchars($nextMatch['title'] ?? 'No match scheduled'); ?></p>
                 </div>
 
@@ -580,6 +581,45 @@
                 captainOverlay.style.display = 'none';
             }
         });
+
+        function updateCaptainRealtime() {
+            const now = new Date();
+            const welcomeDate = document.getElementById('captainWelcomeDate');
+            if (welcomeDate) {
+                welcomeDate.textContent = now.toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+            }
+
+            const numberEl = document.getElementById('captainCountdownNumber');
+            const labelEl = document.getElementById('captainCountdownLabel');
+            if (!numberEl || !labelEl) {
+                return;
+            }
+
+            const rawTs = Number(numberEl.dataset.matchTimestamp || 0);
+            if (!rawTs || Number.isNaN(rawTs)) {
+                numberEl.textContent = '0';
+                labelEl.textContent = 'Days';
+                return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const matchDate = new Date(rawTs);
+            matchDate.setHours(0, 0, 0, 0);
+
+            const diffDays = Math.max(0, Math.round((matchDate.getTime() - today.getTime()) / 86400000));
+            numberEl.textContent = String(diffDays);
+            labelEl.textContent = diffDays === 1 ? 'Day' : 'Days';
+        }
+
+        updateCaptainRealtime();
+        setInterval(updateCaptainRealtime, 30000);
     </script>
 </body>
 

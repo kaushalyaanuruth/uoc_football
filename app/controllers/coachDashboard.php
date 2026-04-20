@@ -39,8 +39,51 @@ class coachDashboard extends CoachBaseController {
             ];
         }
 
+        $mealPlanModel = $this->model('CoachMealplanModel');
+        $teamId = null;
+        $todayMealPlan = [
+            'breakfast' => [],
+            'lunch' => [],
+            'dinner' => []
+        ];
+
+        try {
+            $coachNic = (string) ($_SESSION['nic'] ?? '');
+            if ($mealPlanModel && $coachNic !== '') {
+                $teamId = $mealPlanModel->getTeamIdByCoachNic($coachNic);
+            }
+
+            if ($teamId === null && $mealPlanModel) {
+                $teamId = $mealPlanModel->getAnyTeamId();
+            }
+
+            if ($mealPlanModel && $teamId) {
+                $todayMealPlan = $mealPlanModel->getTeamMealPlan($teamId);
+            }
+        } catch (Exception $e) {
+            $todayMealPlan = [
+                'breakfast' => [],
+                'lunch' => [],
+                'dinner' => []
+            ];
+        }
+
+        $defaultMeals = [
+            'breakfast' => ['Oatmeal with fruits', 'Boiled eggs', 'Green tea', 'Banana'],
+            'lunch' => ['Basmati or Red rice', 'Chicken, Egg, Fish', 'Vegetable(minimum 3)', 'Pala', 'Yogurt', 'Fruits'],
+            'dinner' => ['Grilled chicken breast', 'Steamed vegetables', 'Boiled sweet potato', 'Glass of warm milk']
+        ];
+
+        foreach (['breakfast', 'lunch', 'dinner'] as $mealType) {
+            if (empty($todayMealPlan[$mealType]) || !is_array($todayMealPlan[$mealType])) {
+                $todayMealPlan[$mealType] = $defaultMeals[$mealType];
+            }
+        }
+
         $data = $this->buildCoachViewData([
-            'next_events' => $nextEvents
+            'next_events' => $nextEvents,
+            'today_day_name' => date('l'),
+            'today_meal_plan' => $todayMealPlan
         ]);
         $this->view('coachDashboard', $data);
     }

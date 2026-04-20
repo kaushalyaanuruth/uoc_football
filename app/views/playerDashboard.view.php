@@ -52,7 +52,7 @@
                 </p>
             </div>
             <div class="banner-datetime">
-                <h2><?php echo $data['date']; ?></h2>
+                <h2 id="live-date"><?php echo $data['date']; ?></h2>
                 <p id="live-time"><?php echo $data['time']; ?></p>
             </div>
             <div class="banner-decoration"></div>
@@ -76,8 +76,8 @@
                     </div>
 
                     <div class="card slug-countdown">
-                        <span class="slug-number"><?php echo $data['slug_countdown']; ?></span>
-                            <span class="slug-text"><?php echo ((int)($data['slug_countdown'] ?? 0) === 1 ? 'day' : 'days'); ?><br>more</span>
+                        <span class="slug-number" id="playerCountdownNumber" data-match-timestamp="<?php echo htmlspecialchars((string)($data['next_match_timestamp_ms'] ?? '')); ?>"><?php echo $data['slug_countdown']; ?></span>
+                            <span class="slug-text" id="playerCountdownLabel"><?php echo ((int)($data['slug_countdown'] ?? 0) === 1 ? 'day' : 'days'); ?><br>more</span>
                             <p style="font-size: 0.8rem; margin-top: 10px; color: var(--primary-color);">to next match</p>
                             <p style="font-size: 0.8rem; margin-top: 4px; color: #6b7280;"><?php echo htmlspecialchars($data['next_match_countdown_title'] ?? 'No upcoming match'); ?></p>
                     </div>
@@ -145,7 +145,7 @@
 
                 <div class="card">
                     <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Meal Plan</h3>
-                    <p style="font-size: 0.84rem; color: #6b7280; margin-bottom: 10px;">Showing <?php echo htmlspecialchars((string) ($data['today_day_name'] ?? date('l'))); ?> meal plan</p>
+                    <p id="playerMealDayLabel" style="font-size: 0.84rem; color: #6b7280; margin-bottom: 10px;">Showing <?php echo htmlspecialchars((string) ($data['today_day_name'] ?? date('l'))); ?> meal plan</p>
                     <div class="meal-plan-tabs">
                         <button class="meal-btn" onclick="showMeal('Breakfast', this)">Breakfast</button>
                         <button class="meal-btn active" onclick="showMeal('Lunch', this)">Lunch</button>
@@ -472,9 +472,61 @@
                 hours = hours % 12;
                 hours = hours ? hours : 12;
                 const strTime = hours + ':' + minutes + ' ' + ampm;
-                document.getElementById('live-time').textContent = strTime;
+                const timeEl = document.getElementById('live-time');
+                if (timeEl) {
+                    timeEl.textContent = strTime;
+                }
+
+                const dateEl = document.getElementById('live-date');
+                if (dateEl) {
+                    dateEl.textContent = now.toLocaleDateString(undefined, {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
             }
+            function updatePlayerDayLabel() {
+                const mealDayLabel = document.getElementById('playerMealDayLabel');
+                if (mealDayLabel) {
+                    const dayName = new Date().toLocaleDateString(undefined, { weekday: 'long' });
+                    mealDayLabel.textContent = `Showing ${dayName} meal plan`;
+                }
+            }
+
+            function updatePlayerCountdown() {
+                const numberEl = document.getElementById('playerCountdownNumber');
+                const labelEl = document.getElementById('playerCountdownLabel');
+                if (!numberEl || !labelEl) {
+                    return;
+                }
+
+                const rawTs = Number(numberEl.dataset.matchTimestamp || 0);
+                if (!rawTs || Number.isNaN(rawTs)) {
+                    numberEl.textContent = '0';
+                    labelEl.innerHTML = 'days<br>more';
+                    return;
+                }
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const matchDate = new Date(rawTs);
+                matchDate.setHours(0, 0, 0, 0);
+
+                const diffDays = Math.max(0, Math.round((matchDate.getTime() - today.getTime()) / 86400000));
+                numberEl.textContent = String(diffDays);
+                labelEl.innerHTML = (diffDays === 1 ? 'day' : 'days') + '<br>more';
+            }
+
+            updateClock();
+            updatePlayerDayLabel();
+            updatePlayerCountdown();
             setInterval(updateClock, 1000);
+            setInterval(() => {
+                updatePlayerDayLabel();
+                updatePlayerCountdown();
+            }, 30000);
 
             function generateCalendar() {
                 const now = new Date();

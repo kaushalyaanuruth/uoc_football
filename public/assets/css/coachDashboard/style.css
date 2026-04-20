@@ -177,8 +177,8 @@ body::before {
 
 .welcome-title {
     font-size: 48px;
-    font-weight: 900;
-    font-family: 'Merriweather', serif;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
     line-height: 1.2;
 }
 

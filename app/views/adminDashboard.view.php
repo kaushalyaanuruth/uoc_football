@@ -95,8 +95,8 @@
             <div class="welcome-content">
                 <h1 class="welcome-title">Welcome back,<br> Admin!</h1>
                 <div class="welcome-datetime">
-                    <p class="date"><?php echo date('l, F j, Y'); ?></p>
-                    <p class="time"><?php echo date('h:i A'); ?></p>
+                    <p class="date" id="adminLiveDate"><?php echo date('l, F j, Y'); ?></p>
+                    <p class="time" id="adminLiveTime"><?php echo date('h:i A'); ?></p>
                 </div>
             </div>
         </div>
@@ -696,6 +696,32 @@
         if (shouldOpenNotifications) {
             overlay.style.display = 'block';
         }
+
+        function updateAdminWelcomeDateTime() {
+            const now = new Date();
+            const dateEl = document.getElementById('adminLiveDate');
+            const timeEl = document.getElementById('adminLiveTime');
+
+            if (dateEl) {
+                dateEl.textContent = now.toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            }
+
+            if (timeEl) {
+                timeEl.textContent = now.toLocaleTimeString(undefined, {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+        }
+
+        updateAdminWelcomeDateTime();
+        setInterval(updateAdminWelcomeDateTime, 1000);
     </script>
 </body>
 </html>

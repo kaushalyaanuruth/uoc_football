@@ -1,0 +1,107 @@
+UOC Football - Team Members Manual Entry Template
+
+Purpose:
+Use this file to prepare all data before adding a team manually in Team Management.
+You can copy/paste values quickly while creating a team.
+
+Validation Rules:
+- Season: required
+- Team status: present or past
+- Player NIC: exactly 12 digits
+- Coach NIC: exactly 12 digits
+- Player phone number: exactly 10 digits
+- Coach phone number: exactly 10 digits
+- Only 1 Captain per team
+- Only 1 Vice-Captain per team
+- Default account password after creation: 123456
+- Username for player/coach login: NIC
+
+================================================================
+1) BLANK TEMPLATE (COPY AND FILL)
+================================================================
+
+TEAM
+Season: 
+Status: present
+
+TOURNAMENTS
+1. 
+2. 
+3. 
+
+ACHIEVEMENTS
+1. 
+2. 
+3. 
+
+PLAYERS
+(Use one line per player)
+Format:
+First Name | Last Name | NIC(12 digits) | Email | Phone(10 digits) | Position(goalkeeper/defender/midfielder/forward) | Role(Player/Vice-Captain/Captain)
+
+1) 
+2) 
+3) 
+4) 
+5) 
+6) 
+7) 
+8) 
+9) 
+10) 
+11) 
+
+COACHES
+(Use one line per coach)
+Format:
+First Name | Last Name | NIC(12 digits) | Email | Phone(10 digits) | License
+
+1) 
+2) 
+
+================================================================
+2) FULL EXAMPLE (READY TO COPY/EDIT)
+================================================================
+
+TEAM
+Season: 2026
+Status: present
+
+TOURNAMENTS
+1. Inter Faculty Football Championship 2026
+2. University League Cup 2026
+
+ACHIEVEMENTS
+1. Champions - Inter Faculty Football Championship 2026
+2. Fair Play Award - University League Cup 2026
+
+PLAYERS
+1) Nimal | Perera | 200112345678 | nimal.perera@gmail.com | 0771234567 | goalkeeper | Player
+2) Kasun | Silva | 200212345679 | kasun.silva@gmail.com | 0712345678 | defender | Captain
+3) Tharindu | Fernando | 200312345680 | tharindu.fernando@gmail.com | 0751234567 | defender | Player
+4) Isuru | Jayasinghe | 200412345681 | isuru.jaya@gmail.com | 0769876543 | midfielder | Vice-Captain
+5) Dinesh | Lakmal | 200512345682 | dinesh.lakmal@gmail.com | 0704567891 | midfielder | Player
+6) Akila | Senanayake | 200612345683 | akila.sena@gmail.com | 0743216789 | midfielder | Player
+7) Chamath | Wijesinghe | 200712345684 | chamath.wije@gmail.com | 0786541230 | forward | Player
+8) Ruwan | Madushanka | 200812345685 | ruwan.mad@gmail.com | 0723456789 | forward | Player
+9) Sahan | Dilshan | 200912345686 | sahan.dilshan@gmail.com | 0798765432 | defender | Player
+10) Prabath | Kumara | 201012345687 | prabath.k@gmail.com | 0732109876 | forward | Player
+11) Janith | Nuwan | 201112345688 | janith.nuwan@gmail.com | 0779871234 | midfielder | Player
+
+COACHES
+1) Roshan | De Silva | 198745612345 | roshan.desilva@gmail.com | 0774561234 | AFC-B-License
+2) Mahesh | Fernando | 198845612346 | mahesh.fernando@gmail.com | 0717654321 | UEFA-C-License
+
+================================================================
+3) QUICK CHECKLIST BEFORE SAVE
+================================================================
+
+[ ] Season is filled
+[ ] Status selected (present/past)
+[ ] At least one tournament entered (optional but recommended)
+[ ] At least one achievement entered (optional)
+[ ] All NIC values are 12 digits
+[ ] All phone numbers are 10 digits
+[ ] Exactly one Captain only
+[ ] At most one Vice-Captain
+[ ] Emails are valid format

@@ -218,6 +218,11 @@ body::before {
     overflow: hidden;
 }
 
+.welcome-text {
+    position: relative;
+    z-index: 1;
+}
+
 .welcome-banner::before {
     content: '';
     position: absolute;
@@ -246,7 +251,12 @@ body::before {
 }
 
 .welcome-date {
-    font-size: 1.8rem;
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    margin: 0;
+    text-align: right;
+    font-size: 1.05rem;
     opacity: 0.9;
 }
 
@@ -550,6 +560,14 @@ body::before {
   font-size: 13px;
   padding: 6px 14px;
 }
+
+    .welcome-date {
+        position: static;
+        margin-top: 10px;
+        text-align: left;
+        font-size: 0.95rem;
+    }
+
  .dashboard-grid,
   .sidebar-container {
     grid-template-columns: 1fr;

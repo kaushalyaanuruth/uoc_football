@@ -333,18 +333,6 @@
             </div>
         </div>
 
-        <!-- Coach Notes Section -->
-        <div class="notes-section">
-            <div class="notes-card">
-                <div class="card-header">
-                    <h2>Coach Notes & Insights</h2>
-                    <button class="save-btn">Save Notes</button>
-                </div>
-                <div class="notes-content">
-                    <textarea class="notes-textarea" placeholder="Add your notes, strategy improvements, or quick feedback..."><?php echo htmlspecialchars((string) ($data['coach_note'] ?? '')); ?></textarea>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="notification-overlay" id="coachNotificationOverlay" style="display: none;">
@@ -362,7 +350,6 @@
             'comparisonRows' => $comparisonRows,
             'selected_match_id' => $selectedMatchId,
             'selected_player_id' => $selectedPlayerId,
-            'saveNotesUrl' => ROOT . '/coachPerformance/saveNotes',
             'playerMatchStatUrl' => ROOT . '/coachPerformance/playerMatchStat',
         ]); ?>;
     </script>

@@ -47,8 +47,8 @@
             <div class="welcome-content">
                 <h1 class="welcome-title">Welcome,<br><?php echo htmlspecialchars($data['coach_name'] ?? 'Coach'); ?>!</h1>
                 <div class="welcome-datetime">
-                    <p class="date"><?php echo date('l, F j, Y'); ?></p>
-                    <p class="time"><?php echo date('h:i A'); ?></p>
+                    <p class="date" id="coachLiveDate"><?php echo date('l, F j, Y'); ?></p>
+                    <p class="time" id="coachLiveTime"><?php echo date('h:i A'); ?></p>
                 </div>
             </div>
         </div>
@@ -84,32 +84,13 @@
                    
                 </div>
                 <div class="card-body">
+                    <p id="coachMealDayLabel" style="font-size: 0.84rem; color: #6b7280; margin-bottom: 10px;">Showing <?php echo htmlspecialchars((string) ($data['today_day_name'] ?? date('l'))); ?> meal plan</p>
                     <div class="meal-tabs">
                         <button class="meal-tab active" data-meal="breakfast">Breakfast</button>
                         <button class="meal-tab" data-meal="lunch">Lunch</button>
                         <button class="meal-tab" data-meal="dinner">Dinner</button>
                     </div>
                     <div class="meal-items" id="mealItems">
-                        <div class="meal-item">
-                            <span>Basmati or Red Rice</span>
-                            <i class="meal-icon">⋮</i>
-                        </div>
-                        <div class="meal-item">
-                            <span>Chicken, Egg, Fish</span>
-                            <i class="meal-icon">⋮</i>
-                        </div>
-                        <div class="meal-item">
-                            <span>Vegetable(Minimum 3)</span>
-                            <i class="meal-icon">⋮</i>
-                        </div>
-                        <div class="meal-item">
-                            <span>Paip</span>
-                            <i class="meal-icon">⋮</i>
-                        </div>
-                        <div class="meal-item">
-                            <span>Yogurt</span>
-                            <i class="meal-icon">⋮</i>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -206,6 +187,11 @@
         </div>
     </div>
 
+    <script>
+        window.COACH_DASHBOARD_DATA = {
+            todayMealPlan: <?php echo json_encode($data['today_meal_plan'] ?? []); ?>
+        };
+    </script>
     <script src="<?php echo ROOT; ?>/assets/js/coachDashboard/script.js"></script>
     <script>
         const coachBell = document.getElementById('coachNotificationBell');

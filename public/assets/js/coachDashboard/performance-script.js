@@ -4,7 +4,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();
     initializePlayerComparison();
-    initializeNotes();
     initializeDetailedMatchBreakdown();
 });
 
@@ -136,54 +135,6 @@ function updateComparison() {
             item.style.transform = 'scale(1)';
         }, index * 80);
     });
-}
-
-// Notes functionality
-function initializeNotes() {
-    const saveBtn = document.querySelector('.save-btn');
-    const notesTextarea = document.querySelector('.notes-textarea');
-
-    if (saveBtn && notesTextarea) {
-        saveBtn.addEventListener('click', async function() {
-            const notes = notesTextarea.value.trim();
-            const config = window.COACH_PERFORMANCE_DATA || {};
-            const saveUrl = config.saveNotesUrl || '/coachPerformance/saveNotes';
-
-            const originalText = this.textContent;
-
-            this.disabled = true;
-            this.textContent = 'Saving...';
-
-            try {
-                const response = await fetch(saveUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ note: notes })
-                });
-
-                const result = await response.json();
-                if (!response.ok || !result || !result.success) {
-                    throw new Error((result && result.message) ? result.message : 'Failed to save notes');
-                }
-
-                this.textContent = 'Saved!';
-                this.style.background = 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
-            } catch (error) {
-                alert(error.message || 'Failed to save notes.');
-                this.textContent = 'Save Failed';
-                this.style.background = 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)';
-            }
-
-            setTimeout(() => {
-                this.textContent = originalText;
-                this.style.background = '#340134';
-                this.disabled = false;
-            }, 1600);
-        });
-    }
 }
 
 function initializeDetailedMatchBreakdown() {
