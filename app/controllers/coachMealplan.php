@@ -34,6 +34,26 @@ class coachMealplan extends CoachBaseController {
         ];
     }
 
+    private function defaultWeeklyTeamMealPlan()
+    {
+        $weekly = [];
+        $dayPlan = $this->defaultTeamMealPlan();
+
+        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+            $weekly[$day] = $dayPlan;
+        }
+
+        return $weekly;
+    }
+
+    private function normalizeDayKey($day)
+    {
+        $value = strtolower(trim((string) $day));
+        $allowed = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        return in_array($value, $allowed, true) ? $value : 'monday';
+    }
+
     private function resolveCoachTeamContext()
     {
         $mealModel = $this->model('CoachMealplanModel');
@@ -60,12 +80,19 @@ class coachMealplan extends CoachBaseController {
 
     private function getTeamMealPlanPayload($mealModel, $teamId)
     {
-        $defaults = $this->defaultTeamMealPlan();
-        $dbPlan = ($mealModel && $teamId) ? $mealModel->getTeamMealPlan($teamId) : [];
+        $defaults = $this->defaultWeeklyTeamMealPlan();
+        $dbPlan = ($mealModel && $teamId) ? $mealModel->getWeeklyTeamMealPlan($teamId) : [];
 
-        foreach (['breakfast', 'lunch', 'dinner'] as $mealType) {
-            if (empty($dbPlan[$mealType])) {
-                $dbPlan[$mealType] = $defaults[$mealType];
+        foreach ($defaults as $day => $defaultDayPlan) {
+            if (empty($dbPlan[$day]) || !is_array($dbPlan[$day])) {
+                $dbPlan[$day] = $defaultDayPlan;
+                continue;
+            }
+
+            foreach (['breakfast', 'lunch', 'dinner'] as $mealType) {
+                if (empty($dbPlan[$day][$mealType]) || !is_array($dbPlan[$day][$mealType])) {
+                    $dbPlan[$day][$mealType] = $defaultDayPlan[$mealType];
+                }
             }
         }
 
@@ -92,7 +119,7 @@ class coachMealplan extends CoachBaseController {
             if (!$context['mealModel'] || !$context['teamId']) {
                 $this->responseJson([
                     'success' => true,
-                    'plan' => $this->defaultTeamMealPlan(),
+                    'plan' => $this->defaultWeeklyTeamMealPlan(),
                 ]);
             }
 
@@ -127,13 +154,14 @@ class coachMealplan extends CoachBaseController {
             $payload = json_decode($raw, true);
 
             $mealType = strtolower(trim((string) ($payload['mealType'] ?? '')));
+            $day = $this->normalizeDayKey($payload['day'] ?? 'monday');
             $items = $payload['items'] ?? [];
 
             if (!in_array($mealType, ['breakfast', 'lunch', 'dinner'], true) || !is_array($items)) {
                 $this->responseJson(['success' => false, 'message' => 'Invalid payload'], 422);
             }
 
-            $saved = $context['mealModel']->saveTeamMealType($context['teamId'], $mealType, $items);
+            $saved = $context['mealModel']->saveTeamMealType($context['teamId'], $mealType, $items, $day);
             if (!$saved) {
                 $this->responseJson(['success' => false, 'message' => 'Unable to save meal plan'], 500);
             }
@@ -167,10 +195,12 @@ class coachMealplan extends CoachBaseController {
             }
 
             $defaults = $this->defaultTeamMealPlan();
-            foreach ($defaults as $mealType => $items) {
-                $saved = $context['mealModel']->saveTeamMealType($context['teamId'], $mealType, $items);
-                if (!$saved) {
-                    $this->responseJson(['success' => false, 'message' => 'Unable to reset meal plan'], 500);
+            foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+                foreach ($defaults as $mealType => $items) {
+                    $saved = $context['mealModel']->saveTeamMealType($context['teamId'], $mealType, $items, $day);
+                    if (!$saved) {
+                        $this->responseJson(['success' => false, 'message' => 'Unable to reset meal plan'], 500);
+                    }
                 }
             }
 

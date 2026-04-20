@@ -55,11 +55,6 @@
                 <input type="text" class="search-input" placeholder="Search here..." id="searchInput">
             </div>
             <div class="filter-actions">
-                <button class="filter-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                    </svg>
-                </button>
                 <button class="add-notice-btn">+ Add</button>
             </div>
         </div>

@@ -17,7 +17,17 @@ class teamManagement extends Controller {
         $this->achievementModel = $this->model('AchievementModel');
         $this->userModel = $this->model('User');
 
+        if (method_exists($this->teamModel, 'ensureStatusColumn')) {
+            $this->teamModel->ensureStatusColumn();
+        }
+
         $this->ensureTeamMetaTables();
+    }
+
+    private function normalizeTeamStatus($status)
+    {
+        $value = strtolower(trim((string) $status));
+        return $value === 'past' ? 'past' : 'present';
     }
 
     private function ensureTeamMetaTables()
@@ -217,7 +227,7 @@ class teamManagement extends Controller {
 
             $teamData = [
                 'season' => trim($_POST['season'] ?? ''),
-                'status' => $_POST['status'] ?? 'present'
+                'status' => $this->normalizeTeamStatus($_POST['status'] ?? 'present')
             ];
 
             if (empty($teamData['season'])) {
@@ -1027,7 +1037,7 @@ class teamManagement extends Controller {
             // Update team basic info
             $updateData = [
                 'season' => trim($_POST['season'] ?? ''),
-                'status' => $_POST['status'] ?? 'present'
+                'status' => $this->normalizeTeamStatus($_POST['status'] ?? 'present')
             ];
             
             $this->teamModel->update($teamId, $updateData);

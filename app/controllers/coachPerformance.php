@@ -4,11 +4,30 @@ require_once __DIR__ . '/CoachBaseController.php';
 
 class coachPerformance extends CoachBaseController {
 
+    private function resolvePerformanceTeamId($analyticsModel)
+    {
+        $teamId = (int) $analyticsModel->resolveCoachTeamIdByNic((string) ($_SESSION['nic'] ?? ''));
+
+        $teamModel = $this->model('TeamModel');
+        if ($teamModel && method_exists($teamModel, 'getPresentTeamId')) {
+            $presentTeamId = (int) ($teamModel->getPresentTeamId() ?? 0);
+            if ($presentTeamId > 0) {
+                return $presentTeamId;
+            }
+        }
+
+        if ($teamId > 0) {
+            return $teamId;
+        }
+
+        return 1;
+    }
+
     public function index() {
         $this->ensureCoachAccess();
 
         $analyticsModel = $this->model('PerformanceAnalyticsModel');
-        $teamId = $analyticsModel->resolveCoachTeamIdByNic((string) ($_SESSION['nic'] ?? ''));
+        $teamId = $this->resolvePerformanceTeamId($analyticsModel);
 
         $selectedMatchId = (int) ($_GET['match_id'] ?? 0);
         $selectedPlayerId = (int) ($_GET['player_id'] ?? 0);
@@ -37,7 +56,7 @@ class coachPerformance extends CoachBaseController {
         $noteText = trim((string) ($payload['note'] ?? ''));
 
         $analyticsModel = $this->model('PerformanceAnalyticsModel');
-        $teamId = $analyticsModel->resolveCoachTeamIdByNic((string) ($_SESSION['nic'] ?? ''));
+        $teamId = $this->resolvePerformanceTeamId($analyticsModel);
         $saved = $analyticsModel->saveCoachPerformanceNote((string) ($_SESSION['nic'] ?? ''), $teamId, $noteText);
 
         header('Content-Type: application/json');
@@ -66,7 +85,7 @@ class coachPerformance extends CoachBaseController {
         }
 
         $analyticsModel = $this->model('PerformanceAnalyticsModel');
-        $teamId = $analyticsModel->resolveCoachTeamIdByNic((string) ($_SESSION['nic'] ?? ''));
+        $teamId = $this->resolvePerformanceTeamId($analyticsModel);
         $row = $analyticsModel->getCoachPlayerMatchStatCard($teamId, $playerId, $matchId);
 
         if (!$row) {

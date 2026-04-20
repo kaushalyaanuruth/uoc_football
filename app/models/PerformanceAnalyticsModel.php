@@ -41,6 +41,37 @@ class PerformanceAnalyticsModel
         return $exists;
     }
 
+    private function hasTeamsStatusColumn()
+    {
+        if (!$this->tableExists('teams')) {
+            return false;
+        }
+
+        $rows = $this->safeQuery("SHOW COLUMNS FROM teams LIKE 'status'");
+        return !empty($rows);
+    }
+
+    private function getPresentTeamId()
+    {
+        if (!$this->hasTeamsStatusColumn()) {
+            return null;
+        }
+
+        $rows = $this->safeQuery(
+            "SELECT team_id
+             FROM teams
+             WHERE status = 'present'
+             ORDER BY team_id DESC
+             LIMIT 1"
+        );
+
+        if (empty($rows)) {
+            return null;
+        }
+
+        return (int) ($rows[0]->team_id ?? 0) ?: null;
+    }
+
     private function createCoachNotesTableIfNeeded()
     {
         $this->safeQuery(
@@ -124,12 +155,32 @@ class PerformanceAnalyticsModel
 
     public function resolveCoachTeamIdByNic($nic)
     {
+        $presentTeamId = $this->getPresentTeamId();
+        if ($presentTeamId !== null) {
+            $rows = $this->safeQuery(
+                "SELECT tc.team_id
+                 FROM coaches c
+                 JOIN team_coaches tc ON tc.coach_id = c.coach_id
+                 WHERE c.nic = :nic
+                   AND tc.team_id = :team_id
+                 LIMIT 1",
+                [
+                    'nic' => $nic,
+                    'team_id' => $presentTeamId,
+                ]
+            );
+
+            if (!empty($rows)) {
+                return (int) ($rows[0]->team_id ?? 0);
+            }
+        }
+
         $rows = $this->safeQuery(
             "SELECT tc.team_id
              FROM coaches c
              JOIN team_coaches tc ON tc.coach_id = c.coach_id
              WHERE c.nic = :nic
-             ORDER BY tc.team_id ASC
+             ORDER BY tc.team_id DESC
              LIMIT 1",
             ['nic' => $nic]
         );
@@ -143,12 +194,35 @@ class PerformanceAnalyticsModel
 
     public function resolvePlayerContextByNic($nic)
     {
+        $presentTeamId = $this->getPresentTeamId();
+        if ($presentTeamId !== null) {
+            $rows = $this->safeQuery(
+                "SELECT p.player_id, tp.team_id
+                 FROM players p
+                 LEFT JOIN team_players tp ON tp.player_id = p.player_id
+                 WHERE p.nic = :nic
+                   AND tp.team_id = :team_id
+                 LIMIT 1",
+                [
+                    'nic' => $nic,
+                    'team_id' => $presentTeamId,
+                ]
+            );
+
+            if (!empty($rows)) {
+                return [
+                    'player_id' => (int) ($rows[0]->player_id ?? 0),
+                    'team_id' => (int) ($rows[0]->team_id ?? 0),
+                ];
+            }
+        }
+
         $rows = $this->safeQuery(
             "SELECT p.player_id, tp.team_id
              FROM players p
              LEFT JOIN team_players tp ON tp.player_id = p.player_id
              WHERE p.nic = :nic
-             ORDER BY tp.team_id ASC
+             ORDER BY tp.team_id DESC
              LIMIT 1",
             ['nic' => $nic]
         );
@@ -500,7 +574,7 @@ class PerformanceAnalyticsModel
 
         $latestByType = [];
         foreach ($testRows as $row) {
-            $type = strtolower(trim((string) ($row->test_type ?? '')));
+            $type = $this->normalizeAnalyzeTestTypeKey((string) ($row->test_type ?? ''));
             if ($type === '') {
                 continue;
             }
@@ -512,9 +586,7 @@ class PerformanceAnalyticsModel
         $buildTestMetric = function ($label, $key) use ($latestByType) {
             $row = $latestByType[$key] ?? null;
             $rawScore = trim((string) ($row->score ?? ''));
-            preg_match('/-?\d+(?:\.\d+)?/', $rawScore, $m);
-            $num = isset($m[0]) ? (float) $m[0] : 0.0;
-            $percent = (int) max(0, min(100, round($num * 4)));
+            $percent = $this->analyzeScoreToPercent($rawScore);
 
             return [
                 'label' => $label,
@@ -538,11 +610,9 @@ class PerformanceAnalyticsModel
                 ? (date('M d', strtotime((string) $row->date)) . ' - ' . (string) ($row->test_type ?? 'Test'))
                 : (string) ($row->test_type ?? 'Test');
             $rawScore = trim((string) ($row->score ?? ''));
-            preg_match('/-?\d+(?:\.\d+)?/', $rawScore, $m);
-            $num = isset($m[0]) ? (float) $m[0] : 0.0;
 
             $trendLabels[] = $label;
-            $trendScoreData[] = (int) max(0, min(100, round($num * 4)));
+            $trendScoreData[] = $this->analyzeScoreToPercent($rawScore);
         }
 
         if (empty($trendLabels)) {
@@ -736,10 +806,15 @@ class PerformanceAnalyticsModel
 
     private function resolveFallbackTeamId()
     {
+        $presentTeamId = $this->getPresentTeamId();
+        if ($presentTeamId !== null) {
+            return $presentTeamId;
+        }
+
         $rows = $this->safeQuery(
             "SELECT DISTINCT team_id
              FROM team_players
-             ORDER BY team_id ASC
+             ORDER BY team_id DESC
              LIMIT 1"
         );
 
@@ -747,7 +822,7 @@ class PerformanceAnalyticsModel
             return (int) $rows[0]->team_id;
         }
 
-        $teams = $this->safeQuery("SELECT team_id FROM teams ORDER BY team_id ASC LIMIT 1");
+        $teams = $this->safeQuery("SELECT team_id FROM teams ORDER BY team_id DESC LIMIT 1");
         if (!empty($teams)) {
             return (int) $teams[0]->team_id;
         }
@@ -783,5 +858,69 @@ class PerformanceAnalyticsModel
         $sign = $delta >= 0 ? '+' : '';
 
         return $sign . (string) round($delta) . '%';
+    }
+
+    private function normalizeAnalyzeTestTypeKey($testType)
+    {
+        $value = strtolower(trim((string) $testType));
+        if ($value === '') {
+            return '';
+        }
+
+        $compact = str_replace([' ', '-', '_'], '', $value);
+
+        if (in_array($compact, ['2km', '2k', '2kilometer', '2kilometre'], true)) {
+            return '2km';
+        }
+
+        if (in_array($compact, ['5km', '5k', '5kilometer', '5kilometre'], true)) {
+            return '5km';
+        }
+
+        if (in_array($compact, ['bronko', 'bronco'], true)) {
+            return 'bronko';
+        }
+
+        if (in_array($compact, ['yoyo', 'yoyotest'], true)) {
+            return 'yoyo';
+        }
+
+        return $compact;
+    }
+
+    private function analyzeScoreToPercent($rawScore)
+    {
+        $raw = trim((string) $rawScore);
+        if ($raw === '') {
+            return 0;
+        }
+
+        preg_match('/-?\d+(?:\.\d+)?/', $raw, $m);
+        if (isset($m[0])) {
+            $num = (float) $m[0];
+            if ($num <= 25) {
+                return (int) max(0, min(100, round($num * 4)));
+            }
+            return (int) max(0, min(100, round($num)));
+        }
+
+        $text = strtolower($raw);
+        $wordMap = [
+            'excellent' => 95,
+            'very good' => 85,
+            'well' => 75,
+            'good' => 75,
+            'average' => 60,
+            'fair' => 50,
+            'poor' => 35,
+        ];
+
+        foreach ($wordMap as $word => $score) {
+            if (strpos($text, $word) !== false) {
+                return $score;
+            }
+        }
+
+        return 0;
     }
 }

@@ -8,6 +8,123 @@ class TeamModel
 
     private $columnCache = null;
 
+    private function normalizeStatus($status)
+    {
+        $value = strtolower(trim((string) $status));
+        return $value === 'past' ? 'past' : 'present';
+    }
+
+    private function clearColumnCache()
+    {
+        $this->columnCache = null;
+    }
+
+    private function enforceSinglePresentTeam()
+    {
+        if (!$this->hasColumn('status')) {
+            return;
+        }
+
+        $presentRows = $this->query(
+            "SELECT team_id FROM {$this->table} WHERE status = 'present' ORDER BY team_id DESC"
+        );
+
+        if (!empty($presentRows)) {
+            $keepPresentId = (int) ($presentRows[0]->team_id ?? 0);
+            if ($keepPresentId > 0) {
+                $this->query(
+                    "UPDATE {$this->table} SET status = 'past' WHERE status = 'present' AND team_id != :team_id",
+                    ['team_id' => $keepPresentId]
+                );
+            }
+            return;
+        }
+
+        $latestRows = $this->query("SELECT team_id FROM {$this->table} ORDER BY team_id DESC LIMIT 1");
+        if (!empty($latestRows)) {
+            $latestTeamId = (int) ($latestRows[0]->team_id ?? 0);
+            if ($latestTeamId > 0) {
+                $this->query("UPDATE {$this->table} SET status = 'past'");
+                $this->query(
+                    "UPDATE {$this->table} SET status = 'present' WHERE team_id = :team_id",
+                    ['team_id' => $latestTeamId]
+                );
+            }
+        }
+    }
+
+    private function getExistingPresentTeamId($excludeTeamId = null)
+    {
+        if (!$this->hasColumn('status')) {
+            return null;
+        }
+
+        $query = "SELECT team_id FROM {$this->table} WHERE status = 'present'";
+        $params = [];
+
+        if ($excludeTeamId !== null) {
+            $query .= " AND team_id != :exclude_team_id";
+            $params['exclude_team_id'] = (int) $excludeTeamId;
+        }
+
+        $query .= " ORDER BY team_id DESC LIMIT 1";
+
+        $rows = $this->query($query, $params);
+        return !empty($rows) ? ((int) ($rows[0]->team_id ?? 0) ?: null) : null;
+    }
+
+    private function assertNoOtherPresentTeam($excludeTeamId = null)
+    {
+        $existingPresentTeamId = $this->getExistingPresentTeamId($excludeTeamId);
+        if ($existingPresentTeamId !== null) {
+            throw new Exception('A present team already exists. Set it to past before creating/updating another present team.');
+        }
+    }
+
+    public function ensureStatusColumn()
+    {
+        if ($this->hasColumn('status')) {
+            $this->enforceSinglePresentTeam();
+            return true;
+        }
+
+        try {
+            $this->query("ALTER TABLE {$this->table} ADD COLUMN status ENUM('present','past') NOT NULL DEFAULT 'past' AFTER season");
+            $this->clearColumnCache();
+
+            if ($this->hasColumn('status')) {
+                $latestRows = $this->query("SELECT team_id FROM {$this->table} ORDER BY team_id DESC LIMIT 1");
+                if (!empty($latestRows)) {
+                    $latestTeamId = (int) ($latestRows[0]->team_id ?? 0);
+                    if ($latestTeamId > 0) {
+                        $this->query("UPDATE {$this->table} SET status = 'past'");
+                        $this->query("UPDATE {$this->table} SET status = 'present' WHERE team_id = :team_id", ['team_id' => $latestTeamId]);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            return false;
+        }
+
+        if ($this->hasColumn('status')) {
+            $this->enforceSinglePresentTeam();
+        }
+
+        return $this->hasColumn('status');
+    }
+
+    private function markOtherTeamsAsPast($presentTeamId)
+    {
+        if (!$this->hasColumn('status') || (int) $presentTeamId <= 0) {
+            return;
+        }
+
+        $this->query(
+            "UPDATE {$this->table} SET status = 'past' WHERE team_id != :team_id AND status = 'present'",
+            ['team_id' => (int) $presentTeamId]
+        );
+    }
+
     private function getColumns()
     {
         if ($this->columnCache !== null) {
@@ -35,16 +152,24 @@ class TeamModel
     /** Create a new team*/
     public function create($data)
     {
+        $this->ensureStatusColumn();
+
         // Don't include created_by if it's null or empty
         if (empty($data['created_by'])) {
             unset($data['created_by']);
         }
 
         if ($this->hasColumn('status')) {
+            $status = $this->normalizeStatus($data['status'] ?? 'present');
+
+            if ($status === 'present') {
+                $this->assertNoOtherPresentTeam();
+            }
+
             $query = "INSERT INTO {$this->table} (season, status) VALUES (:season, :status)";
             return $this->query($query, [
                 'season' => $data['season'],
-                'status' => $data['status'] ?? 'present'
+                'status' => $status
             ]);
         }
 
@@ -106,6 +231,8 @@ class TeamModel
      */
     public function update($id, $data)
     {
+        $this->ensureStatusColumn();
+
         $fields = [];
         $params = ['team_id' => $id];
         $hasStatus = $this->hasColumn('status');
@@ -116,18 +243,28 @@ class TeamModel
                     continue;
                 }
                 $fields[] = "{$key} = :{$key}";
-                $params[$key] = $value;
+                if ($key === 'status') {
+                    $params[$key] = $this->normalizeStatus($value);
+                } else {
+                    $params[$key] = $value;
+                }
             }
         }
 
         if (empty($fields)) {
             return true;
         }
+
+        if ($hasStatus && isset($params['status']) && $params['status'] === 'present') {
+            $this->assertNoOtherPresentTeam((int) $id);
+        }
         
         $fieldsString = implode(', ', $fields);
         $query = "UPDATE {$this->table} SET {$fieldsString} WHERE team_id = :team_id";
         
-        return $this->query($query, $params);
+        $saved = $this->query($query, $params);
+
+        return $saved;
     }
     
     /**
@@ -143,6 +280,8 @@ class TeamModel
      */
     public function getByStatus($status)
     {
+        $this->ensureStatusColumn();
+
         if (!$this->hasColumn('status')) {
             if ($status === 'present') {
                 return $this->getAll();
@@ -153,6 +292,21 @@ class TeamModel
         return $this->query("SELECT * FROM {$this->table} WHERE status = :status ORDER BY team_id DESC", [
             'status' => $status
         ]);
+    }
+
+    public function getPresentTeamId()
+    {
+        $this->ensureStatusColumn();
+
+        if ($this->hasColumn('status')) {
+            $rows = $this->query("SELECT team_id FROM {$this->table} WHERE status = 'present' ORDER BY team_id DESC LIMIT 1");
+            if (!empty($rows)) {
+                return (int) ($rows[0]->team_id ?? 0) ?: null;
+            }
+        }
+
+        $rows = $this->query("SELECT team_id FROM {$this->table} ORDER BY team_id DESC LIMIT 1");
+        return !empty($rows) ? ((int) ($rows[0]->team_id ?? 0) ?: null) : null;
     }
     
     /**

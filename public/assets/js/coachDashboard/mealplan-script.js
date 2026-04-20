@@ -135,14 +135,7 @@ function applyTeamPlanToWeek(teamPlan) {
         return;
     }
 
-    DAYS_OF_WEEK.forEach(function (day) {
-        MEAL_TYPES.forEach(function (mealType) {
-            const sourceItems = Array.isArray(teamPlan[mealType])
-                ? teamPlan[mealType]
-                : defaultDayPlan[mealType];
-            weeklyMealPlan[day.key][mealType] = normalizeItems(sourceItems);
-        });
-    });
+    weeklyMealPlan = normalizeWeeklyPlan(teamPlan);
 }
 
 async function fetchServerPlan() {
@@ -165,7 +158,7 @@ async function fetchServerPlan() {
     return payload.plan;
 }
 
-async function persistMealTypeToServer(mealType, items) {
+async function persistMealTypeToServer(mealType, items, day) {
     const response = await fetch(getApiBase() + '/save', {
         method: 'POST',
         headers: {
@@ -173,6 +166,7 @@ async function persistMealTypeToServer(mealType, items) {
             'Accept': 'application/json'
         },
         body: JSON.stringify({
+            day: day,
             mealType: mealType,
             items: items
         })
@@ -538,7 +532,7 @@ async function handleMealFormSubmit(event) {
     weeklyMealPlan[selectedDay][currentMealType] = modalDraftItems.slice();
 
     try {
-        const savedPlan = await persistMealTypeToServer(currentMealType, modalDraftItems.slice());
+        const savedPlan = await persistMealTypeToServer(currentMealType, modalDraftItems.slice(), selectedDay);
         applyTeamPlanToWeek(savedPlan);
         saveMealPlanState();
         renderAllMealCards();

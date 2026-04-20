@@ -133,52 +133,54 @@ class PlayerDashboard extends Controller
             'Dinner' => ['Grilled chicken breast', 'Steamed vegetables', 'Boiled sweet potato', 'Glass of warm milk']
         ];
 
-        $mealPlan = $defaultMeals;
-        if ($teamId !== null && $this->tableExists($playerModel, 'meal_plans')) {
-            $mealRows = $playerModel->query(
-                "SELECT meal_id
-                FROM meal_plans
-                WHERE team_id = :team_id
-                ORDER BY updated_date DESC
-                LIMIT 1",
-                ['team_id' => $teamId]
-            );
-
-            if (!empty($mealRows)) {
-                $mealId = (int)$mealRows[0]->meal_id;
-
-                if ($this->tableExists($playerModel, 'breakfast')) {
-                    $breakfastRows = $playerModel->query("SELECT meal FROM breakfast WHERE meal_id = :meal_id", ['meal_id' => $mealId]);
-                    $mealPlan['Breakfast'] = array_map(fn($row) => $row->meal, $breakfastRows);
-                }
-
-                if ($this->tableExists($playerModel, 'lunch')) {
-                    $lunchRows = $playerModel->query("SELECT meal FROM lunch WHERE meal_id = :meal_id", ['meal_id' => $mealId]);
-                    $mealPlan['Lunch'] = array_map(fn($row) => $row->meal, $lunchRows);
-                }
-
-                if ($this->tableExists($playerModel, 'dinner')) {
-                    $dinnerRows = $playerModel->query("SELECT meal FROM dinner WHERE meal_id = :meal_id", ['meal_id' => $mealId]);
-                    $mealPlan['Dinner'] = array_map(fn($row) => $row->meal, $dinnerRows);
-                }
+        $normalizeItems = function ($items) {
+            if (!is_array($items)) {
+                return [];
             }
+
+            $clean = [];
+            $seen = [];
+            foreach ($items as $item) {
+                $value = trim((string) $item);
+                if ($value === '') {
+                    continue;
+                }
+
+                $key = strtolower($value);
+                if (isset($seen[$key])) {
+                    continue;
+                }
+
+                $seen[$key] = true;
+                $clean[] = $value;
+            }
+
+            return $clean;
+        };
+
+        $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $mealPlanByDay = [];
+        foreach ($daysOfWeek as $dayName) {
+            $mealPlanByDay[$dayName] = $defaultMeals;
         }
 
-        foreach (['Breakfast', 'Lunch', 'Dinner'] as $slot) {
-            if (empty($mealPlan[$slot])) {
-                $mealPlan[$slot] = $defaultMeals[$slot];
+        $mealPlanModel = $this->model('CoachMealplanModel');
+        if ($mealPlanModel && $teamId !== null) {
+            $weeklyFromDb = $mealPlanModel->getWeeklyTeamMealPlan($teamId);
+
+            foreach ($daysOfWeek as $dayName) {
+                $dbDay = $weeklyFromDb[strtolower($dayName)] ?? [];
+                $mealPlanByDay[$dayName] = [
+                    'Breakfast' => !empty($dbDay['breakfast']) ? $normalizeItems($dbDay['breakfast']) : $defaultMeals['Breakfast'],
+                    'Lunch' => !empty($dbDay['lunch']) ? $normalizeItems($dbDay['lunch']) : $defaultMeals['Lunch'],
+                    'Dinner' => !empty($dbDay['dinner']) ? $normalizeItems($dbDay['dinner']) : $defaultMeals['Dinner'],
+                ];
             }
         }
 
         $todayDayName = date('l');
-        $mealPlanByDay = [];
-        $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        foreach ($daysOfWeek as $dayName) {
-            // Current schema stores meal types without day columns, so each day maps to the latest team plan.
-            $mealPlanByDay[$dayName] = $mealPlan;
-        }
-
-        $todayMealPlan = $mealPlanByDay[$todayDayName] ?? $mealPlan;
+        $todayMealPlan = $mealPlanByDay[$todayDayName] ?? $defaultMeals;
+        $mealPlan = $todayMealPlan;
 
         $eventModel = $this->model('EventModel');
         $upcomingEvents = [];

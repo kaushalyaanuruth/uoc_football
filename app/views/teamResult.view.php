@@ -2,6 +2,7 @@
 // Use data passed from controller, or default to empty arrays
 $testResults = $testResults ?? [];
 $matchResults = $matchResults ?? [];
+$todayDate = date('Y-m-d');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,12 +68,12 @@ $matchResults = $matchResults ?? [];
 
                 <div class="filter-group">
                     <label>Date From</label>
-                    <input type="date" id="dateFrom">
+                    <input type="date" id="dateFrom" max="<?php echo $todayDate; ?>">
                 </div>
 
                 <div class="filter-group">
                     <label>Date To</label>
-                    <input type="date" id="dateTo">
+                    <input type="date" id="dateTo" max="<?php echo $todayDate; ?>">
                 </div>
 
                 <div class="filter-actions">
@@ -148,12 +149,12 @@ $matchResults = $matchResults ?? [];
 
                 <div class="filter-group">
                     <label>Date From</label>
-                    <input type="date" id="matchDateFrom">
+                    <input type="date" id="matchDateFrom" max="<?php echo $todayDate; ?>">
                 </div>
 
                 <div class="filter-group">
                     <label>Date To</label>
-                    <input type="date" id="matchDateTo">
+                    <input type="date" id="matchDateTo" max="<?php echo $todayDate; ?>">
                 </div>
 
                 <div class="filter-actions">
@@ -250,7 +251,7 @@ $matchResults = $matchResults ?? [];
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="testDate">Date</label>
-                        <input type="date" class="form-input" id="testDate" name="testDate" required>
+                        <input type="date" class="form-input" id="testDate" name="testDate" max="<?php echo $todayDate; ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="score">Score</label>
@@ -290,7 +291,7 @@ $matchResults = $matchResults ?? [];
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="matchDate">Date</label>
-                        <input type="date" class="form-input" id="matchDate" name="matchDate" required>
+                        <input type="date" class="form-input" id="matchDate" name="matchDate" max="<?php echo $todayDate; ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="goalsScored">Goals Scored</label>
@@ -369,7 +370,7 @@ $matchResults = $matchResults ?? [];
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="editTestDate">Date</label>
-                        <input type="date" class="form-input" id="editTestDate" name="testDate" required>
+                        <input type="date" class="form-input" id="editTestDate" name="testDate" max="<?php echo $todayDate; ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="editScore">Score</label>
@@ -408,7 +409,7 @@ $matchResults = $matchResults ?? [];
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="editMatchDate">Date</label>
-                        <input type="date" class="form-input" id="editMatchDate" name="matchDate" required>
+                        <input type="date" class="form-input" id="editMatchDate" name="matchDate" max="<?php echo $todayDate; ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="input-label" for="editGoalsScored">Goals Scored</label>

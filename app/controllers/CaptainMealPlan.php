@@ -117,83 +117,38 @@ class CaptainMealPlan extends Controller
 
     private function getPlayerTeamMealMap($nic)
     {
-        $defaults = $this->defaultMealItemsByType();
-        $mealMap = $defaults;
+        $defaultsByType = $this->defaultMealItemsByType();
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-        $playerModel = $this->model('PlayerModel');
-        if (!$this->tableExists($playerModel, 'players') || !$this->tableExists($playerModel, 'team_players')) {
-            return $mealMap;
+        $weeklyMap = [];
+        foreach ($days as $day) {
+            $weeklyMap[$day] = $defaultsByType;
         }
 
-        $teamRows = $playerModel->query(
-            "SELECT tp.team_id
-             FROM players p
-             JOIN team_players tp ON tp.player_id = p.player_id
-             WHERE p.nic = :nic
-             ORDER BY tp.team_id DESC
-             LIMIT 1",
-            ['nic' => $nic]
-        );
-
-        if (empty($teamRows)) {
-            return $mealMap;
+        $mealModel = $this->model('CoachMealplanModel');
+        if (!$mealModel || $nic === '') {
+            return $weeklyMap;
         }
 
-        $teamId = (int) ($teamRows[0]->team_id ?? 0);
-        if ($teamId <= 0 || !$this->tableExists($playerModel, 'meal_plans')) {
-            return $mealMap;
+        $teamId = $mealModel->getTeamIdByPlayerNic($nic);
+        if (!$teamId) {
+            return $weeklyMap;
         }
 
-        $mealRows = $playerModel->query(
-            "SELECT meal_id
-             FROM meal_plans
-             WHERE team_id = :team_id
-             ORDER BY updated_date DESC, meal_id DESC
-             LIMIT 1",
-            ['team_id' => $teamId]
-        );
+        $dbWeekly = $mealModel->getWeeklyTeamMealPlan($teamId);
+        foreach ($days as $day) {
+            $dayKey = strtolower($day);
+            $dbDay = $dbWeekly[$dayKey] ?? [];
 
-        if (empty($mealRows)) {
-            return $mealMap;
-        }
-
-        $mealId = (int) ($mealRows[0]->meal_id ?? 0);
-        if ($mealId <= 0) {
-            return $mealMap;
-        }
-
-        $tableMap = [
-            'Breakfast' => 'breakfast',
-            'Lunch' => 'lunch',
-            'Dinner' => 'dinner',
-        ];
-
-        foreach ($tableMap as $slot => $tableName) {
-            if (!$this->tableExists($playerModel, $tableName)) {
-                continue;
-            }
-
-            $rows = $playerModel->query(
-                "SELECT meal
-                 FROM {$tableName}
-                 WHERE meal_id = :meal_id",
-                ['meal_id' => $mealId]
-            );
-
-            $items = [];
-            foreach ($rows as $row) {
-                $value = trim((string) ($row->meal ?? ''));
-                if ($value !== '') {
-                    $items[] = $value;
+            foreach (['Breakfast' => 'breakfast', 'Lunch' => 'lunch', 'Dinner' => 'dinner'] as $slot => $mealType) {
+                $items = $dbDay[$mealType] ?? [];
+                if (is_array($items) && !empty($items)) {
+                    $weeklyMap[$day][$slot] = array_values(array_unique(array_filter(array_map('trim', $items))));
                 }
             }
-
-            if (!empty($items)) {
-                $mealMap[$slot] = array_values(array_unique($items));
-            }
         }
 
-        return $mealMap;
+        return $weeklyMap;
     }
 
     private function normalizeImageUrl($imagePath, $displayName = '')
@@ -232,23 +187,24 @@ class CaptainMealPlan extends Controller
     {
         $this->ensureCaptainAccess();
 
-        $mealItemsByType = $this->getPlayerTeamMealMap((string) ($_SESSION['nic'] ?? ''));
+        $mealItemsByDay = $this->getPlayerTeamMealMap((string) ($_SESSION['nic'] ?? ''));
 
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         $mealsByDay = [];
         foreach ($days as $day) {
+            $dayMeals = $mealItemsByDay[$day] ?? $this->defaultMealItemsByType();
             $mealsByDay[$day] = [
                 'Breakfast' => [
-                    'items' => $mealItemsByType['Breakfast'],
-                    'calories' => $this->estimateCalories($mealItemsByType['Breakfast']),
+                    'items' => $dayMeals['Breakfast'] ?? [],
+                    'calories' => $this->estimateCalories($dayMeals['Breakfast'] ?? []),
                 ],
                 'Lunch' => [
-                    'items' => $mealItemsByType['Lunch'],
-                    'calories' => $this->estimateCalories($mealItemsByType['Lunch']),
+                    'items' => $dayMeals['Lunch'] ?? [],
+                    'calories' => $this->estimateCalories($dayMeals['Lunch'] ?? []),
                 ],
                 'Dinner' => [
-                    'items' => $mealItemsByType['Dinner'],
-                    'calories' => $this->estimateCalories($mealItemsByType['Dinner']),
+                    'items' => $dayMeals['Dinner'] ?? [],
+                    'calories' => $this->estimateCalories($dayMeals['Dinner'] ?? []),
                 ],
             ];
         }

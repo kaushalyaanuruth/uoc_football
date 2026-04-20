@@ -100,17 +100,33 @@ class TeamResult extends Controller
     private function getPresentTeamId()
     {
         try {
-            // Get the first team that has players
-            $query = "SELECT DISTINCT tp.team_id 
-                      FROM team_players tp 
+            $statusColumn = $this->playerModel->query("SHOW COLUMNS FROM teams LIKE 'status'", []);
+            $hasStatus = !empty($statusColumn);
+
+            if ($hasStatus) {
+                $query = "SELECT t.team_id
+                          FROM teams t
+                          WHERE t.status = 'present'
+                          ORDER BY t.team_id DESC
+                          LIMIT 1";
+                $result = $this->playerModel->query($query, []);
+                if (!empty($result)) {
+                    return (int) $result[0]->team_id;
+                }
+            }
+
+            // Fallback: get the latest team that has players.
+            $query = "SELECT DISTINCT tp.team_id
+                      FROM team_players tp
+                      ORDER BY tp.team_id DESC
                       LIMIT 1";
             $result = $this->playerModel->query($query, []);
             if (!empty($result)) {
                 return (int)$result[0]->team_id;
             }
             
-            // Fallback: get the first team from teams table
-            $query = "SELECT team_id FROM teams LIMIT 1";
+            // Last fallback: get latest team from teams table.
+            $query = "SELECT team_id FROM teams ORDER BY team_id DESC LIMIT 1";
             $teams = $this->playerModel->query($query, []);
             if (!empty($teams)) {
                 return (int)$teams[0]->team_id;
@@ -120,6 +136,24 @@ class TeamResult extends Controller
         }
         
         return 1;
+    }
+
+    private function assertDateNotFuture($dateValue, $fieldLabel)
+    {
+        $dateValue = trim((string) $dateValue);
+        if ($dateValue === '') {
+            throw new Exception($fieldLabel . ' is required');
+        }
+
+        $date = DateTime::createFromFormat('Y-m-d', $dateValue);
+        if (!$date || $date->format('Y-m-d') !== $dateValue) {
+            throw new Exception('Invalid ' . strtolower($fieldLabel) . ' format');
+        }
+
+        $today = new DateTime('today');
+        if ($date > $today) {
+            throw new Exception($fieldLabel . ' cannot be in the future');
+        }
     }
 
     /**
@@ -175,6 +209,8 @@ class TeamResult extends Controller
                 throw new Exception('Test type, date, and score are required');
             }
 
+            $this->assertDateNotFuture($data['date'], 'Test date');
+
             $this->testResultModel->create($data);
 
             $this->respondJson([
@@ -217,6 +253,8 @@ class TeamResult extends Controller
             if (empty($data['test_type']) || empty($data['date']) || empty($data['score'])) {
                 throw new Exception('Test type, date, and score are required');
             }
+
+            $this->assertDateNotFuture($data['date'], 'Test date');
 
             $this->testResultModel->update($result_id, $data);
 
@@ -298,6 +336,8 @@ class TeamResult extends Controller
                 throw new Exception('Opponent team, result, and date are required');
             }
 
+            $this->assertDateNotFuture($data['date'], 'Match date');
+
             // Validate result value
             if (!in_array($data['result'], ['Won', 'Draw', 'Lost'])) {
                 throw new Exception('Result must be Won, Draw, or Lost');
@@ -376,6 +416,8 @@ class TeamResult extends Controller
             if (empty($data['opponent_team']) || empty($data['result']) || empty($data['date'])) {
                 throw new Exception('Opponent team, result, and date are required');
             }
+
+            $this->assertDateNotFuture($data['date'], 'Match date');
 
             $this->matchResultModel->update($result_id, $data);
             

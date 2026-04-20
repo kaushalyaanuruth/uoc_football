@@ -301,10 +301,7 @@
                                 <span class="legend-color" style="background: #f59e0b;"></span>
                                 <span class="legend-label">Late</span>
                             </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #3b82f6;"></span>
-                                <span class="legend-label">Excused</span>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>
