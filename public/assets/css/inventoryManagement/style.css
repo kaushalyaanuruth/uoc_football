@@ -237,7 +237,7 @@ body::before {
 .inventory-list-head,
 .inventory-item {
     display: grid;
-    grid-template-columns: 2.2fr 0.9fr 0.7fr 0.8fr 1.4fr 0.8fr 1fr 0.7fr;
+    grid-template-columns: 2.2fr 0.9fr 0.7fr 0.8fr 1.1fr 0.8fr 1fr 1fr 0.7fr;
     gap: 12px;
     align-items: center;
 }
@@ -319,6 +319,7 @@ body::before {
 
 .item-category,
 .item-stock,
+.item-received-date,
 .item-location {
     font-size: 14px;
     color: var(--text-medium);
@@ -561,7 +562,7 @@ textarea.form-input {
 @media (max-width: 1024px) {
     .inventory-list-head,
     .inventory-item {
-        grid-template-columns: 1.8fr 1fr 0.8fr 0.8fr 1fr 0.7fr;
+        grid-template-columns: 1.6fr 0.8fr 0.7fr 0.8fr 1fr 0.8fr 0.9fr 0.9fr 0.7fr;
     }
 }
 

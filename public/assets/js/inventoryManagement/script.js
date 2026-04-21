@@ -64,6 +64,7 @@
             currentItemId = null;
             itemForm.reset();
             byId('itemId').value = '';
+            byId('testDate').value = new Date().toISOString().slice(0, 10);
             modalTitle.textContent = 'Add Item';
             itemSubmitBtn.textContent = 'Save Item';
         }
@@ -160,6 +161,7 @@
     function itemToRow(item) {
         const statusKey = normalizeStatusKey(item.status || item.status_key);
         const statusLabel = item.status_label || statusLabelFromKey(statusKey);
+        const receivedDate = String(item.received_date || '').trim();
         const row = document.createElement('div');
         row.className = 'inventory-item';
         row.dataset.itemId = item.id;
@@ -182,6 +184,7 @@
             '<span class="item-available">' + escapeHtml(String(item.available_quantity || 0)) + ' ' + escapeHtml(item.unit || 'pcs') + '</span>',
             '<span class="item-taken-by">' + escapeHtml(item.taken_by || '-') + '</span>',
             '<span class="status-badge status-' + escapeHtml(statusKey) + '">' + escapeHtml(statusLabel) + '</span>',
+            '<span class="item-received-date">' + escapeHtml(receivedDate || '-') + '</span>',
             '<span class="item-location">' + escapeHtml(item.location || '') + '</span>',
             '<div class="row-actions">',
             '    <button type="button" class="icon-btn edit-btn" data-id="' + item.id + '" aria-label="Edit item">',
@@ -231,6 +234,7 @@
         byId('itemStatus').value = normalizeStatusKey(item.status || item.status_key);
         byId('itemLocation').value = item.location || '';
         byId('itemIcon').value = normalizeIcon(item.icon, item.name);
+        byId('testDate').value = item.received_date || '';
         byId('itemDescription').value = item.description || '';
     }
 
@@ -262,6 +266,7 @@
             status: normalizeStatusKey(byId('itemStatus').value),
             location: byId('itemLocation').value.trim(),
             icon: byId('itemIcon').value,
+            testDate: byId('testDate').value,
             description: byId('itemDescription').value.trim()
         };
     }
@@ -281,6 +286,9 @@
         }
         if (!formData.location) {
             return 'Location is required';
+        }
+        if (!formData.testDate) {
+            return 'Received date is required';
         }
         return '';
     }

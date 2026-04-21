@@ -1,5 +1,6 @@
 <?php
 $items = $data['items'] ?? [];
+$todayDate = $data['todayDate'] ?? date('Y-m-d');
 
 /**
  * This helper converts stored inventory icon values into Material Symbols names.
@@ -125,6 +126,7 @@ function inventoryIconSymbol($icon, $itemName = '')
                     <span>Available</span>
                     <span>Taken By</span>
                     <span>Status</span>
+                    <span>Received Date</span>
                     <span>Location</span>
                     <span>Actions</span>
                 </div>
@@ -145,6 +147,7 @@ function inventoryIconSymbol($icon, $itemName = '')
                             <span class="item-available"><?php echo (int) ($item['available_quantity'] ?? 0); ?> <?php echo htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="item-taken-by"><?php echo htmlspecialchars((string) ($item['taken_by'] ?? '-'), ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="status-badge status-<?php echo htmlspecialchars($item['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($item['status_label'] ?? ucfirst($item['status']), ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span class="item-received-date"><?php echo htmlspecialchars((string) ($item['received_date'] !== '' ? $item['received_date'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="item-location"><?php echo htmlspecialchars($item['location'], ENT_QUOTES, 'UTF-8'); ?></span>
                             <div class="row-actions">
                                 <button type="button" class="icon-btn edit-btn" data-id="<?php echo (int) $item['id']; ?>" aria-label="Edit item">
@@ -177,6 +180,7 @@ function inventoryIconSymbol($icon, $itemName = '')
                     <label class="input-label" for="itemName">Item Name</label>
                     <input type="text" class="form-input" id="itemName" name="name" required>
                 </div>
+
                 <div class="form-group two-col">
                     <div>
                         <label class="input-label" for="itemCategory">Category</label>
@@ -216,6 +220,10 @@ function inventoryIconSymbol($icon, $itemName = '')
                             <option value="sports_bar">Bottle</option>
                         </select>
                     </div>
+                </div>
+                <div class="form-group">
+                        <label class="input-label" for="testDate">Received Date</label>
+                        <input type="date" class="form-input" id="testDate" name="testDate" max="<?php echo $todayDate; ?>" required>
                 </div>
                 <div class="form-group notes-group">
                     <label class="input-label" for="itemDescription">Description</label>

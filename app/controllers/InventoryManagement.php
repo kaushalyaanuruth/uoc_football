@@ -136,6 +136,7 @@ class InventoryManagement extends Controller
             'status_label' => $this->statusLabelFromKey($statusKey),
             'location' => trim((string) ($row->location ?? '')),
             'description' => trim((string) ($row->description ?? '')),
+            'received_date' => trim((string) ($row->received_date ?? '')),
             'icon' => $this->normalizeStoredIcon($row->icon ?? '', $row->item_name ?? ''),
             'borrowed_quantity' => (int) ($borrowInfo['borrowed_qty'] ?? 0),
             'taken_by' => $takenBy !== '' ? $takenBy : '-',
@@ -211,6 +212,7 @@ class InventoryManagement extends Controller
                 'damagedItems' => (int) ($stats->damaged ?? 0)
             ],
             'team_id' => $teamId,
+            'todayDate' => date('Y-m-d'),
             'title' => 'Inventory Management'
         ];
 
@@ -233,6 +235,7 @@ class InventoryManagement extends Controller
             }
 
             $statusKey = $this->normalizeStatusKey($input['status'] ?? 'available');
+            $receivedDate = trim((string) ($input['testDate'] ?? $input['received_date'] ?? ''));
             $model = new InventoryModel();
             $model->addItem([
                 'item_name' => trim((string) ($input['name'] ?? '')),
@@ -244,6 +247,7 @@ class InventoryManagement extends Controller
                 'description' => trim((string) ($input['description'] ?? '')),
                 'unit' => trim((string) ($input['unit'] ?? 'pcs')),
                 'icon' => trim((string) ($input['icon'] ?? 'inventory_2')),
+                'received_date' => $receivedDate !== '' ? $receivedDate : null,
                 'updated_by' => (string) ($_SESSION['nic'] ?? ''),
             ], $teamId);
 
@@ -283,6 +287,7 @@ class InventoryManagement extends Controller
 
             $statusKey = $this->normalizeStatusKey($input['status'] ?? ($existing->status ?? 'available'));
             $quantity = max(0, (int) ($input['quantity'] ?? $existing->total_count ?? 0));
+            $receivedDate = trim((string) ($input['testDate'] ?? $input['received_date'] ?? $existing->received_date ?? ''));
             $model->updateItem([
                 'item_id' => $id,
                 'item_name' => trim((string) ($input['name'] ?? $existing->item_name ?? '')),
@@ -294,6 +299,7 @@ class InventoryManagement extends Controller
                 'description' => trim((string) ($input['description'] ?? $existing->description ?? '')),
                 'unit' => trim((string) ($input['unit'] ?? $existing->unit ?? 'pcs')),
                 'icon' => trim((string) ($input['icon'] ?? $existing->icon ?? 'inventory_2')),
+                'received_date' => $receivedDate !== '' ? $receivedDate : null,
                 'updated_by' => (string) ($_SESSION['nic'] ?? ''),
             ], $teamId);
 

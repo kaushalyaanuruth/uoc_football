@@ -42,7 +42,22 @@ class InventoryModel
             $this->query("ALTER TABLE inventory_items ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'Available'");
             $this->columnCache = null;
         } catch (Exception $e) {
-            // Keep legacy behavior if ALTER is not permitted.
+            // 
+        }
+    }
+
+    private function ensureReceivedDateColumn()
+    {
+        if ($this->hasColumn('received_date')) {
+            return;
+        }
+
+        try {
+            $this->query("ALTER TABLE inventory_items ADD COLUMN received_date DATE NULL");
+            $this->columnCache = null;
+        }
+        catch (Exception $e) {
+            // error 
         }
     }
 
@@ -101,6 +116,15 @@ class InventoryModel
         }
 
         return "'inventory_2'";
+    }
+
+    private function receivedDateExpression()
+    {
+        if ($this->hasColumn('received_date')) {
+            return "received_date";
+        }
+
+        return "NULL";
     }
 
     private function normalizeStatusLabel($status)
@@ -212,6 +236,7 @@ class InventoryModel
     public function addItem($data, $teamId = null)
     {
         $this->ensureStatusColumn();
+        $this->ensureReceivedDateColumn();
 
         $columns = ['item_name', 'total_count', 'available_count', 'updated_by'];
         $values = [':item_name', ':total_count', ':available_count', ':updated_by'];
@@ -271,6 +296,12 @@ class InventoryModel
             $params['icon'] = $data['icon'] ?? 'inventory_2';
         }
 
+        if ($this->hasColumn('received_date')) {
+            $columns[] = 'received_date';
+            $values[] = ':received_date';
+            $params['received_date'] = $data['received_date'] ?? null;
+        }
+
         $query = "INSERT INTO inventory_items (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ")";
 
         return $this->query($query, $params);
@@ -279,6 +310,7 @@ class InventoryModel
     public function getAllItems($teamId)
     {
         $this->ensureStatusColumn();
+        $this->ensureReceivedDateColumn();
 
         $categoryExpr = $this->categoryExpression();
         $statusExpr = $this->statusExpression();
@@ -286,6 +318,7 @@ class InventoryModel
         $descriptionExpr = $this->descriptionExpression();
         $unitExpr = $this->unitExpression();
         $iconExpr = $this->iconExpression();
+        $receivedDateExpr = $this->receivedDateExpression();
         $where = $this->teamWhereClause();
         $params = $this->withTeamParam([], $teamId);
 
@@ -300,11 +333,12 @@ class InventoryModel
             {$descriptionExpr} AS description,
             {$unitExpr} AS unit,
             {$iconExpr} AS icon,
+            {$receivedDateExpr} AS received_date,
             last_updated,
             updated_by
             FROM inventory_items
             {$where}
-            ORDER BY last_updated DESC";
+            ORDER BY  received_date DESC";
 
         return $this->query($query, $params);
     }
@@ -341,6 +375,7 @@ class InventoryModel
     public function getItemById($id, $teamId)
     {
         $this->ensureStatusColumn();
+        $this->ensureReceivedDateColumn();
 
         $categoryExpr = $this->categoryExpression();
         $statusExpr = $this->statusExpression();
@@ -348,6 +383,7 @@ class InventoryModel
         $descriptionExpr = $this->descriptionExpression();
         $unitExpr = $this->unitExpression();
         $iconExpr = $this->iconExpression();
+        $receivedDateExpr = $this->receivedDateExpression();
         $where = $this->hasColumn('team_id') ? ' AND team_id = :team_id' : '';
 
         $params = ['item_id' => (int) $id];
@@ -367,6 +403,7 @@ class InventoryModel
                 {$descriptionExpr} AS description,
                 {$unitExpr} AS unit,
                 {$iconExpr} AS icon,
+                 {$receivedDateExpr} AS received_date,
                 last_updated,
                 updated_by
              FROM inventory_items
@@ -380,6 +417,7 @@ class InventoryModel
     public function updateItem($data, $teamId)
     {
         $this->ensureStatusColumn();
+        $this->ensureReceivedDateColumn();
 
         $set = [
             'item_name = :item_name',
@@ -431,6 +469,11 @@ class InventoryModel
         if ($this->hasColumn('icon')) {
             $set[] = 'icon = :icon';
             $params['icon'] = $data['icon'] ?? 'inventory_2';
+        }
+
+        if ($this->hasColumn('received_date')) {
+            $set[] = 'received_date = :received_date';
+            $params['received_date'] = $data['received_date'] ?? null;
         }
 
         $where = 'item_id = :item_id';
